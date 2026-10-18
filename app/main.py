@@ -3,6 +3,8 @@
     SpaceFractionsAgent.exe                         → GUI
     SpaceFractionsAgent.exe --run-pytest [args…]    → run pytest with the bundled interpreter (cwd = project)
     SpaceFractionsAgent.exe --run-script <file>     → run a Python script with the bundled interpreter
+    SpaceFractionsAgent.exe --doctor                → offline health check (no API call)
+    SpaceFractionsAgent.exe --self-test [dir]       → full scripted mock pipeline (no API call)
     SpaceFractionsAgent.exe --version
 """
 
@@ -53,7 +55,18 @@ def main(argv: list[str] | None = None) -> int:
             print("usage: --run-script <file.py> [args]")
             return 2
         return run_script(args[1], args[2:])
+    if args[:1] == ["--doctor"]:
+        _redirect_output()
+        from app.selftest import doctor
+
+        return doctor()
+    if args[:1] == ["--self-test"]:
+        _redirect_output()
+        from app.selftest import self_test
+
+        return self_test(args[1] if len(args) > 1 else None)
     if args[:1] == ["--version"]:
+        _redirect_output()
         print(__version__)
         return 0
     from app.gui.app import launch

@@ -11,18 +11,21 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from app.bundled import BUNDLED_STDLIB
+
 ROLE = """# Role
 You are Space Fractions Code Agent, an autonomous software engineer. From a structured architecture
 specification you design, implement, test and document a complete Python desktop application in the
 project directory you are given. You work only through the provided tools."""
 
-RULES = """# Rules
+RULES_TEMPLATE = """# Rules
 1. Target is a single-user Windows DESKTOP application built with Tkinter. Never build a web app,
    server, REST/gRPC service, Docker-only or cloud deployment. The input documentation describes a
    web/microservice/cloud system: keep its LOGICAL design (components, use cases, classes, states,
    sequences, data entities) and ADAPT the technology to a desktop app. Record every adaptation.
-2. Python standard library only at runtime: tkinter, sqlite3, json, fractions, random, dataclasses,
-   pathlib, enum, typing. Tests use pytest. No third-party runtime packages, no network access.
+2. Python standard library only, and ONLY these modules (they are bundled in the user's exe; anything
+   else will not exist on the target PC): {stdlib}.
+   Tests use pytest. No third-party runtime packages, no network access.
 3. Keep game logic free of Tkinter (pure Python, testable headless); the UI layer calls the logic.
 4. Prefer edit_file (exact, unique search-and-replace) over rewriting a file. You must read_file a
    whole file before editing it. Create new files with write_files, several per call.
@@ -85,6 +88,7 @@ DESIGN_DECISIONS.md must contain:
   2. "Input issues found": every item in the spec's input_issues, each with how you handled it.
   3. Assumptions you made where the spec is thin."""
 
+RULES = RULES_TEMPLATE.format(stdlib=", ".join(BUNDLED_STDLIB))
 SYSTEM_PROMPT = "\n\n".join([ROLE, RULES, TOOL_USAGE, OUTPUT_CONTRACT])
 
 PLAN_INSTRUCTIONS = """## PHASE 1/3 — ANALYSE & PLAN (plan mode: read-only)

@@ -40,6 +40,9 @@ class AgentApp(ctk.CTk):
         self.title(f"Space Fractions Code Agent  v{__version__}")
         self.geometry("1280x800")
         self.minsize(1050, 680)
+        icon = Path(__file__).resolve().parent.parent.parent / "assets" / "icon.ico"
+        if icon.exists():
+            self.iconbitmap(str(icon))
         self.cfg = load_config()
         self.controller = RunController()
         self.vars: dict[str, tk.Variable] = {}
