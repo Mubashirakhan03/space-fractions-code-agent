@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Mubashirakhan03/space-fractions-code-agent/schemas/spec.schema.json",
+  "title": "Space Fractions agent input spec",
+  "description": "Structured JSON produced deterministically from Architecture_Documentation.md and Architecture_View.md.",
+  "type": "object",
+  "required": ["spec_version", "sources", "target_platform", "domain_model", "requirements",
+               "input_issues", "platform_conflicts", "document", "views"],
+  "properties": {
+    "spec_version": {"type": "string"},
+    "sources": {
+      "type": "object",
+      "required": ["documentation", "views"],
+      "additionalProperties": {"$ref": "#/$defs/source"}
+    },
+    "target_platform": {
+      "type": "object",
+      "required": ["kind", "gui", "language", "persistence"],
+      "properties": {"kind": {"const": "desktop"}}
+    },
+    "domain_model": {
+      "type": "object",
+      "required": ["actors", "use_cases", "classes", "states", "transitions", "sequences", "components"],
+      "properties": {
+        "actors": {"type": "array", "items": {"type": "string"}},
+        "use_cases": {
+          "type": "array",
+          "items": {"type": "object", "required": ["actor", "use_case"],
+                    "properties": {"actor": {"type": "string"}, "use_case": {"type": "string"}}}
+        },
+        "classes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "attributes", "methods"],
+            "properties": {
+              "name": {"type": "string"},
+              "attributes": {"type": "array", "items": {"type": "object", "required": ["name", "type"]}},
+              "methods": {"type": "array", "items": {"type": "object", "required": ["name", "params", "returns"]}}
+            }
+          }
+        },
+        "states": {"type": "array", "items": {"type": "string"}},
+        "transitions": {
+          "type": "array",
+          "items": {"type": "object", "required": ["from", "to"],
+                    "properties": {"trigger": {"type": ["string", "null"]}}}
+        },
+        "sequences": {
+          "type": "array",
+          "items": {"type": "object", "required": ["name", "messages"]}
+        },
+        "components": {"type": "array", "items": {"type": "string"}},
+        "implied_features": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^(FR|NFR|ASR)-[0-9]+$"},
+          "type": {"enum": ["FR", "NFR", "ASR"]}
+        }
+      }
+    },
+    "input_issues": {"type": "array", "items": {"$ref": "#/$defs/issue"}},
+    "platform_conflicts": {
+      "type": "array",
+      "items": {"type": "object", "required": ["term", "sections"]}
+    },
+    "document": {
+      "type": "object",
+      "required": ["sections", "requirements", "components", "issues"],
+      "properties": {
+        "sections": {"type": "array", "items": {"type": "object", "required": ["level", "title"]}}
+      }
+    },
+    "views": {
+      "type": "object",
+      "required": ["diagrams", "warnings"],
+      "properties": {
+        "diagrams": {"type": "array", "items": {"$ref": "#/$defs/diagram"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["file", "sha256"],
+      "properties": {"file": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+    },
+    "issue": {
+      "type": "object",
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": {"type": "string"},
+        "severity": {"enum": ["low", "medium", "high"]},
+        "message": {"type": "string"}
+      }
+    },
+    "diagram": {
+      "type": "object",
+      "required": ["name", "type", "elements", "relations", "warnings"],
+      "properties": {
+        "name": {"type": "string"},
+        "view": {"type": ["string", "null"]},
+        "type": {"type": "string"},
+        "elements": {
+          "type": "array",
+          "items": {"type": "object", "required": ["id", "kind", "label"]}
+        },
+        "relations": {
+          "type": "array",
+          "items": {"type": "object", "required": ["from", "to", "arrow", "kind"]}
+        },
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
