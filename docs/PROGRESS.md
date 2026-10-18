@@ -3,13 +3,13 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-18
-**Current phase:** Phase 0 done → waiting for OK to start Phase 1
+**Current phase:** Phase 1 done (tag `phase-1`) → next: Phase 2 (tools, sandbox, agent loop)
 
 | Phase | Status | Tag |
 |---|---|---|
-| 0 — Research & plan | ✅ done | (tag after git init) |
-| 1 — Skeleton, config, providers, parsers | ⏳ next | |
-| 2 — Tools, sandbox, loop, context, prompts | ⬜ | |
+| 0 — Research & plan | ✅ done | `phase-0` |
+| 1 — Skeleton, config, providers, parsers | ✅ done | `phase-1` |
+| 2 — Tools, sandbox, loop, context, prompts | ⏳ next | |
 | 3 — GUI | ⬜ | |
 | 4 — Exe build + GitHub Actions | ⬜ | |
 | 5 — One real run → examples/ | ⬜ | |
@@ -17,8 +17,10 @@ Read this first when resuming work in a new session.
 
 ## Environment facts
 - Python 3.12.6 via `py`; tkinter 8.6; sqlite 3.45 — OK
-- git 2.51 — OK; **gh CLI not installed** (install via `winget install GitHub.cli`, needs approval)
-- No pip packages installed yet (will use a `.venv`)
+- git 2.51; gh 2.102 at `C:\Program Files\GitHub CLI\gh.exe` (logged in as Mubashirakhan03)
+- Repo: https://github.com/Mubashirakhan03/space-fractions-code-agent
+- `.venv` with all deps; run tests: `.venv/Scripts/python -m pytest`; lint: `.venv/Scripts/python -m ruff check .`
+- Pre-commit secret hook: `python scripts/install_hooks.py` (re-run after a fresh clone)
 
 ## Scope decisions (2026-10-18, see DECISIONS.md D-008…D-011)
 - Model: **only `deepseek-v4-pro`**, official API `https://api.deepseek.com`. No flash anywhere.
@@ -27,7 +29,7 @@ Read this first when resuming work in a new session.
 - Phase 5: STOP first → tell user exact balance to add (with margin), runs covered, cost per run → wait for confirmation.
 
 ## Open decisions / waiting on user
-1. ~~Approve installing `gh`~~ approved 2026-10-18 → user does the `gh auth login` browser step.
+- none right now
 
 ## Key files
 - Plan & requirements: `docs/PROMPT.md`
