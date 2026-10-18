@@ -73,3 +73,19 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Screenshot: `docs/screenshots/gui_mock_run.png`. Pillow installed in `.venv` only for screenshots (not a dependency).
 - Verified manually: "Run generated game" opens the generated Tk window via the bundled interpreter.
 - Rollback: `git revert 04c72c5` or `git checkout phase-2 -- app/` (GUI files are new, so revert removes them).
+
+### 2026-10-18 — Phase 4 (exe build, verification, CI)
+- `a193ed2` build: `SpaceFractionsAgent.spec` (one-file, windowed, icon; bundles customtkinter assets, openai SDK,
+  pytest via `pytest.freeze_includes()`, samples, schema, and the stdlib list in `app/bundled.py`), `run_agent.py`
+  entry, `scripts/build_exe.bat`, `scripts/make_icon.py` → `assets/icon.ico/.png`, `app/selftest.py`
+  (`--doctor`, `--self-test`), `scripts/verify_exe.py`, `.github/workflows/build-windows.yml`.
+- System prompt now lists exactly the bundled stdlib modules (generated code can only use what the exe contains).
+- Local build: `dist/SpaceFractionsAgent.exe` 26.1 MB in ~1 min. `verify_exe.py` with PATH = Windows dirs only:
+  6/6 PASS (--version, --doctor, --self-test incl. child-exe pytest "2 passed", --run-script frozen=True,
+  GUI window, generated game window).
+- Note: "no Python" is simulated by stripping PATH/PYTHON* env vars; a clean-PC test (e.g. Windows Sandbox or
+  another laptop) is still recommended before submission.
+- Rollback: `git revert a193ed2`; build outputs (`build/`, `dist/`) are gitignored and can simply be deleted.
+- CI run 39153253009 on windows-latest: lint, 81 tests, build and verify_exe 6/6 PASS on a clean GitHub runner;
+  artifact `SpaceFractionsAgent-windows` uploaded.
+- Bumped actions to checkout@v7, setup-python@v7, upload-artifact@v7, action-gh-release@v3 (Node 20 deprecation).
