@@ -154,3 +154,40 @@ kharcha track karta hai. Sab kuch MockProvider se deterministic tested hai."
 ### Interview line
 "GUI non-blocking hai: agent worker thread mein chalta hai aur events queue ke zariye UI tak aate hain. User har waqt
 Stop kar sakta hai, state save hoti hai, aur Resume se wahin se dobara chal sakta hai."
+
+---
+
+## Phase 4 — `.exe` banana (Python ke baghair chalne wali app)
+
+### PyInstaller kya karta hai?
+- Hamara Python code + Python interpreter (python312.dll) + saari libraries (customtkinter, openai, pytest...) ko
+  **ek hi file** `SpaceFractionsAgent.exe` (26 MB) mein pack kar deta hai. Double-click → khul jati hai.
+- `--onefile --windowed`: ek file, aur kala console window nahi aata.
+
+### Asal mushkil: generated game kaise chalega jab PC par Python hi nahi?
+- Hal: exe ke andar ka Python hi istemal karte hain. Exe ke **chhupe hue commands**:
+  - `SpaceFractionsAgent.exe --run-pytest tests` → generated tests chalata hai
+  - `SpaceFractionsAgent.exe --run-script main.py` → generated game chalata hai ("▶ Run generated game" yahi karta hai)
+  - `--doctor` (sehat check), `--self-test` (poora mock pipeline exe ke andar)
+- Lekin exe mein sirf wo modules hote hain jo hamare code ne import kiye. Isliye `app/bundled.py` mein ek **list** hai
+  (tkinter, sqlite3, fractions, random...) jo exe mein zabardasti daali jati hai **aur** AI ko system prompt mein bataya
+  jata hai ke sirf yehi modules use kare. Dono jagah ek hi list → kabhi mismatch nahi.
+- Windowed exe ka console nahi hota, to output ek file mein likhwate hain (`SFA_OUTPUT_FILE`) aur wahan se parhte hain.
+
+### Kaise prove kiya ke Python ke baghair chalti hai?
+- `scripts/verify_exe.py`: exe ko aisa environment deta hai jismein PATH par sirf Windows folders hain (koi Python nahi)
+  aur 6 cheezein check karta hai: version, doctor, self-test (agent → child exe → pytest "2 passed"), script run
+  (`frozen True`), GUI window khulna, game window khulna. **6/6 PASS** — mere PC par bhi aur GitHub ke saaf Windows
+  runner par bhi.
+
+### GitHub Actions (CI)
+- Har push par GitHub ki Windows machine: lint → 81 tests → exe build → verify_exe → exe ko "artifact" bana ke upload.
+- `v1.0.0` jaisa tag lagayen to **Release** khud ban jati hai aur exe attach ho jata hai (professor wahan se download karenge).
+
+### Ek ahem fix
+- AI ek jawab mein max 8K tokens likh sakta tha — poore game ka code isse bara hai, jawab beech mein kat jata.
+  Limit 32K ki aur AI ko kaha 4–6 files per call likho.
+
+### Interview line
+"Exe ke andar ka interpreter hi generated code chalata hai via hidden sub-commands, aur bundled stdlib list system
+prompt mein bhi di jati hai. CI har commit par exe build kar ke bina-Python environment mein verify karta hai."

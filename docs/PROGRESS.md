@@ -3,7 +3,7 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-18
-**Current phase:** Phase 3 done (tag `phase-3`) → next: Phase 4 (PyInstaller exe + GitHub Actions)
+**Current phase:** Phase 4 done (tag `phase-4`) → next: Phase 5 (ONE real DeepSeek run) — WAITING for user to add balance
 
 | Phase | Status | Tag |
 |---|---|---|
@@ -11,8 +11,8 @@ Read this first when resuming work in a new session.
 | 1 — Skeleton, config, providers, parsers | ✅ done | `phase-1` |
 | 2 — Tools, sandbox, loop, context, prompts | ✅ done | `phase-2` |
 | 3 — GUI | ✅ done | `phase-3` |
-| 4 — Exe build + GitHub Actions | ⏳ next | |
-| 5 — One real run → examples/ | ⬜ | |
+| 4 — Exe build + GitHub Actions | ✅ done | `phase-4` |
+| 5 — One real run → examples/ | ⏸ waiting for balance | |
 | 6 — README, video script, release | ⬜ | |
 
 ## Environment facts
@@ -34,6 +34,8 @@ Read this first when resuming work in a new session.
 - Tools: `app/tools/builtin.py`; permissions: `sandbox.py`; generated code runs via `runner.py` → `app/main.py`.
 - Replay: `ReplayProvider(transcript.jsonl)` re-runs recorded model replies with zero cost.
 - GUI: `python -m app.main` (dev). Mock mode checkbox = zero-cost scripted demo.
+- Exe: `scriptsuild_exe.bat` → `dist\SpaceFractionsAgent.exe` (26 MB); check with `python scripts/verify_exe.py`.
+- CI: `.github/workflows/build-windows.yml` builds + verifies on every push; `v*` tag → GitHub Release with exe.
 
 ## Open decisions / waiting on user
 - none right now

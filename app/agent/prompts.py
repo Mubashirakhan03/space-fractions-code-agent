@@ -102,9 +102,10 @@ You may call both tools in the same turn."""
 
 IMPLEMENT_INSTRUCTIONS = """## PHASE 2/3 — IMPLEMENT
 Your plan was accepted; DESIGN_DECISIONS.md and AGENT_NOTES.md have been written by the harness.
-Create every file of the plan with write_files (several files per call, complete working code, no
-placeholders or TODOs). Keep the todo list updated. Then run_python compile and test, fix any
-failures with edit_file, and call finish with a short summary."""
+Create every file of the plan with write_files: complete working code, no placeholders or TODOs,
+4-6 files per write_files call so no single reply gets cut off (a cut-off reply loses the whole call).
+Keep the todo list updated. Then run_python compile and test, fix any failures with edit_file, and
+call finish with a short summary."""
 
 
 def fix_instructions(report: str, round_no: int, max_rounds: int) -> str:

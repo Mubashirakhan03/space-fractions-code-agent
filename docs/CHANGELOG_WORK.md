@@ -89,3 +89,6 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - CI run 39153253009 on windows-latest: lint, 81 tests, build and verify_exe 6/6 PASS on a clean GitHub runner;
   artifact `SpaceFractionsAgent-windows` uploaded.
 - Bumped actions to checkout@v7, setup-python@v7, upload-artifact@v7, action-gh-release@v3 (Node 20 deprecation).
+- CI run 39153490927 green with Node 24 actions (no warnings).
+- `max_output_tokens` default 8192 → 32768 and implement prompt asks for 4-6 files per `write_files` call
+  (a full module batch does not fit in 8K output tokens; a cut-off reply would break the tool-call JSON).
