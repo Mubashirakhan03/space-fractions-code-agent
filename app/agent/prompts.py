@@ -1,32 +1,39 @@
 """Layered prompts (mirrors Claude Code's static-sections-then-dynamic design).
 
+The system prompt is GENERIC: it knows how to turn any architecture spec into a desktop app, but
+nothing about a particular application. What to build comes from spec.json; optional task-specific
+hints come from a user-selected task profile (profiles/*.md), never from code.
+
 Order inside every request — kept byte-identical across requests so DeepSeek's prefix cache hits:
   [system]  ROLE → RULES → TOOL USAGE → OUTPUT CONTRACT          (static, no timestamps)
-  [user]    compact spec.json                                     (static for the whole run)
+  [user]    compact spec.json (+ optional task profile)           (static for the whole run)
   [user]    phase instructions + AGENT_NOTES.md (memory)           (appended later, never prepended)
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 from typing import Any
 
+from app.agent.profile import TaskProfile
 from app.bundled import BUNDLED_STDLIB
 
 ROLE = """# Role
-You are Space Fractions Code Agent, an autonomous software engineer. From a structured architecture
-specification you design, implement, test and document a complete Python desktop application in the
-project directory you are given. You work only through the provided tools."""
+You are a Code Agent, an autonomous software engineer. From a structured architecture specification
+(spec.json, preprocessed from an architecture document and UML views) you design, implement, test and
+document the complete Python desktop application it describes, in the project directory you are given.
+You work only through the provided tools."""
 
 RULES_TEMPLATE = """# Rules
 1. Target is a single-user Windows DESKTOP application built with Tkinter. Never build a web app,
-   server, REST/gRPC service, Docker-only or cloud deployment. The input documentation describes a
-   web/microservice/cloud system: keep its LOGICAL design (components, use cases, classes, states,
+   server, REST/gRPC service, Docker-only or cloud deployment. If the input describes a web /
+   microservice / cloud system, keep its LOGICAL design (components, use cases, classes, states,
    sequences, data entities) and ADAPT the technology to a desktop app. Record every adaptation.
 2. Python standard library only, and ONLY these modules (they are bundled in the user's exe; anything
    else will not exist on the target PC): {stdlib}.
    Tests use pytest. No third-party runtime packages, no network access.
-3. Keep game logic free of Tkinter (pure Python, testable headless); the UI layer calls the logic.
+3. Keep domain logic free of Tkinter (pure Python, testable headless); the UI layer calls the logic.
 4. Prefer edit_file (exact, unique search-and-replace) over rewriting a file. You must read_file a
    whole file before editing it. Create new files with write_files, several per call.
 5. Be request-efficient: every model call costs money. Batch independent tool calls in one turn,
@@ -34,8 +41,9 @@ RULES_TEMPLATE = """# Rules
 6. Paths are relative to the project root. The folder agent_run/ belongs to the harness (read-only).
 7. Never run main.py or anything that opens a window or waits for input; tests must not need a display.
 8. Keep AGENT_NOTES.md (your memory file) up to date with key decisions when they change.
-9. Do not invent requirements that contradict the spec; where the spec is thin, derive reasonable
-   behaviour from the use cases, diagrams and summary, and document the assumption."""
+9. Build what the spec describes. Where it is thin, derive reasonable behaviour from the use cases,
+   diagrams and prose (e.g. features named only in a summary) and document each assumption.
+   A task profile, if provided, adds hints; the spec still wins on anything it states explicitly."""
 
 TOOL_USAGE = """# Tool usage
 - update_todos: keep a todo list; exactly one item in_progress; mark items completed as you go.
@@ -44,49 +52,34 @@ TOOL_USAGE = """# Tool usage
 - Before finish: run_python action=compile and action=test yourself and fix failures.
 - Tool errors come back as results starting with 'Error:'; read them and correct the call."""
 
-OUTPUT_CONTRACT = """# Output contract — the "Space Fractions" game
-An educational fractions game for 6th-grade students. Launch: `python main.py`.
+OUTPUT_CONTRACT = """# Output contract (applies to any input spec)
+Implement every use case, class, state machine, sequence and component in spec.domain_model, plus
+features that appear only in prose (domain_model.implied_features). Launch with `python main.py`.
 
-Screens / flow (derive from the spec's summary, use cases, activity and state diagrams):
-- Animated INTRO scene ("intro movie"): space-themed tkinter.Canvas animation (stars, ship), Skip button,
-  auto-advances to the menu.
-- MAIN MENU: Play, High Scores, Help, Admin, Exit.
-- PLAYER NAME entry before playing (UserComponent).
-- QUESTION FLOW: a round of fraction questions of mixed types — equivalent fractions, compare,
-  add/subtract, simplify; multiple choice and typed answers; immediate feedback; progress and score.
-  Correctness MUST be checked with fractions.Fraction (accept equivalent forms like 2/4 == 1/2).
-- PAUSE / RESUME implementing the state machine Playing ⇄ Paused → GameOver exactly as in the spec
-  (invalid transitions raise an error).
-- ENDING scene with final score, percentage and encouraging feedback; option to play again.
-- HIGH SCORES (View Score use case) from SQLite; HELP screen (View Help use case).
-- ADMIN screen: add / edit / delete questions (Update Questions use case).
-
-Architecture (mirror the UML; in-process Python interfaces replace REST/gRPC, same method names
-such as play(), viewScore(), getPrompt(), getOptions(), updateQuestions()):
-  main.py                     entry point (only file that starts Tk)
-  game/      Game, GameState state machine, scoring, round logic        (GameComponent)
-  questions/ Question model, answer checking, QuestionRepository (SQLite) (QuestionComponent)
-  users/     User / player profile and score records                     (UserComponent)
-  admin/     Admin operations on questions                               (AdminComponent)
-  ui/        Tkinter screens (intro, menu, play, pause, end, scores, help, admin)
-  data/questions.json         seed questions (at least 20, all four types)
-  sql/schema.sql              SQLite DDL adapted from the doc's `games` table + `questions` + `scores`
-  tests/                      pytest: game logic, state machine, scoring, answer checking (Fraction),
-                              repository with a temporary SQLite file, admin CRUD; no Tk needed
-  README.md                   how to run, features, how the architecture maps to the UML
-  DESIGN_DECISIONS.md         (written from your submit_plan) mapping table + input issues
-  TRACEABILITY.csv            requirement,use_case_or_feature,component,file,test
-  requirements.txt            "# standard library only" plus pytest
-  Dockerfile                  optional: python:3.12-slim running the test suite headless
-  AGENT_NOTES.md              your memory file
+Project layout:
+  main.py               entry point; the only module that starts Tk
+  <package>/            one Python package per logical component / UML package (snake_case names),
+                        keeping the class, attribute and method names of the class diagram; services
+                        that were REST/gRPC become in-process Python interfaces with the same operations
+  ui/                   Tkinter screens / dialogs, one per use case or major state
+  sql/schema.sql        if the spec has persisted entities or DDL: SQLite DDL adapted from it
+  data/                 seed data files, if the application needs initial content
+  tests/                pytest, headless: domain logic, every state machine (valid AND invalid
+                        transitions), sequences, persistence with a temporary SQLite file
+  README.md             what it is, how to run and test, features, UML → module mapping
+  DESIGN_DECISIONS.md   written by the harness from your submit_plan (see below)
+  TRACEABILITY.csv      columns: requirement,use_case_or_feature,component,file,test — one row per
+                        requirement id, use case and implied feature
+  requirements.txt      "# standard library only" plus pytest
+  Dockerfile            optional: python:3.12-slim running the tests headless
+  AGENT_NOTES.md        your memory file
 
 DESIGN_DECISIONS.md must contain:
-  1. A table: original element (from the doc) → desktop equivalent → reason. Cover at least:
-     microservices, Node.js/Express, REST/OpenAPI /play, gRPC proto, PostgreSQL (JSONB) → SQLite,
-     Redis, RabbitMQ, Elasticsearch, OAuth2, Prometheus, Kubernetes/Docker/Terraform/Jenkins,
-     replication/HA/SLOs, TLS/service mesh/Vault.
-  2. "Input issues found": every item in the spec's input_issues, each with how you handled it.
-  3. Assumptions you made where the spec is thin."""
+  1. Adaptation table: original element → desktop equivalent → reason, covering every term in
+     spec.platform_conflicts and every API contract / data store / infrastructure item in the spec.
+  2. "Input issues found": every item in spec.input_issues, each with how you handled it.
+  3. Assumptions made where the spec is thin.
+  4. UML → code mapping (diagram element → module / class / test)."""
 
 RULES = RULES_TEMPLATE.format(stdlib=", ".join(BUNDLED_STDLIB))
 SYSTEM_PROMPT = "\n\n".join([ROLE, RULES, TOOL_USAGE, OUTPUT_CONTRACT])
@@ -126,21 +119,32 @@ def compact_spec(spec: dict[str, Any]) -> dict[str, Any]:
     doc = spec["document"]
     pick = ("traceability", "risks", "qa_mapping", "testing_matrix", "components", "tech_stack",
             "assumptions", "open_questions", "deliverables", "implied_features")
-    data_blocks = [{k: b.get(k) for k in ("section", "kind", "content") if k in b}
-                   for b in doc["code_blocks"] if b["kind"] in {"sql", "openapi", "proto"} and b["section"] != "L"]
+    seen: set[str] = set()
+    data_blocks = []
+    for b in doc["code_blocks"]:  # API contracts and schemas, each distinct block once
+        digest = hashlib.sha1(b["content"].encode()).hexdigest()
+        if b["kind"] in {"sql", "openapi", "proto"} and digest not in seen:
+            seen.add(digest)
+            data_blocks.append({k: b.get(k) for k in ("section", "kind", "content")})
     return {
         "target_platform": spec["target_platform"],
         "domain_model": spec["domain_model"],
         "requirements": spec["requirements"],
         "input_issues": spec["input_issues"],
         "platform_conflicts": [c["term"] for c in spec["platform_conflicts"]],
-        "document": {k: doc[k] for k in pick} | {"contracts_and_schemas": data_blocks},
+        "document": {k: doc.get(k) for k in pick} | {"contracts_and_schemas": data_blocks},
     }
 
 
-def initial_messages(spec: dict[str, Any]) -> list[dict[str, Any]]:
+def initial_messages(spec: dict[str, Any], profile: TaskProfile | None = None) -> list[dict[str, Any]]:
     spec_json = json.dumps(compact_spec(spec), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    user = ("# Input specification (compact spec.json)\n"
-            "Preprocessed deterministically from Architecture_Documentation.md and Architecture_View.md. "
+    sources = spec.get("sources", {})
+    names = " and ".join(s.get("file", "?") for s in sources.values()) or "the input files"
+    user = (f"# Input specification (compact spec.json)\nPreprocessed deterministically from {names}. "
             "The full version is at agent_run/spec.json.\n\n```json\n" + spec_json + "\n```")
+    if profile:
+        user += (f"\n\n# Task profile: {profile.name} (selected by the user)\n"
+                 f"Additional task-specific hints:\n\n{profile.hints}")
+        if profile.required_files:
+            user += "\n\nRequired files for this task: " + ", ".join(profile.required_files)
     return [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}]

@@ -10,12 +10,12 @@ from app.agent.state import RunState
 from app.config import AppConfig
 from app.tools.runner import SKIP_DIRS
 
-REQUIRED_FILES = ["main.py", "README.md", "requirements.txt", "DESIGN_DECISIONS.md", "TRACEABILITY.csv",
-                  "sql/schema.sql", "data/questions.json"]
+REQUIRED_FILES = ["main.py", "README.md", "requirements.txt", "DESIGN_DECISIONS.md", "TRACEABILITY.csv"]
 
 
-def missing_deliverables(root: Path) -> list[str]:
-    missing = [f for f in REQUIRED_FILES if not (root / f).is_file()]
+def missing_deliverables(root: Path, extra: list[str] | None = None) -> list[str]:
+    """Generic deliverables + any `required_files` from the selected task profile."""
+    missing = [f for f in [*REQUIRED_FILES, *(extra or [])] if not (root / f).is_file()]
     if not list((root / "tests").glob("test_*.py")):
         missing.append("tests/test_*.py")
     return missing
@@ -26,12 +26,13 @@ def project_files(root: Path) -> list[tuple[str, int]]:
                   if p.is_file() and not SKIP_DIRS & set(p.relative_to(root).parts))
 
 
-def write_report(root: Path, state: RunState, spec: dict[str, Any], cfg: AppConfig) -> Path:
+def write_report(root: Path, state: RunState, spec: dict[str, Any], cfg: AppConfig,
+                 profile_name: str | None = None) -> Path:
     u = state.usage
     files = project_files(root)
     replay = state.provider.startswith("REPLAY")
     lines = [
-        "# RUN_REPORT — Space Fractions Code Agent",
+        "# RUN_REPORT — Code Agent run",
         "",
         f"> **{'REPLAY of a recorded run (no API calls were made)' if replay else 'Live run'}**",
         "",
@@ -39,6 +40,8 @@ def write_report(root: Path, state: RunState, spec: dict[str, Any], cfg: AppConf
         f"| Generated (UTC) | {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')} |",
         f"| Provider | {state.provider} |",
         f"| Model | `{state.model}` |",
+        f"| Inputs | {', '.join(s.get('file', '?') for s in spec.get('sources', {}).values())} |",
+        f"| Task profile | {profile_name or '(none — spec only)'} |",
         f"| Status | **{state.status}**{' — ' + state.stop_reason if state.stop_reason else ''} |",
         f"| Verification | {'PASSED' if state.verify_ok else 'FAILED' if state.verify_ok is False else 'not run'} |",
         f"| Fix rounds used | {state.fix_round} / {cfg.fix_rounds} |",

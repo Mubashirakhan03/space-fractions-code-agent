@@ -22,6 +22,7 @@ from typing import Any
 from app.agent import prompts
 from app.agent.context import ContextManager
 from app.agent.planner import TodoList
+from app.agent.profile import TaskProfile
 from app.agent.report import REQUIRED_FILES, missing_deliverables, write_report
 from app.agent.state import RunState
 from app.agent.transcript import Transcript
@@ -56,10 +57,11 @@ class RunResult:
 class Agent:
     def __init__(self, provider: LLMProvider, cfg: AppConfig, output_dir: Path | str, spec: dict[str, Any], *,
                  on_event: EventCallback | None = None, approve_write: ApproveWrite | None = None,
-                 stop_event: threading.Event | None = None):
+                 stop_event: threading.Event | None = None, profile: TaskProfile | None = None):
         self.provider = provider
         self.cfg = cfg
         self.spec = spec
+        self.profile = profile
         self.root = Path(output_dir).resolve()
         self.run_dir = self.root / "agent_run"
         self.state_path = self.run_dir / "state.json"
@@ -106,9 +108,10 @@ class Agent:
             self.log(f"Resuming run at phase '{self.state.phase}' ({self.state.requests} requests so far).")
         else:
             save_spec(self.spec, self.run_dir / "spec.json")
-            self.state = RunState(messages=prompts.initial_messages(self.spec))
+            self.state = RunState(messages=prompts.initial_messages(self.spec, self.profile))
         self.state.provider, self.state.model = self.provider.name, self.provider.model
         self.transcript.append("run_start", provider=self.provider.name, model=self.provider.model, resume=resume,
+                               profile=self.profile.name if self.profile else None,
                                config={k: v for k, v in asdict(self.cfg).items() if k != "api_key"})
         prior_elapsed = self.state.elapsed_s
         try:
@@ -123,7 +126,8 @@ class Agent:
         finally:
             self.state.elapsed_s = prior_elapsed + (time.time() - started)
             self._save()
-            report = write_report(self.root, self.state, self.spec, self.cfg)
+            report = write_report(self.root, self.state, self.spec, self.cfg,
+                                  self.profile.name if self.profile else None)
             self.transcript.append("run_end", status=self.state.status, reason=self.state.stop_reason,
                                    requests=self.state.requests, cost_usd=round(self.state.cost_usd, 6),
                                    usage=self.state.usage, verify_ok=self.state.verify_ok)
@@ -283,7 +287,7 @@ class Agent:
     def verify(self) -> tuple[bool, str]:
         """Harness-side self-verification: deliverables present, everything compiles, tests pass."""
         parts, ok = [], True
-        missing = missing_deliverables(self.root)
+        missing = missing_deliverables(self.root, self.profile.required_files if self.profile else None)
         if missing:
             ok = False
             parts.append("Missing required deliverables: " + ", ".join(missing))

@@ -29,6 +29,7 @@ class AppConfig:
     fix_rounds: int = 3  # verify → fix cycles
     ask_before_write: bool = False
     doc_path: str = ""
+    profile_path: str = ""  # optional task profile (profiles/*.md)
     view_path: str = ""
     output_dir: str = ""
 

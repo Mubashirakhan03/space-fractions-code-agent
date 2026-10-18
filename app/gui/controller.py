@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import queue
+import shutil
 import subprocess
 import sys
 import threading
@@ -14,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from app.agent.loop import Agent
+from app.agent.profile import load_profile
 from app.agent.replay import ReplayProvider
 from app.config import AppConfig
 from app.llm.deepseek import DeepSeekProvider
@@ -37,16 +39,43 @@ def build_provider(cfg: AppConfig, replay_transcript: Path | None = None) -> LLM
     return DeepSeekProvider(key, thinking=cfg.thinking)
 
 
+APP_ROOT = Path(__file__).resolve().parent.parent.parent  # in a frozen exe this is the temp _MEI folder
+
+
+def user_data_dir() -> Path:
+    """Persistent, user-visible folder for samples and profiles (never the temp _MEI folder)."""
+    return Path.home() / "Documents" / "SpaceFractionsAgent"
+
+
+def resource_dir(name: str) -> Path:
+    """Folder with bundled `samples` or `profiles`.
+
+    Dev mode: the repo folder. Frozen exe: copied once from the bundle to Documents/SpaceFractionsAgent/
+    so paths shown in the GUI stay valid after the exe exits.
+    """
+    if not getattr(sys, "frozen", False):
+        return APP_ROOT / name
+    target = user_data_dir() / name
+    bundled = APP_ROOT / name
+    if bundled.is_dir() and not target.exists():
+        shutil.copytree(bundled, target)
+    return target
+
+
 def find_default_inputs(extra_dirs: list[Path] | None = None) -> tuple[str, str]:
-    """Pre-fill the two input files if they sit next to the exe, in samples/, or in the cwd."""
+    """Pre-fill the two input files if they sit next to the exe, in the cwd, or in the samples folder."""
     exe_dir = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else None
-    app_root = Path(__file__).resolve().parent.parent.parent
     candidates = [*(extra_dirs or []), *(d for d in (exe_dir, exe_dir and exe_dir / "samples") if d),
-                  Path.cwd(), Path.cwd() / "samples", app_root / "samples"]
+                  Path.cwd(), Path.cwd() / "samples", resource_dir("samples")]
     for d in candidates:
         if (d / DOC_NAME).is_file() and (d / VIEW_NAME).is_file():
             return str(d / DOC_NAME), str(d / VIEW_NAME)
     return "", ""
+
+
+def list_profiles() -> list[Path]:
+    d = resource_dir("profiles")
+    return sorted(d.glob("*.md")) if d.is_dir() else []
 
 
 @dataclass
@@ -87,10 +116,12 @@ class RunController:
             try:
                 prov = provider or build_provider(cfg, replay_transcript)
                 spec = self._load_spec(cfg, replay_transcript)
+                profile = load_profile(cfg.profile_path)
                 self.agent = Agent(prov, cfg, cfg.output_dir, spec, on_event=self._emit,
                                    approve_write=approve if cfg.ask_before_write else None,
-                                   stop_event=self.stop_event)
-                self._emit("log", {"text": f"Provider: {prov.name} | model: {prov.model}"})
+                                   stop_event=self.stop_event, profile=profile)
+                self._emit("log", {"text": f"Provider: {prov.name} | model: {prov.model} | task profile: "
+                                           f"{profile.name if profile else 'none (spec only)'}"})
                 self.agent.run(resume=resume)
             except Exception as exc:  # surface everything to the UI instead of dying silently
                 self._emit("error", {"text": f"{type(exc).__name__}: {exc}"})

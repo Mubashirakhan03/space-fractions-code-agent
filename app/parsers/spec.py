@@ -25,10 +25,10 @@ TARGET_PLATFORM = {
     "os": "Windows",
     "gui": "tkinter",
     "language": "Python 3.11+",
-    "dependencies": "standard library only (tkinter, sqlite3, json, fractions, random) + pytest for tests",
+    "dependencies": "Python standard library only (see bundled module list) + pytest for tests",
     "persistence": "SQLite file",
     "users": "single local user per session",
-    "source": "Professor's instruction: the generated game must be a desktop application, not web-based.",
+    "source": "Task constraint: the deliverable must be a Windows desktop application, not web-based.",
 }
 
 

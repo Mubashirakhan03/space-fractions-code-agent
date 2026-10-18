@@ -221,7 +221,8 @@ def parse_document(text: str) -> dict[str, Any]:
         "traceability": traceability,
         "risks": find_table("Risk", "Mitigation"),
         "qa_mapping": find_table("ASR/NFR ID", "Test Type"),
-        "testing_matrix": find_table("Test Type", "GameComponent"),
+        "testing_matrix": next((t for _, t in all_tables if next(iter(t[0])) == "Test Type" and len(t[0]) > 1),
+                               []),
         "components": _dedupe(components, "name"),
         "tech_stack": tech_stack,
         "assumptions": assumptions,
@@ -277,7 +278,7 @@ def detect_issues(doc: dict[str, Any], all_tables, all_blocks) -> list[dict[str,
     ids = [r["id"] for r in doc["requirements"]]
     if len(ids) < 6:
         add("THIN_REQUIREMENTS", "high",
-            f"Only {len(ids)} requirement ids exist ({', '.join(ids)}); game features from the summary "
+            f"Only {len(ids)} requirement ids exist ({', '.join(ids)}); features from the summary "
             f"({', '.join(doc['implied_features'])}) have no FR of their own.")
     untraced = [r["id"] for r in doc["requirements"] if not r["components"]]
     if untraced:
@@ -295,7 +296,7 @@ def detect_issues(doc: dict[str, Any], all_tables, all_blocks) -> list[dict[str,
         hashes[h] = hashes.get(h, 0) + 1
     dupes = sum(1 for c in hashes.values() if c > 1)
     if dupes:
-        add("DUPLICATE_BLOCKS", "low", f"{dupes} code block(s) are duplicated verbatim (section L repeats D/E).")
+        add("DUPLICATE_BLOCKS", "low", f"{dupes} code block(s) appear more than once verbatim.")
 
     for _, b in all_blocks:
         if b.get("parse_error"):
