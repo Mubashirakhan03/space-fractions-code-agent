@@ -24,5 +24,14 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - **Copied** `Task1/env` → `.env` (secret, gitignored).
 - **Added** `.gitignore` (secrets, Python, build outputs).
 - **Added** docs: `RESEARCH_NOTES.md`, `DECISIONS.md`, `CHANGELOG_WORK.md`, `PROGRESS.md`, `LEARNING_NOTES_UR.md`.
-- Commit: *(none yet — git is initialised in Phase 1)*
+- Commit: `d37cc8f` — tag `phase-0`
 - Rollback: delete the `space-fractions-code-agent/` folder; `Task1/` is unchanged.
+
+### 2026-10-18 — Phase 1 start (git + GitHub)
+- Installed GitHub CLI 2.102.0 (`winget install GitHub.cli`); user logged in as `Mubashirakhan03`.
+- `git init -b main`, identity `Mubashira <mubashirakhan1001@gmail.com>`; verified `.env` ignored (`git check-ignore`).
+- Added `.env.example`, `LICENSE` (MIT), starter `README.md`.
+- Created public repo https://github.com/Mubashirakhan03/space-fractions-code-agent and pushed `main` + tag `phase-0`.
+- Recorded scope decisions D-008…D-011 (only deepseek-v4-pro, DeepSeek + Mock only, mock-only dev, stop before paid runs).
+- Commit: `d37cc8f` (same first commit)
+- Rollback: `gh repo delete Mubashirakhan03/space-fractions-code-agent` (irreversible, ask first) / `rm -rf .git`.

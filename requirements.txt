@@ -1,0 +1,6 @@
+openai>=2.0
+customtkinter>=5.2
+PyYAML>=6.0
+python-dotenv>=1.0
+jsonschema>=4.20
+pytest>=8.0

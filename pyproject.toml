@@ -1,0 +1,19 @@
+[project]
+name = "space-fractions-agent"
+version = "0.1.0"
+description = "Simplified Claude-Code-style code agent that generates the Space Fractions desktop game with DeepSeek"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Mubashira" }]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["examples", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
