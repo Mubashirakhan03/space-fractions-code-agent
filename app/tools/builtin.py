@@ -213,6 +213,9 @@ def submit_plan(ctx: ToolContext, a: dict) -> str:
         raise ToolError("file_tree must be a non-empty list of relative file paths.")
     if len(str(a["design_decisions"])) < 200:
         raise ToolError("design_decisions is too short; include the adaptation mapping table and input issues.")
+    if "ui design brief" not in str(a["design_decisions"]).lower():
+        raise ToolError("design_decisions must include a 'UI design brief' section (target users, mood, palette, "
+                        "fonts, layout, key screens) derived from the spec.")
     if not ctx.todos.items:
         raise ToolError("Call update_todos with the implementation plan before submit_plan.")
     ctx.plan = {"design_decisions": a["design_decisions"], "file_tree": tree, "notes": a.get("notes", "")}

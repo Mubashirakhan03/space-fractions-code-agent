@@ -126,6 +126,15 @@ def test_plan_mode_blocks_write_tools(reg):
     assert call(reg, "submit_plan", mode="implement", design_decisions="x", file_tree=["a"]).is_error
 
 
+def test_submit_plan_requires_ui_design_brief(reg):
+    call(reg, "update_todos", mode="plan", todos=[{"content": "a", "status": "in_progress"}])
+    no_brief = call(reg, "submit_plan", mode="plan", design_decisions="x" * 300, file_tree=["main.py"])
+    assert no_brief.is_error and "UI design brief" in no_brief.content
+    ok = call(reg, "submit_plan", mode="plan", design_decisions="## UI design brief\n" + "x" * 300,
+              file_tree=["main.py"])
+    assert not ok.is_error
+
+
 def test_invalid_json_unknown_tool_missing_args(reg):
     r = reg.execute(ToolCall(id="1", name="read_file", arguments="{bad"), "implement")
     assert r.is_error and "Invalid JSON" in r.content

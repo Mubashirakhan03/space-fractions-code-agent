@@ -1,5 +1,6 @@
 """The agent is generic: nothing about Space Fractions lives in code; profiles are optional data files."""
 
+import re
 import sys
 
 import pytest
@@ -7,6 +8,7 @@ import pytest
 from app.agent import prompts
 from app.agent.loop import Agent
 from app.agent.profile import load_profile, parse_profile
+from app.bundled import BUNDLED_STDLIB
 from app.config import AppConfig
 from app.gui import controller
 from app.llm.mock import MockProvider, reply, tool_call
@@ -22,9 +24,21 @@ def lib_spec():
     return build_spec(LIB / "Architecture_Documentation.md", LIB / "Architecture_View.md")
 
 
-@pytest.mark.parametrize("term", ["Space Fractions", "6th-grade", "questions.json", "GameComponent", "intro"])
+SPECIFIC_WORDS = ["space fractions", "space", "star", "planet", "rocket", "child", "children", "kid", "fraction", "6th",
+                  "grade", "game", "question", "score", "player", "intro", "confetti", "pupil", "student",
+                  "questions.json", "gamecomponent"]
+
+
+@pytest.mark.parametrize("term", SPECIFIC_WORDS)
 def test_system_prompt_has_no_task_specific_content(term):
-    assert term.lower() not in prompts.SYSTEM_PROMPT.lower()
+    """The generic prompt must not carry Space-Fractions style or content; that lives in profiles/."""
+    text = prompts.SYSTEM_PROMPT.lower().replace(", ".join(BUNDLED_STDLIB).lower(), "")  # e.g. module 'fractions'
+    assert re.search(rf"\b{re.escape(term)}s?\b", text) is None, f"'{term}' found in the generic system prompt"
+
+
+def test_plan_requires_ui_design_brief():
+    assert "UI design brief" in prompts.PLAN_INSTRUCTIONS and "UI design brief" in prompts.OUTPUT_CONTRACT
+    assert "UI design brief" in prompts.IMPLEMENT_INSTRUCTIONS
 
 
 def test_profile_parsing():
@@ -74,7 +88,8 @@ def library_project():
 
 
 def library_script():
-    design = ("# Design decisions\n\n| Original | Desktop | Reason |\n|---|---|---|\n"
+    design = ("# Design decisions\n\n## UI design brief\nClean, calm, table based.\n\n"
+              "| Original | Desktop | Reason |\n|---|---|---|\n"
               + "| PostgreSQL | SQLite | local |\n" * 8)
     return [
         reply(tool_call("update_todos", "t", todos=[{"content": "build", "status": "in_progress"}]),

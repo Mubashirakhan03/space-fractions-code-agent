@@ -20,7 +20,7 @@ from app.llm.mock import MockProvider, reply, tool_call
 from app.llm.provider import LLMResponse, ToolCall, Usage
 from app.parsers.spec import build_spec
 
-DESIGN = "# Design decisions\n\n| Original | Desktop | Reason |\n|---|---|---|\n" + \
+DESIGN = "# Design decisions\n\n## UI design brief\nCalm.\n\n| Original | Desktop | Reason |\n|---|---|---|\n" + \
          "| PostgreSQL | SQLite | single user desktop |\n" * 8
 
 

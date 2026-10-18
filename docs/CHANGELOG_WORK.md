@@ -142,3 +142,13 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   Tests: `tests/test_ui_probe.py` (bad layout flagged, good passes, crashing screen flagged, no-UI skipped).
 - Tests: 102 passed, 1 skipped.
 - Rollback: `git revert <this hash>`; run-1 folder can be deleted without affecting the agent.
+
+### 2026-10-19 — Generic UI style: "UI design brief"
+- System prompt: removed all app-specific style words (stars/planets, "question/game" examples, children);
+  style now comes from a **UI design brief** the agent derives from the spec in the Plan phase and writes as
+  DESIGN_DECISIONS.md section 5 (users, mood, hex palette with roles, fonts, layout, key screens). Examples:
+  Tic-Tac-Toe → playful big 3x3 board; library tracker → calm, table based; learning app → bright, encouraging.
+  Implement phase must follow it (palette/fonts in ui/theme.py). Generic quality rules kept.
+- `submit_plan` rejects design_decisions without a "UI design brief" section.
+- Tests: generic prompt contains none of 21 Space-Fractions words (whole-word check, stdlib module names excluded);
+  plan/contract/implement mention the brief; submit_plan brief enforcement. 120 passed, 1 skipped.

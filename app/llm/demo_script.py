@@ -310,6 +310,9 @@ _DESIGN = f"""# DESIGN_DECISIONS.md ({BANNER})
 
 ## Input issues found
 See agent_run/spec.json → input_issues (this mock demo does not analyse them).
+
+## UI design brief
+Mock demo only: dark navy background, warm yellow accent, large Segoe UI fonts, one centred panel.
 """
 
 FILES = [

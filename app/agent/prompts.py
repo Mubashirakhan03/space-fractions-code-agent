@@ -51,24 +51,28 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Main window: at least 1100x750 (root.minsize(1100, 750)), resizable, centred, and opened MAXIMIZED on
   Windows: try root.state("zoomed") except tk.TclError: root.attributes("-zoomed", True). F11 toggles
   full screen (root.attributes("-fullscreen", …)) and Esc leaves full screen. Never a tiny dialog-sized window.
-- Large readable fonts: titles 32+ pt, main content / questions 24-28+ pt, buttons and inputs 18+ pt.
-- One consistent colour theme that suits the domain, high-contrast text. Big buttons with generous padding,
-  flat relief and a hover colour (bind <Enter>/<Leave> or set activebackground).
+- Visual style comes from YOUR UI design brief (DESIGN_DECISIONS.md section 5), derived from this spec's
+  users and domain — not from any fixed template. Put the palette and fonts in one module (ui/theme.py) and
+  use it everywhere; never leave the default grey Tk look.
+- Large readable fonts: titles 32+ pt, main content 24-28+ pt, buttons and inputs 18+ pt.
+- High-contrast text. Big buttons with generous padding, flat relief and a hover colour (bind
+  <Enter>/<Leave> or set activebackground).
+- Where a flow ends (a round, a task, a booking…), show a clear result / summary screen.
 - Forms: the main input has keyboard focus, Enter submits, the input is cleared automatically after each
   submission, and feedback is clear and coloured (green = success, red = error) in the window itself.
   Use messagebox only for confirmations.
 - Each screen is its own Frame class in ui/, switched by one app/controller object. Contract (the harness
   uses it): ui/app.py defines `create_app(root) -> App`, which builds everything WITHOUT calling mainloop();
   App has `screens: dict[str, tk.Frame]` and `show(name)`. Every screen must render safely when shown
-  directly (e.g. the end or question screen with no game in progress shows defaults instead of crashing).
+  directly (e.g. a results or detail screen shown before any data exists displays defaults, not a crash).
 - Canvas drawing: winfo_width()/winfo_height() return 1 until the window is actually shown, so NEVER compute
-  positions from them at construction time. Bind <Configure> on the canvas and (re)draw backgrounds, stars,
-  planets and canvas text from event.width/event.height; lay out normal widgets with pack/grid or
+  positions from them at construction time. Bind <Configure> on the canvas and (re)draw backgrounds,
+  decorations, shapes and canvas text from event.width/event.height; lay out normal widgets with pack/grid or
   place(relx=…, rely=…). The harness opens the real window, shows every screen and FAILS verification if
   widgets or canvas items are outside the visible area or squeezed into a corner.
 - Required test tests/test_ui_smoke.py (pytest): create ONE tk.Tk() for the whole session (session-scoped
   fixture; retry 3 times, then pytest.skip on tk.TclError). Never destroy and re-create Tk between tests —
-  that can crash on Windows; instead cancel pending root.after() callbacks and destroy the root's children
+  that can crash on Windows; instead cancel pending root.after() callbacks and destroy the root's widgets
   after each test, and destroy the root once at the end. root.withdraw(),
   build the app with the factory, call root.update_idletasks(), assert root.minsize() >= (1100, 750), show every
   screen in turn and assert its key widgets exist (title label, main buttons, inputs), exercise one form
@@ -109,16 +113,25 @@ DESIGN_DECISIONS.md must contain:
      spec.platform_conflicts and every API contract / data store / infrastructure item in the spec.
   2. "Input issues found": every item in spec.input_issues, each with how you handled it.
   3. Assumptions made where the spec is thin.
-  4. UML → code mapping (diagram element → module / class / test)."""
+  4. UML → code mapping (diagram element → module / class / test).
+  5. "UI design brief" derived from the spec (actors, use cases, domain, any task profile): target users,
+     mood, colour palette (hex values with roles: background, surface, primary, accent, success, error,
+     text), fonts and sizes, layout approach, key screens and navigation. Fit the app, e.g.:
+     Tic-Tac-Toe → playful, a big 3x3 board, bold contrasting X/O colours; library tracker → clean and calm,
+     table/list based, neutral palette with one accent; learning app → bright, encouraging, big friendly
+     controls. The implementation must follow this brief."""
 
 RULES = RULES_TEMPLATE.format(stdlib=", ".join(BUNDLED_STDLIB))
 SYSTEM_PROMPT = "\n\n".join([ROLE, RULES, UI_QUALITY, TOOL_USAGE, OUTPUT_CONTRACT])
 
 PLAN_INSTRUCTIONS = """## PHASE 1/3 — ANALYSE & PLAN (plan mode: read-only)
-Reconcile the spec with the desktop constraint. Then, in as few turns as possible:
+Reconcile the spec with the desktop constraint and write the UI design brief: who uses this app, what
+mood suits it, and which palette, fonts, layout and screens follow from that. Then, in as few turns as
+possible:
 1. Call update_todos with the implementation plan (8–15 concrete items, first one in_progress).
 2. Call submit_plan with:
    - design_decisions: the full Markdown content of DESIGN_DECISIONS.md (see the output contract),
+     including section 5 "UI design brief",
    - file_tree: every file you will create (relative paths),
    - notes: short content for AGENT_NOTES.md (key decisions, module responsibilities, conventions).
 You may call both tools in the same turn."""
@@ -127,8 +140,9 @@ IMPLEMENT_INSTRUCTIONS = """## PHASE 2/3 — IMPLEMENT
 Your plan was accepted; DESIGN_DECISIONS.md and AGENT_NOTES.md have been written by the harness.
 Create every file of the plan with write_files: complete working code, no placeholders or TODOs,
 4-6 files per write_files call so no single reply gets cut off (a cut-off reply loses the whole call).
-Keep the todo list updated. Then run_python compile and test, fix any failures with edit_file, and
-call finish with a short summary."""
+Follow the UI design brief in DESIGN_DECISIONS.md (palette and fonts in ui/theme.py). Keep the todo
+list updated. Then run_python compile and test, fix any failures with edit_file, and call finish with a
+short summary."""
 
 
 def fix_instructions(report: str, round_no: int, max_rounds: int) -> str:
