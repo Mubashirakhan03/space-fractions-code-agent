@@ -3,15 +3,15 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-18
-**Current phase:** Phase 2 done (tag `phase-2`) → next: Phase 3 (customtkinter GUI)
+**Current phase:** Phase 3 done (tag `phase-3`) → next: Phase 4 (PyInstaller exe + GitHub Actions)
 
 | Phase | Status | Tag |
 |---|---|---|
 | 0 — Research & plan | ✅ done | `phase-0` |
 | 1 — Skeleton, config, providers, parsers | ✅ done | `phase-1` |
 | 2 — Tools, sandbox, loop, context, prompts | ✅ done | `phase-2` |
-| 3 — GUI | ⏳ next | |
-| 4 — Exe build + GitHub Actions | ⬜ | |
+| 3 — GUI | ✅ done | `phase-3` |
+| 4 — Exe build + GitHub Actions | ⏳ next | |
 | 5 — One real run → examples/ | ⬜ | |
 | 6 — README, video script, release | ⬜ | |
 
@@ -33,6 +33,7 @@ Read this first when resuming work in a new session.
   compile, pytest) ⇄ fix (≤ fix_rounds) → RUN_REPORT.md. State saved after every step → `run(resume=True)`.
 - Tools: `app/tools/builtin.py`; permissions: `sandbox.py`; generated code runs via `runner.py` → `app/main.py`.
 - Replay: `ReplayProvider(transcript.jsonl)` re-runs recorded model replies with zero cost.
+- GUI: `python -m app.main` (dev). Mock mode checkbox = zero-cost scripted demo.
 
 ## Open decisions / waiting on user
 - none right now

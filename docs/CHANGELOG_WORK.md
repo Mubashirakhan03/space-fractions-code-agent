@@ -61,3 +61,15 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   Tests: `tests/test_agent_loop.py` (15 mock end-to-end scenarios). Total 74 passed, 1 skipped (symlink test on Windows).
 - Measured fixed prompt prefix ≈ 5.2K tokens (system 1.4K + compact spec 2.9K + tool schemas 1K).
 - Rollback: `git revert 087b40e` / `git revert abc710f`, or `git checkout phase-1 -- app/` to restore Phase 1 code.
+
+### 2026-10-18 — Phase 3 (GUI)
+- `04c72c5` feat(gui): `app/gui/app.py` (customtkinter window: provider/key, inputs, output, limits, fixed action bar,
+  phase strip, MOCK/REPLAY banner, tabs Log/Todos/Spec preview/Report, usage+cost line), `app/gui/controller.py`
+  (worker thread + queue, provider factory, ask-before-write bridge, input pre-fill, launch generated game),
+  `app/llm/demo_script.py` (scripted MOCK DEMO project, clearly labelled as not LLM-generated).
+  Tests: `tests/test_gui.py` (controller + real-window smoke run). Total 81 passed, 1 skipped.
+- New runs require an empty output folder (prevents mixing two runs; nothing is ever deleted).
+- Paid run asks for confirmation with prices and the run's hard limits.
+- Screenshot: `docs/screenshots/gui_mock_run.png`. Pillow installed in `.venv` only for screenshots (not a dependency).
+- Verified manually: "Run generated game" opens the generated Tk window via the bundled interpreter.
+- Rollback: `git revert 04c72c5` or `git checkout phase-2 -- app/` (GUI files are new, so revert removes them).
