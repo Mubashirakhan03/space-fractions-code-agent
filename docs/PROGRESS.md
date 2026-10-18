@@ -3,14 +3,14 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-18
-**Current phase:** Phase 1 done (tag `phase-1`) → next: Phase 2 (tools, sandbox, agent loop)
+**Current phase:** Phase 2 done (tag `phase-2`) → next: Phase 3 (customtkinter GUI)
 
 | Phase | Status | Tag |
 |---|---|---|
 | 0 — Research & plan | ✅ done | `phase-0` |
 | 1 — Skeleton, config, providers, parsers | ✅ done | `phase-1` |
-| 2 — Tools, sandbox, loop, context, prompts | ⏳ next | |
-| 3 — GUI | ⬜ | |
+| 2 — Tools, sandbox, loop, context, prompts | ✅ done | `phase-2` |
+| 3 — GUI | ⏳ next | |
 | 4 — Exe build + GitHub Actions | ⬜ | |
 | 5 — One real run → examples/ | ⬜ | |
 | 6 — README, video script, release | ⬜ | |
@@ -27,6 +27,12 @@ Read this first when resuming work in a new session.
 - Providers: **DeepSeek official + MockProvider (+ replay)**. No OpenRouter / custom.
 - Dev + tests: MockProvider only (zero cost).
 - Phase 5: STOP first → tell user exact balance to add (with margin), runs covered, cost per run → wait for confirmation.
+
+## How the agent works (quick map)
+- `app/agent/loop.py` Agent.run(): plan (read-only + submit_plan) → implement → verify (harness: deliverables,
+  compile, pytest) ⇄ fix (≤ fix_rounds) → RUN_REPORT.md. State saved after every step → `run(resume=True)`.
+- Tools: `app/tools/builtin.py`; permissions: `sandbox.py`; generated code runs via `runner.py` → `app/main.py`.
+- Replay: `ReplayProvider(transcript.jsonl)` re-runs recorded model replies with zero cost.
 
 ## Open decisions / waiting on user
 - none right now

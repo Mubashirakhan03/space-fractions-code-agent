@@ -74,3 +74,55 @@ permissions — aur unka chhota Python version banaya jo DeepSeek ke saath archi
 ### Interview line
 "Main ne input ko pehle deterministic parser se structured JSON mein badla — ye sasta, testable aur reproducible hai.
 AI sirf wahan use hota hai jahan zaroori hai: design decisions aur code likhna."
+
+---
+
+## Phase 2 — Tools, Sandbox, Agent Loop (agent ka dil)
+
+### 1) Agent loop — do layers (Claude Code jaisa)
+- **Bahar wali layer** (`Agent.run`): poora session sambhalti hai — messages, tokens, kharcha, `state.json`.
+  Phases chalati hai: **plan → implement → verify ⇄ fix → report**.
+- **Andar wali layer** (`_run_phase`): ek chakkar (loop): AI ko messages + tools bhejo → AI tool calls lautaye →
+  hum tools chalayein → result `role:"tool"` message mein wapas → dobara... jab tak `submit_plan`/`finish` na aaye.
+- Agar AI tool call na kare → 2 dafa yaad dilate hain (nudge); jawab beech mein kat jaye (`length`) → "continue" bolte hain.
+
+### 2) Plan mode
+- Plan phase mein AI sirf **parh** sakta hai (list_dir, read_file...) aur `update_todos` + `submit_plan`.
+  Likhne ki koshish kare to "Permission denied: not available in plan mode" milta hai.
+- `submit_plan` mein AI `DESIGN_DECISIONS.md` ka content + file tree + notes deta hai; **harness khud** file likhta hai
+  (bilkul Claude Code ke ExitPlanMode jaisa).
+
+### 3) Tools aur Sandbox (hifazat)
+- Har path output folder ke andar hi hona chahiye — `../` ya `C:\...` block. `agent_run/` folder AI ke liye read-only.
+- `.bat/.exe/.ps1` jaisi files likhna mana. Koi shell nahi.
+- `edit_file`: exact text dhoond kar badalta hai; text **ek hi dafa** mile warna error ("Found 2 matches...").
+  Pehle file **poori parhna** zaroori; parhne ke baad kisi aur ne file badli ho to dobara parhna padta hai.
+- `write_files`: ek hi call mein kai files — **requests bachti hain** (paisa bachta hai).
+- Read-only tools ek saath (parallel) chalte hain, likhne wale ek-ek kar ke.
+- Tool ka error crash nahi karta — AI ko "Error: ..." result milta hai taake wo khud theek kare.
+
+### 4) Self-verification
+- AI `finish` bole to harness khud check karta hai: zaroori files hain? sab `.py` compile hoti hain? pytest pass?
+- Fail ho to report AI ko "FIX phase" mein milti hai — max `fix_rounds` dafa.
+- Tests **bundled interpreter** se chalte hain (`app.main --run-pytest`) — exe mein bhi Python ki zaroorat nahi.
+
+### 5) Context management (3 levels)
+1. Bara tool output (8000+ chars) → poora file mein save, AI ko sirf shuru + aakhir + file ka path.
+2. Microcompact → purane tool results ki jagah chhota placeholder.
+3. Auto-compact → beech ki baatcheet ka khulasa (summary) bana kar replace; system prompt + spec kabhi nahi chhede
+   (taake **cache** hit hota rahe), aur current phase ki instructions dobara likh di jati hain.
+
+### 6) Budget aur hifazati limits
+- Max LLM requests (40), max cost ($1), max tokens, max steps, Stop button → run aaram se rukta hai, sab save.
+- **Resume**: `state.json` se wahin se dobara shuru.
+- **Replay**: recorded transcript ke AI jawab dobara chala kar poora project dobara banata hai — **zero kharcha**,
+  report par saaf likha hota hai "REPLAY of a recorded run".
+
+### 7) Testing (mock parity harness)
+- 15 end-to-end scenarios MockProvider ke saath: happy path, fix round, plan mode write denied, budget stop, cost cap,
+  resume, nudges, length continue, auto-compaction, replay, user stop, bara output, ghalat JSON. Sab bina paise ke.
+
+### Interview line
+"Mera agent Claude Code ki tarah two-layer loop chalata hai, plan mode mein sirf read-only tools deta hai, code ko
+search-and-replace se edit karta hai, khud tests chala kar apni ghaltiyan theek karta hai, aur har request ka
+kharcha track karta hai. Sab kuch MockProvider se deterministic tested hai."

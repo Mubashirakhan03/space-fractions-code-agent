@@ -46,3 +46,18 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   Tests: `test_doc_parser.py`, `test_uml_parser.py`, `test_spec.py` (35 tests total, all passing, ruff clean).
 - (this commit) `scripts/check_secrets.py` + `scripts/install_hooks.py` — pre-commit hook blocks keys (verified with a fake key).
 - Rollback: `git revert <hash>` for one commit, or `git checkout phase-0 -- <file>`; whole phase: `git reset --hard phase-0` (destructive, ask first).
+
+### 2026-10-18 — Phase 2 (tools, sandbox, agent loop, context, prompts)
+- `abc710f` feat(tools): `app/tools/sandbox.py` (path guard, harness dir read-only, blocked script types, ReadState
+  read-before-edit + mtime), `registry.py` (JSON-schema tools, mode permissions, parallel read-only batches,
+  errors as results), `builtin.py` (list_dir, read_file, glob, search_text, write_file, write_files, edit_file,
+  run_python, update_todos, submit_plan, finish), `runner.py` (bundled interpreter via `app.main --run-pytest/
+  --run-script`, timeout + process-tree kill, secrets stripped from env), `app/main.py` (hidden sub-commands),
+  `app/agent/planner.py` (TodoList). Tests: `tests/test_tools.py`.
+- `087b40e` feat(agent): `app/agent/loop.py` (two-layer loop + pipeline plan → implement → verify ⇄ fix → report,
+  limits, resume), `context.py` (tool-output cap → disk, microcompact, auto-compact with restated instructions;
+  cached prefix not counted), `prompts.py` (layered system prompt + output contract + compact spec), `state.py`,
+  `transcript.py`, `replay.py` (ReplayProvider), `report.py` (RUN_REPORT.md, required deliverables).
+  Tests: `tests/test_agent_loop.py` (15 mock end-to-end scenarios). Total 74 passed, 1 skipped (symlink test on Windows).
+- Measured fixed prompt prefix ≈ 5.2K tokens (system 1.4K + compact spec 2.9K + tool schemas 1K).
+- Rollback: `git revert 087b40e` / `git revert abc710f`, or `git checkout phase-1 -- app/` to restore Phase 1 code.
