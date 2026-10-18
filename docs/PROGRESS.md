@@ -34,7 +34,7 @@ Read this first when resuming work in a new session.
 - Tools: `app/tools/builtin.py`; permissions: `sandbox.py`; generated code runs via `runner.py` → `app/main.py`.
 - Replay: `ReplayProvider(transcript.jsonl)` re-runs recorded model replies with zero cost.
 - GUI: `python -m app.main` (dev). Mock mode checkbox = zero-cost scripted demo.
-- Exe: `scriptsuild_exe.bat` → `dist\SpaceFractionsAgent.exe` (26 MB); check with `python scripts/verify_exe.py`.
+- Exe: `scripts\build_exe.bat` → `dist\SpaceFractionsAgent.exe` (26 MB); check with `python scripts/verify_exe.py`.
 - CI: `.github/workflows/build-windows.yml` builds + verifies on every push; `v*` tag → GitHub Release with exe.
 
 ## Open decisions / waiting on user
