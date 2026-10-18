@@ -21,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EXE = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "dist" / "SpaceFractionsAgent.exe"
 WORK = Path(tempfile.mkdtemp(prefix="sfa_verify_"))
+DEMO_TITLE = "Space Fractions — MOCK DEMO"  # window title of the mock demo app
 
 
 def no_python_env() -> dict[str, str]:
@@ -103,7 +104,7 @@ def main() -> int:
 
     results.append(("GUI window opens", window_appears([], "Space Fractions Code Agent  v0.1.0"), ""))
     results.append(("generated game window opens",
-                    window_appears(["--run-script", "main.py"], "Mock demo", cwd=st_dir), "mock demo main.py"))
+                    window_appears(["--run-script", "main.py"], DEMO_TITLE, cwd=st_dir), "mock demo main.py"))
 
     print("\n=== exe verification (no Python on PATH) ===")
     for name, ok, detail in results:

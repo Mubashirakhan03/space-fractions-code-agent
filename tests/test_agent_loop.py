@@ -33,6 +33,8 @@ def project_files(failing: bool = False):
         {"path": "game/logic.py", "content": "def add(a, b):\n    return a + b\n"},
         {"path": "tests/test_logic.py",
          "content": f"from game.logic import add\n\n\ndef test_add():\n    {assertion}\n"},
+        {"path": "tests/test_ui_smoke.py",
+         "content": "def test_ui_stub():\n    minsize = (1100, 750)\n    assert minsize >= (1100, 750)\n"},
         {"path": "README.md", "content": "# Mini\n"},
         {"path": "requirements.txt", "content": "# standard library only\npytest\n"},
         {"path": "TRACEABILITY.csv", "content": "requirement,feature,component,file,test\n"},

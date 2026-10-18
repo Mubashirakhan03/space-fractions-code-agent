@@ -1,7 +1,10 @@
 """Controller tests (no window) + a GUI smoke test that drives a full mock run in the real window."""
 
+import contextlib
+import json
 import time
 import tkinter as tk
+from pathlib import Path
 
 import pytest
 
@@ -80,46 +83,143 @@ def test_launch_game_requires_main(tmp_path):
 
 
 def _tk_available() -> bool:
-    try:
-        tk.Tk().destroy()
-        return True
-    except tk.TclError:
-        return False
+    for _ in range(3):  # Tk init can fail transiently on Windows
+        try:
+            tk.Tk().destroy()
+            return True
+        except tk.TclError:
+            time.sleep(0.3)
+    return False
 
 
-@pytest.mark.skipif(not _tk_available(), reason="no display")
-def test_gui_smoke_mock_generate(tmp_path, doc_path, view_path, monkeypatch):
+def close_window(w) -> None:
+    """Cancel pending after() callbacks (customtkinter schedules many) before destroying, so the next
+    test's Tk() starts from a clean interpreter state."""
+    w._pulsing = False
+    with contextlib.suppress(tk.TclError):
+        for after_id in w.tk.call("after", "info"):
+            w.after_cancel(after_id)
+    with contextlib.suppress(tk.TclError):
+        w.destroy()
+
+
+def run_window(window, timeout=90):
+    end = time.time() + timeout
+    while window.controller.running or not window.controller.events.empty():
+        window.update()
+        assert time.time() < end, "GUI run timed out"
+        time.sleep(0.02)
+    for _ in range(20):
+        window.update()
+        time.sleep(0.02)
+
+
+@pytest.fixture
+def window(monkeypatch, doc_path, view_path):
+    if not _tk_available():
+        pytest.skip("no display")
     from app.gui import app as gui
 
     monkeypatch.setattr(gui.messagebox, "showerror", lambda *a, **k: pytest.fail(f"error dialog: {a}"))
-    window = gui.AgentApp()
-    try:
-        window.vars["mock"].set(True)
-        window.vars["doc_path"].set(str(doc_path))
-        window.vars["view_path"].set(str(view_path))
-        window.vars["output_dir"].set(str(tmp_path / "gui_out"))
-        window._generate()
-        assert str(window.stop_btn.cget("state")) == "normal"
-        end = time.time() + 90
-        while window.controller.running or not window.controller.events.empty():
-            window.update()
-            assert time.time() < end, "GUI run timed out"
-            time.sleep(0.02)
-        for _ in range(20):
-            window.update()
-            time.sleep(0.02)
-        log = window.text["Log"].get("1.0", "end")
-        assert "write_files main.py" in log and "VERIFY PASSED" in log
-        assert "tool" in window.text["Log"].tag_names("3.0") or window.text["Log"].tag_ranges("tool")
-        assert "Run completed" in log
-        assert "Verification | PASSED" in window.text["Report"].get("1.0", "end")
-        assert "●" in window.text["Todos"].get("1.0", "end")
-        assert "MOCK MODE" in window.mode_banner.cget("text")
-        assert str(window.generate_btn.cget("state")) == "normal"
-        assert [window.phase_state(x) for x in gui.PHASES] == ["done", "done", "done", "skipped", "done"]
-        assert "deepseek-v4-pro" in window.provider_badge.cget("text") or "Mock" in window.provider_badge.cget("text")
-    finally:
-        window.destroy()
+    w = gui.create_window()
+    w.results = []
+    w._result_dialog = lambda ok, title, msg: w.results.append((ok, title, msg))
+    w.vars["mock"].set(True)
+    w.vars["doc_path"].set(str(doc_path))
+    w.vars["view_path"].set(str(view_path))
+    yield w
+    close_window(w)
+
+
+def test_gui_smoke_mock_generate(tmp_path, window):
+    from app.gui import app as gui
+
+    window.vars["output_dir"].set(str(tmp_path / "gui_out"))
+    assert str(window.run_game_btn.cget("state")) == "disabled"  # nothing generated yet
+    window._generate()
+    assert str(window.stop_btn.cget("state")) == "normal"
+    run_window(window)
+    log = window.text["Log"].get("1.0", "end")
+    assert "write_files main.py" in log and "VERIFY PASSED" in log
+    assert window.text["Log"].tag_ranges("tool")
+    assert "Run completed" in log
+    assert "Verification | PASSED" in window.text["Report"].get("1.0", "end")
+    assert "●" in window.text["Todos"].get("1.0", "end")
+    assert str(window.generate_btn.cget("state")) == "normal"
+    assert [window.phase_state(x) for x in gui.PHASES] == ["done", "done", "done", "skipped", "done"]
+    assert "Mock" in window.provider_badge.cget("text")
+    # clear success feedback + run button enabled and pulsing
+    assert window.results and window.results[-1][0] is True and "Tests: PASSED" in window.results[-1][2]
+    assert "successfully" in window.mode_banner.cget("text")
+    assert str(window.run_game_btn.cget("state")) == "normal" and window._pulsing
+    # switching to an empty folder disables it again
+    window.vars["output_dir"].set(str(tmp_path / "other"))
+    window.update()
+    assert str(window.run_game_btn.cget("state")) == "disabled" and not window._pulsing
+
+
+def test_gui_failed_run_shows_red_reason(tmp_path, window):
+    window.vars["output_dir"].set(str(tmp_path / "fail_out"))
+    window.vars["max_requests"].set("1")
+    window._generate()
+    run_window(window)
+    ok, title, msg = window.results[-1]
+    assert ok is False and "max LLM requests" in msg
+    assert window.mode_banner.cget("text").startswith("✗")
+    assert str(window.run_game_btn.cget("state")) == "disabled"
+
+
+def test_gui_non_empty_folder_choices(tmp_path, window):
+    out = tmp_path / "busy"
+    out.mkdir()
+    (out / "notes.txt").write_text("mine")
+    window.vars["output_dir"].set(str(out))
+    window._folder_dialog = lambda folder: None  # Cancel
+    window._generate()
+    assert not window.controller.running
+    window._folder_dialog = lambda folder: "new"
+    window._generate()
+    assert Path(window.vars["output_dir"].get()).parent == out
+    assert Path(window.vars["output_dir"].get()).name.startswith("run-")
+    run_window(window)
+    assert window.results[-1][0] is True and (out / "notes.txt").exists()
+
+
+def test_show_hide_key_button(window):
+    assert "Show" in window.show_key_btn.cget("text") and window.key_entry.cget("show") == "•"
+    window._toggle_key()
+    assert "Hide" in window.show_key_btn.cget("text") and window.key_entry.cget("show") == ""
+    window._toggle_key()
+    assert "Show" in window.show_key_btn.cget("text")
+
+
+def test_folder_helpers(tmp_path):
+    from datetime import datetime
+
+    from app.gui.controller import clear_previous_run, new_run_subfolder, run_succeeded
+
+    now = datetime(2026, 10, 19, 0, 19)
+    first = new_run_subfolder(tmp_path, now)
+    assert first.name == "run-2026-10-19_0019"
+    first.mkdir()
+    assert new_run_subfolder(tmp_path, now).name == "run-2026-10-19_0019-2"
+
+    with pytest.raises(ValueError):
+        clear_previous_run(tmp_path)  # no recorded run → nothing deleted
+    (tmp_path / "agent_run").mkdir()
+    (tmp_path / "agent_run" / "state.json").write_text(json.dumps(
+        {"status": "completed", "verify_ok": True, "written": ["main.py", "pkg/a.py", "../outside.txt"]}))
+    (tmp_path / "main.py").write_text("x")
+    (tmp_path / "pkg").mkdir()
+    (tmp_path / "pkg" / "a.py").write_text("x")
+    (tmp_path / "mine.txt").write_text("keep")
+    (tmp_path.parent / "outside.txt").write_text("keep")
+    assert run_succeeded(tmp_path)
+    removed = clear_previous_run(tmp_path)
+    assert "main.py" in removed and "agent_run/" in removed
+    assert (tmp_path / "mine.txt").exists() and (tmp_path.parent / "outside.txt").exists()
+    assert not (tmp_path / "pkg").exists()  # emptied package folder tidied up
+    assert not run_succeeded(tmp_path)
 
 
 def test_friendly_key_messages():

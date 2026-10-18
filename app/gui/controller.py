@@ -11,6 +11,7 @@ import subprocess
 import sys
 import threading
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -162,3 +163,65 @@ def launch_generated_game(output_dir: Path) -> subprocess.Popen:
         raise FileNotFoundError(f"No main.py in {output_dir}")
     return subprocess.Popen([*base_command(), "--run-script", "main.py"], cwd=output_dir, env=clean_env(),
                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+# ---------------------------------------------------------------- output-folder helpers
+
+GENERATED_EXTRA = ("DESIGN_DECISIONS.md", "AGENT_NOTES.md")
+
+
+def read_run_state(folder: Path) -> dict[str, Any] | None:
+    path = Path(folder) / "agent_run" / "state.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def run_succeeded(folder: Path | str) -> bool:
+    """True if the folder holds a completed run whose verification passed and a main.py to launch."""
+    if not folder:
+        return False
+    folder = Path(folder)
+    state = read_run_state(folder)
+    return bool(state and state.get("status") == "completed" and state.get("verify_ok")
+                and (folder / "main.py").is_file())
+
+
+def is_non_empty(folder: Path | str) -> bool:
+    folder = Path(folder)
+    return folder.is_dir() and any(folder.iterdir())
+
+
+def new_run_subfolder(folder: Path | str, now: datetime | None = None) -> Path:
+    """<folder>/run-YYYY-MM-DD_HHMM, with -2, -3 … if that already exists."""
+    stamp = (now or datetime.now()).strftime("run-%Y-%m-%d_%H%M")
+    candidate = Path(folder) / stamp
+    n = 2
+    while candidate.exists():
+        candidate = Path(folder) / f"{stamp}-{n}"
+        n += 1
+    return candidate
+
+
+def clear_previous_run(folder: Path | str) -> list[str]:
+    """Delete ONLY what a previous agent run generated (files it recorded + agent_run/); the user's own
+    files are kept. Returns the removed relative paths. Raises if the folder has no recorded run."""
+    folder = Path(folder).resolve()
+    state = read_run_state(folder)
+    if state is None:
+        raise ValueError("No previous agent run is recorded in this folder; nothing was deleted.")
+    removed = []
+    for rel in sorted({*state.get("written", []), *GENERATED_EXTRA}):
+        target = (folder / rel).resolve()
+        if folder in target.parents and target.is_file():
+            target.unlink()
+            removed.append(rel)
+    run_dir = folder / "agent_run"
+    if run_dir.is_dir():
+        shutil.rmtree(run_dir)
+        removed.append("agent_run/")
+    for d in sorted((p for p in folder.rglob("*") if p.is_dir()), key=lambda p: len(p.parts), reverse=True):
+        if not any(d.iterdir()):  # tidy up empty package folders left behind
+            d.rmdir()
+    return removed

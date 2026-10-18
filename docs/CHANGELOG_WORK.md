@@ -107,3 +107,26 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Tests: 94 passed, 1 skipped. New exe built to `build/dist_new/` (old one was locked by open windows), verified
   6/6 PASS without Python, then copied to `dist/`.
 - Rollback: `git revert <this hash>` (GUI) and/or `git revert e8bf914` (generic agent); `git checkout phase-4 -- app/`.
+
+### 2026-10-19 — UI/UX round 2 (user request: 4 items + maximized apps)
+- GUI: success dialog "Project generated successfully! … Tests: PASSED" with Run generated app / Open folder /
+  Close, green banner; failure/stop → red banner + dialog with the reason and "View report".
+- "Run generated app" enabled only when the selected folder holds a completed, verified run (`run_succeeded`);
+  then bold green with a pulsing border; disabled/grey otherwise (re-checked when the folder changes).
+- Non-empty output folder → dialog: Create new subfolder `run-YYYY-MM-DD_HHMM` (recommended) / Overwrite
+  (deletes ONLY files recorded in the previous run's state + `agent_run/`; user files kept) / Resume / Cancel.
+- API key button toggles "👁 Show" ⇄ "🙈 Hide".
+- Agent: generic **UI quality rules** in the system prompt (≥1100×750, maximized, F11/Esc, big fonts, hover
+  buttons, Enter submits, auto-clear input, coloured feedback, screens as Frames + `create_app(root)`);
+  `tests/test_ui_smoke.py` is now a required deliverable and verify checks it asserts `minsize`.
+  Kid-friendly rules added to `profiles/space_fractions.md` (space theme, 36/30/20 pt fonts, progress, pause,
+  feedback then auto-next, end screen with stars + confetti).
+- Mock demo (clearly labelled MOCK): maximized space-themed window, 3 questions, auto-clear, coloured feedback,
+  Congratulations screen with stars + confetti, its own headless UI smoke test.
+- Robustness found while testing: re-creating `tk.Tk()` after `destroy()` can crash the frozen exe on Windows
+  (fatal 0x80000003) and Tk init can fail transiently ("Can't find a usable init.tcl"). Fixes: ONE session Tk
+  root in UI tests (rule also added to the system prompt), retries for Tk creation, `create_window()` retry in
+  the GUI launcher, test teardown cancels pending `after()` callbacks.
+- Tests: 98 passed, 1 skipped. Frozen exe: demo UI tests 8/8 runs green; verify_exe 2/2 ALL PASSED.
+- Screenshots: `docs/screenshots/gui_success.png`, `mock_demo_feedback.png`, `mock_demo_end.png`.
+- Rollback: `git revert <this hash>`.

@@ -291,6 +291,11 @@ class Agent:
         if missing:
             ok = False
             parts.append("Missing required deliverables: " + ", ".join(missing))
+        smoke = self.root / "tests" / "test_ui_smoke.py"
+        if smoke.is_file() and "minsize" not in smoke.read_text(encoding="utf-8", errors="replace"):
+            ok = False
+            parts.append("tests/test_ui_smoke.py must build the UI headlessly and assert root.minsize() >= "
+                         "(1100, 750) (see the UI quality rules).")
         c_ok, c_out = self.runner.compile_all()
         parts.append(("COMPILE OK: " if c_ok else "COMPILE FAILED:\n") + c_out)
         ok &= c_ok

@@ -45,6 +45,26 @@ RULES_TEMPLATE = """# Rules
    diagrams and prose (e.g. features named only in a summary) and document each assumption.
    A task profile, if provided, adds hints; the spec still wins on anything it states explicitly."""
 
+UI_QUALITY = """# UI quality rules (any desktop app)
+- Main window: at least 1100x750 (root.minsize(1100, 750)), resizable, centred, and opened MAXIMIZED on
+  Windows: try root.state("zoomed") except tk.TclError: root.attributes("-zoomed", True). F11 toggles
+  full screen (root.attributes("-fullscreen", …)) and Esc leaves full screen. Never a tiny dialog-sized window.
+- Large readable fonts: titles 32+ pt, main content / questions 24-28+ pt, buttons and inputs 18+ pt.
+- One consistent colour theme that suits the domain, high-contrast text. Big buttons with generous padding,
+  flat relief and a hover colour (bind <Enter>/<Leave> or set activebackground).
+- Forms: the main input has keyboard focus, Enter submits, the input is cleared automatically after each
+  submission, and feedback is clear and coloured (green = success, red = error) in the window itself.
+  Use messagebox only for confirmations.
+- Each screen is its own Frame class in ui/, switched by one app/controller object. Expose a factory such as
+  `create_app(root) -> App` that builds everything WITHOUT calling mainloop(), so tests can build the UI.
+- Required test tests/test_ui_smoke.py (pytest): create ONE tk.Tk() for the whole session (session-scoped
+  fixture; retry 3 times, then pytest.skip on tk.TclError). Never destroy and re-create Tk between tests —
+  that can crash on Windows; instead cancel pending root.after() callbacks and destroy the root's children
+  after each test, and destroy the root once at the end. root.withdraw(),
+  build the app with the factory, call root.update_idletasks(), assert root.minsize() >= (1100, 750), show every
+  screen in turn and assert its key widgets exist (title label, main buttons, inputs), exercise one form
+  submission (input cleared, feedback shown), then root.destroy(). This catches poor or broken UIs."""
+
 TOOL_USAGE = """# Tool usage
 - update_todos: keep a todo list; exactly one item in_progress; mark items completed as you go.
 - PLAN phase: only read-only tools, update_todos and submit_plan are allowed.
@@ -65,7 +85,8 @@ Project layout:
   sql/schema.sql        if the spec has persisted entities or DDL: SQLite DDL adapted from it
   data/                 seed data files, if the application needs initial content
   tests/                pytest, headless: domain logic, every state machine (valid AND invalid
-                        transitions), sequences, persistence with a temporary SQLite file
+                        transitions), sequences, persistence with a temporary SQLite file, plus the
+                        required UI smoke test tests/test_ui_smoke.py (see UI quality rules)
   README.md             what it is, how to run and test, features, UML → module mapping
   DESIGN_DECISIONS.md   written by the harness from your submit_plan (see below)
   TRACEABILITY.csv      columns: requirement,use_case_or_feature,component,file,test — one row per
@@ -82,7 +103,7 @@ DESIGN_DECISIONS.md must contain:
   4. UML → code mapping (diagram element → module / class / test)."""
 
 RULES = RULES_TEMPLATE.format(stdlib=", ".join(BUNDLED_STDLIB))
-SYSTEM_PROMPT = "\n\n".join([ROLE, RULES, TOOL_USAGE, OUTPUT_CONTRACT])
+SYSTEM_PROMPT = "\n\n".join([ROLE, RULES, UI_QUALITY, TOOL_USAGE, OUTPUT_CONTRACT])
 
 PLAN_INSTRUCTIONS = """## PHASE 1/3 — ANALYSE & PLAN (plan mode: read-only)
 Reconcile the spec with the desktop constraint. Then, in as few turns as possible:

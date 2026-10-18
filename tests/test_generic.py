@@ -65,6 +65,8 @@ def library_project():
         {"path": "loans/loan.py", "content": "class Loan:\n    def daysLate(self, late=0):\n        return late\n"},
         {"path": "tests/test_loan.py",
          "content": "from loans.loan import Loan\n\n\ndef test_days_late():\n    assert Loan().daysLate(2) == 2\n"},
+        {"path": "tests/test_ui_smoke.py",
+         "content": "def test_ui_stub():\n    minsize = (1100, 750)\n    assert minsize >= (1100, 750)\n"},
         {"path": "README.md", "content": "# Library Book Tracker\n"},
         {"path": "requirements.txt", "content": "pytest\n"},
         {"path": "TRACEABILITY.csv", "content": "requirement,use_case_or_feature,component,file,test\n"},

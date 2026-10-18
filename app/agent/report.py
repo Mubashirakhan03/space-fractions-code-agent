@@ -10,7 +10,8 @@ from app.agent.state import RunState
 from app.config import AppConfig
 from app.tools.runner import SKIP_DIRS
 
-REQUIRED_FILES = ["main.py", "README.md", "requirements.txt", "DESIGN_DECISIONS.md", "TRACEABILITY.csv"]
+REQUIRED_FILES = ["main.py", "README.md", "requirements.txt", "DESIGN_DECISIONS.md", "TRACEABILITY.csv",
+                  "tests/test_ui_smoke.py"]
 
 
 def missing_deliverables(root: Path, extra: list[str] | None = None) -> list[str]:

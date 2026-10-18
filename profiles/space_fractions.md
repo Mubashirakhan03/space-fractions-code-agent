@@ -20,6 +20,23 @@ Screens / flow
 - HIGH SCORES (View Score) from SQLite; HELP screen (View Help); ADMIN screen to add / edit / delete
   questions (Update Questions).
 
+Kid-friendly look and feel (players are 11–12 years old; this matters as much as correctness)
+- Opens maximized (minimum 1100x750), F11 full screen, Esc leaves full screen.
+- Space theme on a tkinter.Canvas background: dark blue (#0B1736-ish), twinkling stars, two or three
+  colourful planets drawn with ovals/arcs. Bright accent colours (yellow, cyan, pink, green) on dark panels.
+- Fonts: titles 36+ pt bold, questions 30 pt, answer input and buttons 20+ pt. Big flat buttons with a
+  hover colour; multiple-choice answers as 2x2 big coloured buttons.
+- Question screen: "Question 3 of 10" progress text plus a progress bar, the score always visible, the answer
+  input focused, Enter submits, and a visible Pause button (state machine Paused shows an overlay with Resume).
+- After every answer: big coloured feedback in the window — green "Correct! 🎉" or red
+  "Not quite — the answer is 3/4" — the input is CLEARED automatically and the next question appears after
+  about a second (no manual clearing, no popup).
+- End screen: big "Congratulations, <name>!", the score and percentage, 1–3 stars earned (by percentage),
+  a short Canvas confetti/star animation, and buttons "Play again" / "Main menu".
+- Intro: animated rocket flying across moving stars with the game title, a Skip button, auto-advance.
+- tests/test_ui_smoke.py must build every screen (intro, menu, name entry, question, pause overlay, end,
+  high scores, help, admin) and check the answer input is cleared after a submission.
+
 Data
 - `data/questions.json`: at least 20 seed questions covering all four question types.
 - `sql/schema.sql`: adapt the document's `games` table and add `questions` and `scores` tables.
