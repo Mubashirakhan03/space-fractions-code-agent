@@ -1,0 +1,38 @@
+# --- Secrets (NEVER commit) ---
+.env
+.env.*
+!.env.example
+config.json
+*api-key*
+*api_keys*
+*apikey*
+*.key
+secrets/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Build outputs ---
+build/*
+!build/build_exe.bat
+dist/
+
+# --- Local agent runs (only examples/ is committed) ---
+output/
+runs/
+*.log
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

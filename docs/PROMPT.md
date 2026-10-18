@@ -1,0 +1,392 @@
+# Master Prompt — Space Fractions Code Agent (Task 1 Evaluation)
+
+> How to use: put this file at `docs/PROMPT.md` in an empty project folder, together with
+> `docs/Task1-EN.docx`, `docs/Architecture_Documentation.md` and `docs/Architecture_View.md`.
+> Then tell Claude Code: **"Read docs/PROMPT.md completely and follow it. Start with Phase 0 in plan mode."**
+
+---
+
+## 0. Who I am and what this is
+
+I am Mubashira, a Software Engineer / QA Automation Engineer (Python, JavaScript, Playwright, API testing).
+I applied for a Master's position in a Chinese university research group working on
+**Intelligent Software Engineering** (Prof. Peng Liang's group). This is their **first, competitive
+evaluation task**. Quality, clean design, and my ability to explain it all matter.
+
+**Deadline is very tight (about 3 days left).** Prioritise a working, well-documented, end-to-end
+result over extra features. Build the must-haves first, then polish.
+
+**Your teaching duty:** I must explain this project in a YouTube video and possibly in an
+interview. After every phase, explain to me in **simple Roman Urdu** (no heavy jargon):
+what you built, why, how it works, and which Claude Code mechanism it mirrors. Keep a running
+file `docs/LEARNING_NOTES_UR.md` with these explanations so I can revise from it.
+
+### Professor's emails (verbatim)
+
+Email 1:
+> Hi Mubashira,
+> Thank you for your interest. Can you tell us your birth date?
+> The research focus in our group is intelligent software engineering (https://www.researchgate.net/profile/Peng-Liang-4), and for the initial evaluation, we will ask the applicants to implement a project and write a report based on several selected papers published from our group. We will send you the detailed instructions if you agree to take the evaluation which is competitive. You may have a look of the papers published in our group and decide whether you have interest.
+> Best regards.
+
+Email 2:
+> Hi Mubashira,
+> Thank you for your information.
+> Regarding the first task, please find attached the instruction about the implementation task (Task 1), which is the first evaluation task. We hope that you can send us your assignment in one week (for example, you can share with us the GitHub link of your repository). You can then create a Youtube video to show how the implemented code agent works and the generated game with UI, which should be a desktop application (instead of a web-based application).
+> You can decide whether you want to take the evaluation after you read the instructions. Please also carefully read the instructions if you decide to take the task because the evaluation is competitive.
+> Best regards.
+> Peng
+
+### Task 1 instructions (verbatim from Task1-EN.docx)
+
+> **Task Description**
+> Research the implementation mechanisms of open-source Claude-Code projects. Based on the provided open-source references, implement a simplified Code Agent. The underlying LLM must be deepseek-v4-pro via official API; local weight deployment is not required. Reference repositories:
+> https://github.com/ultraworkers/claw-code
+> https://github.com/Windy3f3f3f3f/how-claude-code-works
+> https://github.com/anthropics/claude-code
+> Deliverable: Windows desktop application. Produce a double-click-run .exe executable. No pre-installed Python runtime is required on target machines. The application shall provide minimal GUI for DeepSeek API-Key configuration, input-file selection, task triggering and output-directory assignment.
+> [Fall-back requirement]: If you encounter intractable engineering obstacles when building the Windows desktop .exe, you may submit a CLI-launched web-based version as alternative. The backend service is started from command-line, and users interact entirely via browser. Partial engineering points will be deducted for this fallback solution.
+> **Agent Input & Output Specification**
+> Input: (1) Architectural Documentation: Architecture_Documentation.md. Preprocessing to structured JSON is recommended as agent input. (2) Architectural Views: Architecture_View.md, containing structured syntax descriptions for UML diagrams.
+> Output (non-exhaustive): Project directory layout and full source-code files; Dependency manifest (requirements.txt / package.json); Dockerfile (optional); Project README; Test cases.
+
+---
+
+## 1. The big picture (read carefully)
+
+There are **TWO different programs** in this project. Do not mix them up.
+
+| | Program A — the **Code Agent** (what I submit) | Program B — the **generated game** (what the agent produces) |
+|---|---|---|
+| What | A simplified Claude-Code-like agent with a desktop GUI | "Space Fractions": an educational fractions game for 6th graders |
+| Who writes the code | You (Claude Code) write it with me | **The agent writes it at runtime using deepseek-v4-pro** — NOT you |
+| Form | Windows `.exe`, double-click, no Python needed on target | **Desktop app** (Tkinter), NOT web |
+| Input | `Architecture_Documentation.md` + `Architecture_View.md` | — |
+| Output | A full project folder for Program B | — |
+
+**Critical rule:** You must NOT hand-write the Space Fractions game and commit it as if the agent made
+it. The game must be genuinely generated by the agent through the DeepSeek API. (We will commit one
+real generated run under `examples/` as evidence, with its full agent transcript.)
+
+---
+
+## 2. Things I already identified in the inputs (traps the agent must handle)
+
+1. **Web vs desktop conflict.** `Architecture_Documentation.md` describes a *web-based, microservices,
+   cloud/Kubernetes* system (Node.js, Express, PostgreSQL, Redis, RabbitMQ, Elasticsearch, OAuth2,
+   Prometheus…). The professor explicitly wants the generated game to be a **desktop application**.
+   The agent must detect this conflict and **adapt** the architecture to a single-process desktop app
+   while preserving the *logical* components (GameComponent, QuestionComponent, UserComponent,
+   AdminComponent), the use cases, classes, states and sequences. It must record every adaptation
+   in a generated `DESIGN_DECISIONS.md` with a mapping table: original element → desktop equivalent
+   → reason. Examples: PostgreSQL → SQLite (keep the DDL idea, `games`/`questions`/`scores` tables);
+   REST/gRPC between services → in-process Python interfaces with the same method names;
+   Kubernetes/Redis/RabbitMQ → not applicable for a single-user desktop game (explain why);
+   Dockerfile → optional, for running the test suite headless.
+2. **Documentation is low quality / inconsistent** (looks AI-generated). The agent must notice and
+   handle these, and list them in `DESIGN_DECISIONS.md` under "Input issues found":
+   - Testing matrix table in section H is **empty**.
+   - Traceability matrix references `sql/question_ddl.sql` but deliverables list `sql/game_ddl.sql`.
+   - Only FR-1, NFR-1, ASR-1, ASR-2 exist; requirements are thin (intro movie, menu, questions,
+     ending scene are only mentioned in the executive summary).
+   - Several PlantUML blocks use `->>` (Mermaid syntax), the Object diagram uses `participant`
+     (sequence syntax) instead of `object`. The parser must be tolerant.
+   - Justifications in the tech-stack section are copy-pasted / meaningless.
+3. **Game content implied by the docs** (the agent should derive these, not you hard-coding them):
+   intro "movie" (animated intro scene, skippable), main menu, series of fraction questions with
+   feedback, ending scene with score/feedback; use cases Play Game, View Score, View Help,
+   Update Questions (Admin); class model Game/Question/User/Admin; states Playing ⇄ Paused → GameOver;
+   sequence: play → get prompt → display → submit answer → check → display result.
+
+---
+
+## 3. Mechanisms to study and mirror (from the reference repos)
+
+First, research the three reference repos (use web fetch / clone if possible):
+- `Windy3f3f3f3f/how-claude-code-works` — a (Chinese) deep-dive on Claude Code internals. Key chapters:
+  main agent loop (two-layer loop, error recovery paths), context engineering (multi-level compression,
+  prompt caching), tool system (registry, read-only tools in parallel / writes serial, large outputs
+  saved to disk with summary), plan mode, code-editing strategy (**search-and-replace instead of full
+  rewrites, uniqueness constraint, must read before edit**), permissions & safety (layered defence,
+  allow/deny/ask), task/todo management, system prompt design, observability/cost accounting,
+  and the "minimal necessary components" chapter (~500-line minimal agent → production).
+- `ultraworkers/claw-code` — open-source Rust re-implementation of a Claude-Code-style CLI harness
+  (with a Python reference in `src/`), supports OpenAI-compatible providers, sessions, `doctor`
+  checks, and a deterministic **mock parity harness** for testing.
+- `anthropics/claude-code` — official repo (plugins, hooks, CLAUDE.md conventions, docs).
+
+Write `docs/RESEARCH_NOTES.md`: a short summary of each repo and a table
+**"Claude Code mechanism → how my simplified agent implements it"**. This table goes in the README
+too — it is the heart of the evaluation.
+
+Mechanisms my agent must implement (simplified, but real):
+
+| # | Mechanism | Our implementation |
+|---|---|---|
+| 1 | Agent loop | `while` loop: send messages + tool schemas → model returns tool_calls → execute → append `role:"tool"` results → repeat until model calls `finish` or max steps |
+| 2 | Tool system | Tool registry with JSON-schema definitions; tools: `list_dir`, `read_file`, `write_file`, `edit_file` (exact search/replace, must be unique, file must be read first), `glob`/`search_text`, `run_python` (syntax check / run tests), `update_todos`, `finish` |
+| 3 | Planning / todo | A Plan phase producing a structured todo list (TodoWrite-style) shown live in the GUI; agent ticks items off |
+| 4 | Context management | Token budget tracking; truncate long tool outputs (save full output to a log file, give the model a summary + path); compact/summarise old turns when nearing the budget |
+| 5 | Permissions / sandbox | All file tools restricted to the chosen output directory (path traversal blocked); `run_python` restricted to the output dir with timeout; no arbitrary shell; optional "ask before writing" toggle in GUI |
+| 6 | Self-verification | After writing code: `py_compile` all files → run generated tests → feed failures back to the model to fix (bounded retries) |
+| 7 | System prompt design | Layered system prompt: role, rules (desktop-only, adapt the architecture, edit don't rewrite, verify), output contract, plus the structured spec JSON |
+| 8 | Memory file | Agent writes/reads an `AGENT_NOTES.md` (CLAUDE.md-like) in the output project to keep decisions across steps |
+| 9 | Observability | Live log in the GUI; full transcript saved as `agent_run/transcript.jsonl`; token usage + estimated cost per run |
+| 10 | Resilience | Retry with backoff on API/network errors and malformed tool calls; clear error messages in the GUI |
+
+---
+
+## 4. Program A — the Code Agent: technical requirements
+
+**Language:** Python 3.11+. **GUI:** `customtkinter` (or plain Tkinter/ttk if packaging issues).
+**LLM client:** official `openai` Python SDK pointed at DeepSeek (OpenAI-compatible).
+**Packaging:** PyInstaller → single `SpaceFractionsAgent.exe` (`--onefile --windowed`), with an icon.
+
+### 4.1 DeepSeek integration
+- Model: **`deepseek-v4-pro`** via the **official** DeepSeek API. Verify the exact base URL, model id,
+  tool-calling format and thinking-mode parameters against the **official docs at api-docs.deepseek.com**
+  before coding (my notes say base URL `https://api.deepseek.com` / `https://api.deepseek.com/v1`,
+  OpenAI-style `tools`, optional thinking mode — confirm, and handle `reasoning_content` correctly
+  when tool calls are involved).
+- Provider abstraction: `LLMProvider` interface with `DeepSeekProvider` and a `MockProvider`
+  (scripted responses) so the whole agent can be tested **without spending API credit**.
+  I have very little API credit — use the mock for all development and tests; real API only for
+  final runs. A hidden "Developer: mock mode" checkbox in the GUI is fine.
+- API key: entered in the GUI, "Test connection" button, saved locally in `%APPDATA%\SpaceFractionsAgent\config.json`
+  (never in the repo, never in logs). Also support env var `DEEPSEEK_API_KEY`.
+- Show tokens used and estimated cost after each run.
+
+### 4.1b ZERO-budget plan (I cannot spend any money on API credit)
+- **Provider selector** in GUI:
+  1. `DeepSeek (official)` — **default**, base URL from official docs, model `deepseek-v4-pro`.
+     This is what the task requires and what the professor will use with **his own API key**
+     (the GUI asks for the key, so the evaluator plugs in theirs). This path must be 100% correct.
+  2. `OpenRouter (free)` — base URL `https://openrouter.ai/api/v1`, models
+     `deepseek/deepseek-v4-pro:free` if available, else `deepseek/deepseek-v4-flash:free`. Free account,
+     no card, but rate limited (~50 requests/day). I will use this for my real demo/video run.
+  3. `Custom OpenAI-compatible` — base URL + model + key fields (for any other free provider).
+  The transcript, RUN_REPORT.md and GUI must clearly show which provider + model was used.
+- **Be honest in README and video:** state that the agent targets official `deepseek-v4-pro` by default,
+  and that the recorded demo run used the free OpenRouter DeepSeek V4 route (or the DeepSeek trial
+  credit, if I get one) because I had no paid credit. Never fake or hide this.
+- **Request-efficient agent (free tier has ~50 requests/day):** design the loop to finish a full game
+  generation in **as few LLM calls as possible (target ≤ 30)**: allow the model to write several files
+  in one turn (multiple tool calls per response / a `write_files` batch tool), plan once, fix errors in
+  batches. Add a "Max LLM requests per run" field (default 40). Handle HTTP 429 (rate limit) with
+  backoff and a clear message, and support **resume** of an interrupted run from saved state
+  (`agent_run/state.json`) so a run can continue the next day if the daily limit is hit.
+- **Model selector** in GUI: default `deepseek-v4-pro`; allow `deepseek-v4-flash` as fallback.
+  Transcript must record which model was used.
+- **Budget cap per run:** GUI field "Max cost per run (USD)", default $1.00, plus max tokens and max
+  agent steps. If the cap is reached, stop gracefully, save everything, and report it.
+- **Prompt caching friendly:** keep the system prompt + spec.json as a stable, identical prefix in
+  every request so DeepSeek's automatic cache-hit pricing applies; never put timestamps or random
+  values at the start of messages.
+- Don't resend huge file contents repeatedly — truncate tool outputs, keep context lean.
+- **Thinking mode off by default** (cheaper); optional checkbox to enable it.
+- **Replay mode for demos:** a saved real run (`examples/.../agent_run/transcript.jsonl`) can be
+  replayed in the GUI step by step **with zero API cost**, clearly labelled "REPLAY of recorded run"
+  (never pretend it is live). Useful as a backup during interviews if internet/API fails.
+- Development and all automated tests use `MockProvider` only. **Ask me before every real API call
+  run**, and tell me the estimated cost first.
+- After each real run, show actual tokens and cost so I can track my balance.
+
+### 4.2 Input preprocessing (md → structured JSON) — deterministic, no LLM needed
+- `parsers/doc_parser.py`: parse `Architecture_Documentation.md` into JSON: sections (A–L) with text,
+  markdown tables → list of row objects (risks, traceability, QA mapping), code blocks by language
+  (openapi yaml → parsed with PyYAML, proto, sql, k8s yaml, csv), requirements (FR/NFR/ASR ids),
+  components, assumptions, open questions.
+- `parsers/uml_parser.py`: parse every `@startuml … @enduml` block in `Architecture_View.md` into JSON:
+  diagram name, view (Scenario/Logic/Process/Development/Physical), type, elements (actors, use cases,
+  classes with attributes/methods, states, participants, packages, nodes, artifacts) and relations
+  (from, to, arrow type, label). Must tolerate `->>`, `participant` in object diagrams, etc., and
+  record a `warnings` list.
+- Produce `spec.json` (combined) and save it into the output folder under `agent_run/`.
+  Show a preview of it in the GUI. Include a JSON Schema for it (`schemas/spec.schema.json`).
+- Then an LLM step "Requirements reconciliation": the agent reads spec.json + the desktop constraint
+  and produces the adaptation decisions (feeds `DESIGN_DECISIONS.md`).
+
+### 4.3 Agent pipeline (phases visible in GUI)
+1. Preprocess → spec.json
+2. Analyse & reconcile → design decisions
+3. Plan → todo list + target file tree
+4. Implement → agent loop with tools writes files
+5. Verify → compile + run generated tests, auto-fix loop (max N rounds)
+6. Report → `agent_run/RUN_REPORT.md` (what was generated, test results, tokens, cost, time, issues)
+
+### 4.4 IMPORTANT: running generated code when the target PC has no Python
+The `.exe` must not require Python on the target machine, but the agent needs to run the generated
+tests and the user needs to launch the generated game. Solution to implement:
+- The frozen exe supports hidden sub-commands, e.g. `SpaceFractionsAgent.exe --run-script <path>` and
+  `--run-pytest <dir>`, which execute code using the **interpreter bundled inside the exe** (`runpy`,
+  `pytest.main`). `run_python` tool calls the exe itself (`sys.executable`) with these flags in a
+  subprocess, cwd = output dir, with timeout.
+- Bundle `pytest` and everything the generated game needs (generated game must use **only the
+  standard library: tkinter, sqlite3, json, fractions, random, unittest/pytest**). Tell the agent this
+  constraint in its system prompt.
+- GUI has a **"▶ Run generated game"** button that launches the generated `main.py` via the bundled
+  interpreter. This is what I will show in the video.
+- Test this path in the built exe, not only in dev mode.
+
+### 4.5 GUI (minimal but clean)
+- Fields: DeepSeek API key (masked) + Test connection; Architecture_Documentation.md picker;
+  Architecture_View.md picker; Output folder picker; options (max steps, auto-fix rounds, ask-before-write).
+- Buttons: Generate, Stop, Open output folder, Run generated game.
+- Panels: phase progress, live todo list, live log (tool calls shown like `write_file game/engine.py`),
+  token/cost counter. Never freeze the UI (agent runs in a worker thread, queue to UI).
+- Sensible defaults: if the two .md files sit next to the exe or in `samples/`, pre-fill them.
+
+### 4.6 Quality of Program A itself
+- Clean package layout, type hints, docstrings, small modules.
+- Unit tests with pytest for: doc parser, UML parser, tool sandbox (path traversal blocked, edit
+  uniqueness, read-before-edit), agent loop with `MockProvider` (end-to-end scripted run that
+  writes files and calls finish), context truncation, config handling.
+- `ruff` lint clean.
+
+Suggested layout (adjust if you have a better one, and justify):
+```
+space-fractions-agent/
+  app/main.py                 # entry: GUI or hidden sub-commands
+  app/gui/…                   # customtkinter UI
+  app/agent/loop.py           # agent loop
+  app/agent/prompts.py        # layered system prompts
+  app/agent/context.py        # token budget, truncation, compaction
+  app/agent/planner.py        # plan/todo
+  app/tools/…                 # registry + each tool + sandbox/permissions
+  app/llm/provider.py, deepseek.py, mock.py
+  app/parsers/doc_parser.py, uml_parser.py
+  app/config.py, app/logging_utils.py
+  schemas/spec.schema.json
+  samples/Architecture_Documentation.md, samples/Architecture_View.md
+  tests/…
+  examples/space_fractions_generated/   # one REAL generated run + agent_run/ transcript
+  docs/RESEARCH_NOTES.md, docs/ARCHITECTURE.md, docs/LEARNING_NOTES_UR.md, docs/VIDEO_SCRIPT.md
+  build/build_exe.bat, SpaceFractionsAgent.spec, assets/icon.ico
+  .github/workflows/build-windows.yml   # builds exe on windows-latest, uploads artifact / release
+  requirements.txt, requirements-dev.txt, README.md, LICENSE (MIT), .gitignore
+```
+
+---
+
+## 5. Program B — what the generated Space Fractions game must contain
+
+(This goes into the agent's system prompt / output contract, NOT hand-written by you.)
+- Tkinter desktop app, standard library only, launched with `python main.py`.
+- Screens: animated **intro scene** (canvas animation, space theme, Skip button) → **main menu**
+  (Play, High Scores, Help, Admin, Exit) → **question flow** (fraction questions, multiple choice and/or
+  input: equivalence, compare, add/subtract, simplify; immediate feedback; progress; score) →
+  **Pause/Resume** (state machine Playing ⇄ Paused → GameOver) → **ending scene** with score and feedback.
+- Player name entry (UserComponent); scores saved in **SQLite** (DDL in `sql/schema.sql`, adapted from
+  the doc's `games` table + `questions` + `scores`).
+- Admin screen to add/edit/delete questions (Update Questions use case), questions in SQLite seeded
+  from `data/questions.json`; correct answers validated with `fractions.Fraction`.
+- Package structure that mirrors the UML: `game/` (Game, state machine), `questions/` (Question,
+  repository), `users/`, `admin/`, `ui/`.
+- Generated deliverables: full source, `requirements.txt` (may say "standard library only" + pytest),
+  `README.md` (how to run, features, architecture mapping), `DESIGN_DECISIONS.md`,
+  `TRACEABILITY.csv` (requirement → component → file → test), `Dockerfile` (optional, runs tests
+  headless), and **tests** (pytest: game logic, state machine, scoring, question checking, repository
+  with temp SQLite; UI-free logic so tests run headless).
+
+---
+
+## 6. GitHub — continuous save (VERY IMPORTANT)
+
+I want my work saved on GitHub **continuously, from the very first hour**, so nothing is ever lost.
+
+- **Before writing any code (start of Phase 1):**
+  1. Check if `git` and GitHub CLI `gh` are installed; if not, install them (ask me to approve).
+  2. Configure git identity: `git config user.name "Mubashira"` and
+     `git config user.email "mubashirakhan1001@gmail.com"`.
+  3. Run `gh auth login` and guide me through the browser login (I will do the login step).
+  4. Create the repo: `space-fractions-code-agent` (public), add `.gitignore` (Python, venv, build/,
+     dist/, *.spec outputs if not needed, config.json, .env, any API keys), `LICENSE` (MIT),
+     a starter `README.md`, then first commit and push to `main`.
+- **During the work — commit and push continuously:**
+  - Commit after **every meaningful step** (a module done, tests passing, a bug fixed), not only at the
+    end of a phase. Rough rule: never more than ~30–45 minutes of work without a commit.
+  - **Push immediately after every commit** (`git push`), so GitHub always has the latest work.
+  - Clear commit messages in Conventional Commits style, e.g. `feat(parser): parse PlantUML class diagrams`,
+    `test(agent): mock end-to-end run`, `fix(gui): keep UI responsive during run`, `docs: research notes`.
+  - Before every commit: run tests (fast ones at least) and scan staged changes for secrets
+    (API keys like `sk-...`). **Never commit the DeepSeek key.** If a key is ever committed, stop,
+    tell me, remove it from history and I will regenerate the key.
+  - At the end of each phase create a tag (`phase-1`, `phase-2`, …) and push tags.
+  - If a push fails (network/auth), tell me immediately and retry; do not keep working for long
+    with unpushed commits.
+- At the end: GitHub Actions builds the Windows exe; create **GitHub Release v1.0.0** with the exe
+  attached so the professor can download it directly. Put the repo link + release link + video link
+  at the top of the README.
+- Every time you commit, mention in one line what was saved, so I can follow along.
+
+## 6b. README and submission
+- README (English, professional, concise): what it is, demo video link placeholder, screenshots/GIF,
+  download link, quick start (double-click exe → enter key → pick files → Generate → Run game),
+  architecture diagram (Mermaid), the **mechanism mapping table**, how the agent handles the
+  web→desktop conflict and the input-doc issues, testing, build-from-source, limitations & future work,
+  credits to the reference repos.
+- Never commit API keys. Add a pre-commit check or at least a `.gitignore` rule and a scan.
+
+---
+
+## 7. Phases and my approval points
+
+- **Phase 0 (plan mode):** read all inputs, research the repos, show me the final plan, folder layout
+  and any decisions you changed. Wait for my OK. Write RESEARCH_NOTES.md.
+- **Phase 1:** project skeleton, config, LLM providers (DeepSeek + Mock), parsers → spec.json + tests.
+- **Phase 2:** tools + sandbox + agent loop + context management + prompts + tests (mock end-to-end).
+- **Phase 3:** GUI wired to the agent (worker thread, live log/todos, run game button).
+- **Phase 4:** PyInstaller build + hidden sub-commands + verify exe works without Python; GitHub Actions.
+- **Phase 5:** ONE real run (DeepSeek trial credit if I have it, otherwise OpenRouter free DeepSeek V4;
+  I will give the key at this point). Test with `deepseek-v4-flash:free` first if pro-free is unavailable. Fix agent issues
+  (improve prompts/tools, not the generated code by hand). Save the successful run to `examples/`.
+- **Phase 6:** README, docs, `docs/VIDEO_SCRIPT.md` (4–6 min video: intro, architecture, live run of
+  the exe, generated files, tests passing, playing the game, mechanism table, conclusion),
+  release, final checklist.
+
+Commit + push continuously inside each phase (see section 6). After **every** phase: run tests, tag, push, update `docs/LEARNING_NOTES_UR.md`, and explain to me in
+Roman Urdu. Ask me before anything that costs money (real API calls) or is irreversible.
+
+---
+
+## 7b. Reference links (verify details yourself; third-party guides may be outdated)
+
+- DeepSeek official API docs (source of truth for base URL, model ids, tool calls, thinking mode, pricing):
+  https://api-docs.deepseek.com
+- DeepSeek platform (account, API keys, balance): https://platform.deepseek.com
+- OpenRouter (free DeepSeek V4 route, OpenAI-compatible): https://openrouter.ai/api/v1 — models page https://openrouter.ai/models
+- Guide — DeepSeek V4 API usage (model ids, base URL, tools, thinking mode): https://apidog.com/blog/how-to-use-deepseek-v4-api/
+- Guide — free ways to use DeepSeek V4 API: https://apidog.com/fr/blog/how-to-use-deepseek-v4-api-for-free/
+- DeepSeek V4 Pro (Free) listing: https://www.orcarouter.ai/ko/models/deepseek/deepseek-v4-pro-free
+- DeepSeek pricing breakdown: https://developer.puter.com/tutorials/deepseek-api-pricing/
+- Is DeepSeek free (trial/granted balance notes): https://deepseekai.guide/guides/deepseek-free/
+- Reference repos: https://github.com/ultraworkers/claw-code ,
+  https://github.com/Windy3f3f3f3f/how-claude-code-works , https://github.com/anthropics/claude-code
+- Professor's group: https://www.researchgate.net/profile/Peng-Liang-4
+
+**API keys:** I have created the DeepSeek / OpenRouter keys myself. They will be in a `.env` file in the
+project root (`DEEPSEEK_API_KEY=...`, `OPENROUTER_API_KEY=...`). Before anything else, make sure
+`.env` is listed in `.gitignore` and **verify with `git status` / `git check-ignore .env` that it is never
+committed or pushed**. The app should read keys from `.env` / environment variables in dev mode and
+from the GUI in the exe. Provide a `.env.example` with empty values.
+Both accounts (DeepSeek platform and OpenRouter) are registered on my Gmail **mubashirakhan1001@gmail.com**
+(same email as my GitHub/git identity). You cannot log in to them yourself — whenever you need something
+from a dashboard (check balance/credits, check free-model availability, usage/rate-limit status,
+regenerate a key), tell me exactly what to click and I will do it and report back. Never write a key into any other
+file in the repo, PROMPT.md, logs, transcripts or commit messages, and never print a full key in output.
+
+## 8. Final checklist (verify each before saying "done")
+
+- [ ] Exe double-clicks and opens on Windows with no Python installed
+- [ ] GUI has API key config, input file selection, output folder, Generate button
+- [ ] Agent uses deepseek-v4-pro via official API (verified in transcript)
+- [ ] md → JSON preprocessing works and spec.json is saved
+- [ ] Agent loop with tools, planning, verification, sandbox actually used in the run
+- [ ] Generated game is a desktop Tkinter app with intro, menu, questions, pause, ending, admin, scores
+- [ ] Generated project has source, requirements.txt, README, tests (passing), DESIGN_DECISIONS.md
+- [ ] "Run generated game" works from the exe
+- [ ] Agent's own tests pass; lint clean
+- [ ] README with mechanism table, diagram, screenshots; Release with exe; no secrets in repo
+- [ ] VIDEO_SCRIPT.md and LEARNING_NOTES_UR.md ready
+- [ ] All work committed and pushed to GitHub, phase tags pushed, nothing left only on my laptop
+- [ ] Budget cap, model selector and replay mode work
