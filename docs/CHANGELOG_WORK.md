@@ -92,3 +92,18 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - CI run 39153490927 green with Node 24 actions (no warnings).
 - `max_output_tokens` default 8192 → 32768 and implement prompt asks for 4-6 files per `write_files` call
   (a full module batch does not fit in 8K output tokens; a cut-off reply would break the tool-call JSON).
+
+### 2026-10-19 — Pre-Phase-5 improvements (user request: generic agent + GUI polish)
+- `e8bf914` feat(agent): generic system prompt + output contract; `app/agent/profile.py`; `profiles/space_fractions.md`;
+  generic required deliverables (+ profile `required_files`); `samples/library_tracker/`; samples/profiles copied
+  to `Documents\SpaceFractionsAgent` in the exe; parser testing-matrix lookup made generic. Tests: `tests/test_generic.py`.
+- (this commit) feat(gui): redesigned window (`app/gui/app.py`, new `app/gui/theme.py`): header + subtitle +
+  provider/model badge, cards with labels, phase bar with states incl. "skipped (not needed)", colour-coded log,
+  status bar (requests / tokens / cache-hit % / cost / elapsed), fit-to-screen sizing, friendly key/balance errors
+  (`friendly_key_problem`, DeepSeek 401/402 messages). README: "The agent is generic" + "How to use with your own
+  architecture docs". Screenshots: `docs/screenshots/gui_idle.png`, `gui_mock_run.png`.
+- `scripts/verify_exe.py`: only counts NEW windows (ignores windows the user already has open) and kills both
+  bootloader and child processes.
+- Tests: 94 passed, 1 skipped. New exe built to `build/dist_new/` (old one was locked by open windows), verified
+  6/6 PASS without Python, then copied to `dist/`.
+- Rollback: `git revert <this hash>` (GUI) and/or `git revert e8bf914` (generic agent); `git checkout phase-4 -- app/`.

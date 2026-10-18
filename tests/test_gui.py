@@ -110,11 +110,21 @@ def test_gui_smoke_mock_generate(tmp_path, doc_path, view_path, monkeypatch):
             time.sleep(0.02)
         log = window.text["Log"].get("1.0", "end")
         assert "write_files main.py" in log and "VERIFY PASSED" in log
+        assert "tool" in window.text["Log"].tag_names("3.0") or window.text["Log"].tag_ranges("tool")
         assert "Run completed" in log
         assert "Verification | PASSED" in window.text["Report"].get("1.0", "end")
         assert "●" in window.text["Todos"].get("1.0", "end")
         assert "MOCK MODE" in window.mode_banner.cget("text")
         assert str(window.generate_btn.cget("state")) == "normal"
-        assert window.phase_labels["report"].cget("fg_color") == gui.DONE
+        assert [window.phase_state(x) for x in gui.PHASES] == ["done", "done", "done", "skipped", "done"]
+        assert "deepseek-v4-pro" in window.provider_badge.cget("text") or "Mock" in window.provider_badge.cget("text")
     finally:
         window.destroy()
+
+
+def test_friendly_key_messages():
+    from app.gui.app import friendly_key_problem
+
+    assert "start with sk-" in friendly_key_problem("abc123")
+    assert "No API key" in friendly_key_problem("")
+    assert friendly_key_problem("sk-abc") is None

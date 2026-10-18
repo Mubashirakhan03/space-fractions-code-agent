@@ -1,7 +1,9 @@
-"""Main window (customtkinter).
+"""Main window (customtkinter, light theme).
 
-Left: provider/API key, input files, output folder, limits, actions.
-Right: phase progress, usage/cost counter, tabs (Log, Todos, Spec preview, Report).
+Header: app name, subtitle, provider/model badge.
+Left: cards (DeepSeek API, Inputs, Output, Run limits) + a fixed action bar that never scrolls away.
+Right: phase bar (pending / running / done / failed / skipped), mode banner, tabs (Log, Todos,
+Spec preview, Report) and a status bar with requests, tokens and cost.
 The agent runs in a worker thread; this window polls the controller's queue every 100 ms.
 """
 
@@ -10,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import threading
+import time
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox
@@ -18,169 +21,276 @@ from typing import Any
 import customtkinter as ctk
 
 from app import APP_NAME, __version__
+from app.agent.profile import load_profile
 from app.agent.replay import REPLAY_LABEL
 from app.config import AppConfig, load_config, mask_key, save_config
-from app.gui.controller import RunController, build_provider, find_default_inputs, launch_generated_game
+from app.gui import theme as T
+from app.gui.controller import (
+    RunController,
+    build_provider,
+    find_default_inputs,
+    launch_generated_game,
+    list_profiles,
+)
 from app.llm.deepseek import DEEPSEEK_MODEL
 from app.llm.pricing import PRICES_PER_M
 from app.parsers.spec import build_spec
 
+TITLE = "Space Fractions Code Agent"
+SUBTITLE = "A simplified Claude-Code-style agent powered by DeepSeek"
 PHASES = ["plan", "implement", "verify", "fix", "report"]
-PHASE_LABELS = {"plan": "1 Plan", "implement": "2 Implement", "verify": "3 Verify", "fix": "4 Fix",
-                "report": "5 Report"}
+PHASE_NAMES = {"plan": "1  Plan", "implement": "2  Implement", "verify": "3  Verify", "fix": "4  Fix",
+               "report": "5  Report"}
+NO_PROFILE = "(none — derive everything from the spec)"
+BROWSE = "Browse…"
 POLL_MS = 100
-IDLE, ACTIVE, DONE, FAILED = ("gray85", "gray25"), "#c80", "#2a7", "#a33"
 TODO_ICON = {"pending": "○", "in_progress": "◐", "completed": "●"}
+
+
+def friendly_key_problem(key: str) -> str | None:
+    if not key:
+        return "No API key — paste your DeepSeek key (it starts with sk-) or enable mock mode."
+    if not key.startswith("sk-"):
+        return "Invalid API key — DeepSeek keys start with sk-. Copy it again from platform.deepseek.com → API keys."
+    return None
 
 
 class AgentApp(ctk.CTk):
     def __init__(self) -> None:
-        super().__init__()
-        ctk.set_appearance_mode("system")
-        self.title(f"Space Fractions Code Agent  v{__version__}")
-        self.geometry("1280x800")
-        self.minsize(1050, 680)
+        ctk.set_appearance_mode("light")
+        super().__init__(fg_color=T.BG)
+        self.title(f"{TITLE}  v{__version__}")
+        self.minsize(900, 560)
+        self._fit_to_screen(1400, 850)
         icon = Path(__file__).resolve().parent.parent.parent / "assets" / "icon.ico"
         if icon.exists():
             self.iconbitmap(str(icon))
         self.cfg = load_config()
         self.controller = RunController()
         self.vars: dict[str, tk.Variable] = {}
-        self._current_phase: str | None = None
+        self.phase_status: dict[str, str] = {}
+        self._profiles = {p.stem: p for p in list_profiles()}
+        self._run_kind = "live"
+        self._started_at = 0.0
+        self._max = (40, 1.0)
+        self._last_usage: dict[str, Any] | None = None
         self._build()
         self._load_into_form()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         self.after(POLL_MS, self._poll)
 
-    # ------------------------------------------------------------------ layout
-    def _build(self) -> None:
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        column = ctk.CTkFrame(self, fg_color="transparent")
-        column.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=10)
-        column.grid_rowconfigure(0, weight=1)
-        column.grid_columnconfigure(0, weight=1)
-        left = ctk.CTkScrollableFrame(column, width=390, label_text="Configuration")
-        left.grid(row=0, column=0, sticky="nsew")
-        actions = ctk.CTkFrame(column)  # always visible, never scrolled away
-        actions.grid(row=1, column=0, sticky="ew", pady=(8, 0))
-        right = ctk.CTkFrame(self)
-        right.grid(row=0, column=1, sticky="nsew", padx=(5, 10), pady=10)
-        right.grid_columnconfigure(0, weight=1)
-        right.grid_rowconfigure(2, weight=1)
-        self._build_left(left)
-        self._build_actions(actions)
-        self._build_right(right)
+    def _fit_to_screen(self, width: int, height: int) -> None:
+        """Open at width×height (logical px) but never larger than the screen, centred.
+        With Windows display scaling (e.g. 150%) a fixed 1400×850 would run off the bottom."""
+        scale = ctk.ScalingTracker.get_window_scaling(self)
+        screen_w, screen_h = self.winfo_screenwidth() / scale, self.winfo_screenheight() / scale
+        w, h = min(width, int(screen_w * 0.95)), min(height, int(screen_h * 0.88))
+        x, y = max(int((screen_w - w) / 2), 0), max(int((screen_h - h) / 3), 0)
+        self.geometry(f"{w}x{h}+{x}+{y}")
 
-    def _section(self, parent, text: str) -> None:
-        ctk.CTkLabel(parent, text=text, font=ctk.CTkFont(size=14, weight="bold"), anchor="w").pack(
-            fill="x", padx=8, pady=(12, 2))
+    # ------------------------------------------------------------------ small widget helpers
+    def font(self, size: int = 13, weight: str = "normal", mono: bool = False) -> ctk.CTkFont:
+        return ctk.CTkFont(family=T.MONO_FONT if mono else T.UI_FONT, size=size, weight=weight)
 
     def _var(self, name: str, kind=tk.StringVar, value: Any = "") -> tk.Variable:
         self.vars[name] = kind(value=value)
         return self.vars[name]
 
-    def _build_left(self, f) -> None:
-        self._section(f, "LLM provider")
-        ctk.CTkLabel(f, text=f"Model: {DEEPSEEK_MODEL}  (official DeepSeek API)", anchor="w").pack(fill="x", padx=8)
-        row = ctk.CTkFrame(f, fg_color="transparent")
-        row.pack(fill="x", padx=8, pady=2)
-        self.key_entry = ctk.CTkEntry(row, textvariable=self._var("api_key"), show="•",
-                                      placeholder_text="DeepSeek API key (sk-…)")
-        self.key_entry.pack(side="left", fill="x", expand=True)
-        ctk.CTkButton(row, text="👁", width=34, command=self._toggle_key).pack(side="left", padx=(4, 0))
-        row2 = ctk.CTkFrame(f, fg_color="transparent")
-        row2.pack(fill="x", padx=8, pady=2)
-        ctk.CTkCheckBox(row2, text="Remember key", variable=self._var("remember_key", tk.BooleanVar, False)).pack(
-            side="left")
-        self.test_btn = ctk.CTkButton(row2, text="Test connection", width=130, command=self._test_connection)
-        self.test_btn.pack(side="right")
-        self.conn_label = ctk.CTkLabel(f, text="Test connection makes 1 tiny API request (≈ $0.0001).",
-                                       anchor="w", text_color="gray", wraplength=360, justify="left")
-        self.conn_label.pack(fill="x", padx=8)
-        ctk.CTkCheckBox(f, text="Thinking mode (slower, more tokens)",
-                        variable=self._var("thinking", tk.BooleanVar, False)).pack(anchor="w", padx=8, pady=2)
-        ctk.CTkCheckBox(f, text="Developer: mock mode (no API, scripted demo)",
-                        variable=self._var("mock", tk.BooleanVar, False)).pack(anchor="w", padx=8, pady=2)
+    def _card(self, parent, title: str, hint: str | None = None) -> ctk.CTkFrame:
+        card = ctk.CTkFrame(parent, fg_color=T.CARD, border_color=T.BORDER, border_width=1, corner_radius=10)
+        card.pack(fill="x", padx=4, pady=6)
+        ctk.CTkLabel(card, text=title, font=self.font(15, "bold"), text_color=T.TEXT, anchor="w").pack(
+            fill="x", padx=14, pady=(10, 0))
+        if hint:
+            ctk.CTkLabel(card, text=hint, font=self.font(12), text_color=T.MUTED, anchor="w", justify="left",
+                         wraplength=370).pack(fill="x", padx=14)
+        body = ctk.CTkFrame(card, fg_color="transparent")
+        body.pack(fill="x", padx=14, pady=(6, 12))
+        return body
 
-        self._section(f, "Inputs")
-        self._file_row(f, "doc_path", "Architecture_Documentation.md", self._pick_file)
-        self._file_row(f, "view_path", "Architecture_View.md", self._pick_file)
-        ctk.CTkButton(f, text="Preview spec.json", command=self._preview_spec).pack(fill="x", padx=8, pady=4)
+    def _label(self, parent, text: str) -> None:
+        ctk.CTkLabel(parent, text=text, font=self.font(12, "bold"), text_color=T.TEXT, anchor="w").pack(
+            fill="x", pady=(6, 2))
 
-        self._section(f, "Output")
-        self._file_row(f, "output_dir", "Output folder", self._pick_dir)
+    def _entry(self, parent, var: str, placeholder: str = "", show: str | None = None) -> ctk.CTkEntry:
+        e = ctk.CTkEntry(parent, textvariable=self._var(var), placeholder_text=placeholder, height=34,
+                         font=self.font(13), border_color=T.BORDER, fg_color="#F9FAFB", text_color=T.TEXT)
+        if show:
+            e.configure(show=show)
+        return e
 
-        self._section(f, "Limits & options")
-        grid = ctk.CTkFrame(f, fg_color="transparent")
-        grid.pack(fill="x", padx=8)
-        fields = [("max_steps", "Max agent steps"), ("max_requests", "Max LLM requests / run"),
-                  ("max_cost_usd", "Max cost / run (USD)"), ("fix_rounds", "Auto-fix rounds")]
-        for i, (name, label) in enumerate(fields):
-            ctk.CTkLabel(grid, text=label, anchor="w").grid(row=i, column=0, sticky="w", pady=2)
-            ctk.CTkEntry(grid, width=90, textvariable=self._var(name)).grid(row=i, column=1, sticky="e", pady=2)
-        grid.grid_columnconfigure(0, weight=1)
-        ctk.CTkCheckBox(f, text="Ask before every file write", variable=self._var("ask_before_write", tk.BooleanVar,
-                                                                                    False)).pack(anchor="w", padx=8,
-                                                                                                 pady=4)
+    def _button(self, parent, text: str, command, primary: bool = False, **kw) -> ctk.CTkButton:
+        style = ({"fg_color": T.ACCENT, "hover_color": T.ACCENT_HOVER, "text_color": "#FFFFFF"} if primary else
+                 {"fg_color": T.NEUTRAL_BTN, "hover_color": T.NEUTRAL_BTN_HOVER, "text_color": T.TEXT})
+        opts = {"height": 36, "corner_radius": 8, "font": self.font(13, "bold" if primary else "normal")}
+        return ctk.CTkButton(parent, text=text, command=command, **(opts | style | kw))
 
-    def _build_actions(self, f) -> None:
-        self.generate_btn = ctk.CTkButton(f, text="▶  Generate", height=38, command=self._generate,
-                                          font=ctk.CTkFont(size=14, weight="bold"))
-        self.generate_btn.pack(fill="x", padx=8, pady=(8, 3))
-        self.stop_btn = ctk.CTkButton(f, text="■  Stop", fg_color="gray50", hover_color="#822", command=self._stop,
-                                      state="disabled")
-        self.stop_btn.pack(fill="x", padx=8, pady=3)
-        two = ctk.CTkFrame(f, fg_color="transparent")
-        two.pack(fill="x", padx=8, pady=3)
-        self.resume_btn = ctk.CTkButton(two, text="⟳ Resume run", command=self._resume)
-        self.resume_btn.pack(side="left", fill="x", expand=True, padx=(0, 3))
-        self.replay_btn = ctk.CTkButton(two, text="⏵ Replay recorded run", command=self._replay)
-        self.replay_btn.pack(side="left", fill="x", expand=True, padx=(3, 0))
-        two2 = ctk.CTkFrame(f, fg_color="transparent")
-        two2.pack(fill="x", padx=8, pady=(3, 8))
-        ctk.CTkButton(two2, text="📂 Open output folder", command=self._open_output).pack(
-            side="left", fill="x", expand=True, padx=(0, 3))
-        self.run_game_btn = ctk.CTkButton(two2, text="▶ Run generated game", fg_color="#2a7", hover_color="#185",
-                                          command=self._run_game)
-        self.run_game_btn.pack(side="left", fill="x", expand=True, padx=(3, 0))
-
-    def _file_row(self, parent, var: str, placeholder: str, picker) -> None:
+    def _path_row(self, parent, label: str, var: str, placeholder: str, picker) -> None:
+        self._label(parent, label)
         row = ctk.CTkFrame(parent, fg_color="transparent")
-        row.pack(fill="x", padx=8, pady=2)
-        entry = ctk.CTkEntry(row, textvariable=self._var(var), placeholder_text=placeholder)
+        row.pack(fill="x")
+        entry = self._entry(row, var, placeholder)
         entry.pack(side="left", fill="x", expand=True)
+        self._button(row, "Browse", lambda: picker(var, label), width=80).pack(side="left", padx=(6, 0))
         # show the end of long paths (the file name), not the drive letter
         self.vars[var].trace_add("write", lambda *_: entry.after_idle(lambda: entry.xview("end")))
-        ctk.CTkButton(row, text="…", width=34, command=lambda: picker(var, placeholder)).pack(side="left", padx=(4, 0))
+
+    # ------------------------------------------------------------------ layout
+    def _build(self) -> None:
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self._build_header()
+        left = ctk.CTkFrame(self, fg_color="transparent")
+        left.grid(row=1, column=0, sticky="nsew", padx=(16, 8), pady=(0, 16))
+        left.grid_rowconfigure(0, weight=1)
+        left.grid_columnconfigure(0, weight=1)
+        scroll = ctk.CTkScrollableFrame(left, width=420, fg_color="transparent")
+        scroll.grid(row=0, column=0, sticky="nsew")
+        self._build_settings(scroll)
+        actions = ctk.CTkFrame(left, fg_color=T.CARD, border_color=T.BORDER, border_width=1, corner_radius=10)
+        actions.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+        self._build_actions(actions)
+        right = ctk.CTkFrame(self, fg_color="transparent")
+        right.grid(row=1, column=1, sticky="nsew", padx=(8, 16), pady=(0, 16))
+        right.grid_columnconfigure(0, weight=1)
+        right.grid_rowconfigure(2, weight=1)
+        self._build_right(right)
+
+    def _build_header(self) -> None:
+        head = ctk.CTkFrame(self, fg_color=T.CARD, corner_radius=0, border_color=T.BORDER, border_width=1)
+        head.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 12))
+        head.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(head, text="🚀", font=self.font(30)).grid(row=0, column=0, rowspan=2, padx=(20, 10), pady=12)
+        ctk.CTkLabel(head, text=TITLE, font=self.font(22, "bold"), text_color=T.TEXT, anchor="w").grid(
+            row=0, column=1, sticky="sw", pady=(12, 0))
+        ctk.CTkLabel(head, text=SUBTITLE, font=self.font(13), text_color=T.MUTED, anchor="w").grid(
+            row=1, column=1, sticky="nw", pady=(0, 12))
+        self.provider_badge = ctk.CTkLabel(head, text="", font=self.font(13, "bold"), corner_radius=14,
+                                           fg_color="#EFF6FF", text_color=T.ACCENT, height=30)
+        self.provider_badge.grid(row=0, column=2, rowspan=2, padx=20, ipadx=12)
+
+    def _build_settings(self, f) -> None:
+        api = self._card(f, "DeepSeek API", f"Provider: DeepSeek (official) · Model: {DEEPSEEK_MODEL}")
+        self._label(api, "API key")
+        row = ctk.CTkFrame(api, fg_color="transparent")
+        row.pack(fill="x")
+        self.key_entry = self._entry(row, "api_key", "sk-…", show="•")
+        self.key_entry.pack(side="left", fill="x", expand=True)
+        self._button(row, "Show", self._toggle_key, width=64).pack(side="left", padx=(6, 0))
+        row2 = ctk.CTkFrame(api, fg_color="transparent")
+        row2.pack(fill="x", pady=(8, 0))
+        ctk.CTkCheckBox(row2, text="Remember key on this PC", font=self.font(12), fg_color=T.ACCENT,
+                        variable=self._var("remember_key", tk.BooleanVar, False)).pack(side="left")
+        self.test_btn = self._button(row2, "Test connection", self._test_connection, width=140)
+        self.test_btn.pack(side="right")
+        self.conn_label = ctk.CTkLabel(api, text="Test connection sends one tiny request (≈ $0.0001).",
+                                       font=self.font(12), text_color=T.MUTED, anchor="w", wraplength=370,
+                                       justify="left")
+        self.conn_label.pack(fill="x", pady=(4, 0))
+        opts = ctk.CTkFrame(api, fg_color="transparent")
+        opts.pack(fill="x", pady=(6, 0))
+        ctk.CTkCheckBox(opts, text="Thinking mode (slower, more tokens)", font=self.font(12), fg_color=T.ACCENT,
+                        variable=self._var("thinking", tk.BooleanVar, False)).pack(anchor="w", pady=2)
+        ctk.CTkCheckBox(opts, text="Developer: mock mode (no API calls, scripted demo)", font=self.font(12),
+                        fg_color=T.ACCENT, variable=self._var("mock", tk.BooleanVar, False),
+                        command=self._refresh_badge).pack(anchor="w", pady=2)
+
+        inputs = self._card(f, "Inputs", "Any architecture document + PlantUML views; they are parsed to spec.json.")
+        self._path_row(inputs, "Architecture documentation (.md)", "doc_path", "Architecture_Documentation.md",
+                       self._pick_file)
+        self._path_row(inputs, "Architecture views — PlantUML (.md)", "view_path", "Architecture_View.md",
+                       self._pick_file)
+        self._label(inputs, "Task profile (optional hints)")
+        self._var("profile_path")
+        self.profile_menu = ctk.CTkOptionMenu(inputs, values=[NO_PROFILE, *self._profiles, BROWSE], height=34,
+                                              font=self.font(13), fg_color="#F9FAFB", text_color=T.TEXT,
+                                              button_color=T.ACCENT, button_hover_color=T.ACCENT_HOVER,
+                                              command=self._choose_profile)
+        self.profile_menu.pack(fill="x")
+        self._button(inputs, "Preview spec.json", self._preview_spec).pack(fill="x", pady=(10, 0))
+
+        out = self._card(f, "Output")
+        self._path_row(out, "Output folder (must be empty for a new run)", "output_dir", "Choose a folder",
+                       self._pick_dir)
+
+        lim = self._card(f, "Run limits", "Hard caps: the run stops gracefully and saves its state.")
+        grid = ctk.CTkFrame(lim, fg_color="transparent")
+        grid.pack(fill="x")
+        grid.grid_columnconfigure(0, weight=1)
+        fields = [("max_cost_usd", "Max cost per run (USD)"), ("max_requests", "Max LLM requests per run"),
+                  ("max_steps", "Max agent steps"), ("fix_rounds", "Auto-fix rounds")]
+        for i, (name, label) in enumerate(fields):
+            ctk.CTkLabel(grid, text=label, font=self.font(13), text_color=T.TEXT, anchor="w").grid(
+                row=i, column=0, sticky="w", pady=3)
+            e = self._entry(grid, name)
+            e.configure(width=90, justify="right")
+            e.grid(row=i, column=1, sticky="e", pady=3)
+        ctk.CTkCheckBox(lim, text="Ask me before every file write", font=self.font(12), fg_color=T.ACCENT,
+                        variable=self._var("ask_before_write", tk.BooleanVar, False)).pack(anchor="w", pady=(8, 0))
+
+    def _build_actions(self, f) -> None:
+        inner = ctk.CTkFrame(f, fg_color="transparent")
+        inner.pack(fill="x", padx=12, pady=12)
+        self.generate_btn = self._button(inner, "▶   Generate project", self._generate, primary=True, height=44)
+        self.generate_btn.configure(font=self.font(15, "bold"))
+        self.generate_btn.pack(fill="x")
+        row = ctk.CTkFrame(inner, fg_color="transparent")
+        row.pack(fill="x", pady=(8, 0))
+        row.grid_columnconfigure((0, 1, 2), weight=1, uniform="a")
+        self.stop_btn = self._button(row, "■  Stop", self._stop, state="disabled")
+        self.stop_btn.grid(row=0, column=0, sticky="ew", padx=(0, 4))
+        self.resume_btn = self._button(row, "⟳  Resume", self._resume)
+        self.resume_btn.grid(row=0, column=1, sticky="ew", padx=4)
+        self.replay_btn = self._button(row, "⏵  Replay", self._replay)
+        self.replay_btn.grid(row=0, column=2, sticky="ew", padx=(4, 0))
+        row2 = ctk.CTkFrame(inner, fg_color="transparent")
+        row2.pack(fill="x", pady=(8, 0))
+        row2.grid_columnconfigure((0, 1), weight=1, uniform="b")
+        self._button(row2, "📂  Open output folder", self._open_output).grid(row=0, column=0, sticky="ew",
+                                                                           padx=(0, 4))
+        self.run_game_btn = self._button(row2, "▶  Run generated app", self._run_game, fg_color=T.OK,
+                                         hover_color="#15803D", text_color="#FFFFFF")
+        self.run_game_btn.grid(row=0, column=1, sticky="ew", padx=(4, 0))
 
     def _build_right(self, f) -> None:
-        top = ctk.CTkFrame(f, fg_color="transparent")
-        top.grid(row=0, column=0, sticky="ew", padx=8, pady=(8, 0))
-        self.phase_labels: dict[str, ctk.CTkLabel] = {}
+        bar = ctk.CTkFrame(f, fg_color=T.CARD, border_color=T.BORDER, border_width=1, corner_radius=10)
+        bar.grid(row=0, column=0, sticky="ew")
+        self.phase_widgets: dict[str, tuple[ctk.CTkFrame, ctk.CTkLabel, ctk.CTkLabel]] = {}
         for i, p in enumerate(PHASES):
-            lbl = ctk.CTkLabel(top, text=PHASE_LABELS[p], corner_radius=6, fg_color=IDLE, width=110,
-                               height=30)
-            lbl.grid(row=0, column=i, padx=3, sticky="ew")
-            top.grid_columnconfigure(i, weight=1)
-            self.phase_labels[p] = lbl
-        self.mode_banner = ctk.CTkLabel(f, text="", font=ctk.CTkFont(size=13, weight="bold"))
-        self.mode_banner.grid(row=1, column=0, sticky="ew", padx=8)
-        self.usage_label = ctk.CTkLabel(f, text=self._usage_text(), anchor="w", font=ctk.CTkFont(family="Consolas"))
+            bar.grid_columnconfigure(i, weight=1, uniform="p")
+            box = ctk.CTkFrame(bar, corner_radius=8, height=56)
+            box.grid(row=0, column=i, sticky="ew", padx=6, pady=10)
+            name = ctk.CTkLabel(box, text=PHASE_NAMES[p], font=self.font(14, "bold"))
+            name.pack(pady=(6, 0))
+            caption = ctk.CTkLabel(box, text="", font=self.font(11))
+            caption.pack(pady=(0, 6))
+            self.phase_widgets[p] = (box, name, caption)
+        self.mode_banner = ctk.CTkLabel(f, text="", font=self.font(13, "bold"), text_color=T.WARN, height=28)
+        self.mode_banner.grid(row=1, column=0, sticky="ew", pady=(4, 0))
 
-        self.tabs = ctk.CTkTabview(f)
-        self.tabs.grid(row=2, column=0, sticky="nsew", padx=8, pady=4)
-        mono = ctk.CTkFont(family="Consolas", size=12)
+        self.tabs = ctk.CTkTabview(f, fg_color=T.CARD, border_color=T.BORDER, border_width=1, corner_radius=10,
+                                   segmented_button_selected_color=T.ACCENT,
+                                   segmented_button_selected_hover_color=T.ACCENT_HOVER,
+                                   segmented_button_unselected_color="#F3F4F6", text_color=T.TEXT)
+        self.tabs.grid(row=2, column=0, sticky="nsew")
         self.text: dict[str, ctk.CTkTextbox] = {}
         for name in ("Log", "Todos", "Spec preview", "Report"):
             tab = self.tabs.add(name)
             tab.grid_columnconfigure(0, weight=1)
             tab.grid_rowconfigure(0, weight=1)
-            box = ctk.CTkTextbox(tab, font=mono, wrap="word")
+            box = ctk.CTkTextbox(tab, font=self.font(14 if name == "Todos" else 13, mono=name != "Todos"),
+                                 wrap="word", fg_color="#FAFAFA", text_color=T.TEXT, border_spacing=8)
             box.grid(row=0, column=0, sticky="nsew")
+            for tag, color in T.LOG_COLORS.items():
+                box.tag_config(tag, foreground=color)
             box.configure(state="disabled")
             self.text[name] = box
-        self.usage_label.grid(row=3, column=0, sticky="ew", padx=12, pady=(0, 8))
+
+        self.status = ctk.CTkLabel(f, text="", font=self.font(13, mono=True), text_color=T.TEXT, anchor="w",
+                                   fg_color=T.CARD, corner_radius=8, height=34)
+        self.status.grid(row=3, column=0, sticky="ew", pady=(8, 0), ipadx=12)
+        self._reset_phases()
+        self._update_status()
 
     # ------------------------------------------------------------------ form <-> config
     def _load_into_form(self) -> None:
@@ -190,9 +300,12 @@ class AgentApp(ctk.CTk):
                   "mock": c.provider == "mock", "doc_path": c.doc_path or doc, "view_path": c.view_path or view,
                   "output_dir": c.output_dir or str(Path.home() / "Documents" / "SpaceFractionsGenerated"),
                   "max_steps": c.max_steps, "max_requests": c.max_requests, "max_cost_usd": c.max_cost_usd,
-                  "fix_rounds": c.fix_rounds, "ask_before_write": c.ask_before_write}
+                  "fix_rounds": c.fix_rounds, "ask_before_write": c.ask_before_write,
+                  "profile_path": c.profile_path if c.profile_path and Path(c.profile_path).exists() else ""}
         for k, v in values.items():
             self.vars[k].set(v)
+        self._show_profile()
+        self._refresh_badge()
 
     def _form_config(self) -> AppConfig:
         v = {k: var.get() for k, var in self.vars.items()}
@@ -202,15 +315,24 @@ class AgentApp(ctk.CTk):
                              max_requests=int(v["max_requests"]), max_cost_usd=float(v["max_cost_usd"]),
                              fix_rounds=int(v["fix_rounds"]), ask_before_write=v["ask_before_write"],
                              doc_path=v["doc_path"].strip(), view_path=v["view_path"].strip(),
-                             output_dir=v["output_dir"].strip())
+                             output_dir=v["output_dir"].strip(), profile_path=v["profile_path"])
         except ValueError as exc:
-            raise ValueError("Limits must be numbers.") from exc
+            raise ValueError("Run limits must be numbers (e.g. 1.00 for cost, 40 for requests).") from exc
 
     def _persist(self, cfg: AppConfig) -> None:
         stored = AppConfig(**{**cfg.__dict__, "api_key": cfg.api_key if self.vars["remember_key"].get() else ""})
         save_config(stored)
 
     # ------------------------------------------------------------------ actions
+    def _refresh_badge(self) -> None:
+        if self._run_kind == "replay" and self.controller.running:
+            text = f"⏵ {REPLAY_LABEL}"
+        elif self.vars["mock"].get():
+            text = "Provider: Mock (scripted demo) · no API calls"
+        else:
+            text = f"Provider: DeepSeek (official) · Model: {DEEPSEEK_MODEL}"
+        self.provider_badge.configure(text=f"  {text}  ")
+
     def _toggle_key(self) -> None:
         self.key_entry.configure(show="" if self.key_entry.cget("show") else "•")
 
@@ -224,21 +346,42 @@ class AgentApp(ctk.CTk):
         if path:
             self.vars[var].set(path)
 
+    def _choose_profile(self, choice: str) -> None:
+        if choice == BROWSE:
+            path = filedialog.askopenfilename(title="Select a task profile", filetypes=[("Markdown", "*.md")])
+            if path:
+                self.vars["profile_path"].set(path)
+        elif choice == NO_PROFILE:
+            self.vars["profile_path"].set("")
+        else:
+            self.vars["profile_path"].set(str(self._profiles[choice]))
+        self._show_profile()
+
+    def _show_profile(self) -> None:
+        path = self.vars["profile_path"].get()
+        if path:
+            self._profiles.setdefault(Path(path).stem, Path(path))
+            self.profile_menu.configure(values=[NO_PROFILE, *self._profiles, BROWSE])
+        self.profile_menu.set(Path(path).stem if path else NO_PROFILE)
+
     def _test_connection(self) -> None:
         try:
             cfg = self._form_config()
+            problem = None if cfg.provider == "mock" else friendly_key_problem(cfg.resolved_api_key())
+            if problem:
+                raise ValueError(problem)
             provider = build_provider(cfg)
         except Exception as exc:
-            self.conn_label.configure(text=f"✗ {exc}", text_color="#d55")
+            self.conn_label.configure(text=f"✗ {exc}", text_color=T.ERR)
             return
-        self.conn_label.configure(text=f"Testing {mask_key(cfg.resolved_api_key())} …", text_color="gray")
+        self.conn_label.configure(text=f"Testing key {mask_key(cfg.resolved_api_key())} …", text_color=T.MUTED)
         self.test_btn.configure(state="disabled")
 
         def work():
             try:
-                msg, color = "✓ " + provider.test_connection(), "#3a3"
+                msg, color = "✓ " + provider.test_connection(), T.OK
             except Exception as exc:
-                msg, color = f"✗ {exc}", "#d55"
+                msg, color = f"✗ {exc}", T.ERR
             self.after(0, lambda: (self.conn_label.configure(text=msg, text_color=color),
                                    self.test_btn.configure(state="normal")))
 
@@ -259,6 +402,8 @@ class AgentApp(ctk.CTk):
     def _generate(self, resume: bool = False, replay: Path | None = None) -> None:
         try:
             cfg = self._form_config()
+            if cfg.profile_path:
+                load_profile(cfg.profile_path)  # validate before starting
         except ValueError as exc:
             messagebox.showerror(APP_NAME, str(exc))
             return
@@ -270,85 +415,98 @@ class AgentApp(ctk.CTk):
         if replay is None and cfg.provider == "deepseek" and not self._confirm_paid_run(cfg):
             return
         self._persist(cfg)
-        self._reset_view(replay is not None, cfg.provider == "mock")
+        self._run_kind = "replay" if replay else ("mock" if cfg.provider == "mock" else "live")
+        self._max = (cfg.max_requests, cfg.max_cost_usd)
+        self._reset_view()
         self.controller.start(cfg, resume=resume, replay_transcript=replay)
+        self._started_at = time.time()
         self._set_running(True)
 
     def _confirm_paid_run(self, cfg: AppConfig) -> bool:
-        if not cfg.resolved_api_key():
-            messagebox.showerror(APP_NAME, "Enter your DeepSeek API key first (or enable mock mode).")
+        problem = friendly_key_problem(cfg.resolved_api_key())
+        if problem:
+            messagebox.showerror(APP_NAME, problem)
             return False
         p = PRICES_PER_M[DEEPSEEK_MODEL]
         return messagebox.askyesno(APP_NAME, (
             f"This run calls the paid DeepSeek API ({DEEPSEEK_MODEL}).\n\n"
             f"Price per 1M tokens: input ${p['cache_miss']} (cache hit ${p['cache_hit']}), output ${p['output']} "
-            f"(2× in peak hours).\nTypical full run: ~$0.10–0.40.\n\n"
+            f"(2× in peak hours).\nTypical full run: about $0.20–0.45.\n\n"
             f"Hard limits for this run: ${cfg.max_cost_usd:.2f} and {cfg.max_requests} requests.\n\nStart?"))
 
     def _resume(self) -> None:
         out = Path(self.vars["output_dir"].get())
         if not (out / "agent_run" / "state.json").exists():
-            messagebox.showinfo(APP_NAME, "No saved run state in this output folder.")
+            messagebox.showinfo(APP_NAME, "No saved run in this output folder.")
             return
         self._generate(resume=True)
 
     def _replay(self) -> None:
         path = filedialog.askopenfilename(title="Select a recorded transcript.jsonl",
                                           filetypes=[("Transcript", "transcript.jsonl"), ("JSONL", "*.jsonl")])
-        if not path:
-            return
-        self._generate(replay=Path(path))
+        if path:
+            self._generate(replay=Path(path))
 
     def _stop(self) -> None:
         self.controller.stop()
-        self._log("Stop requested — finishing the current step…")
+        self._log("Stop requested — finishing the current step…", "warn")
 
     def _open_output(self) -> None:
         out = Path(self.vars["output_dir"].get())
         if out.is_dir():
             os.startfile(out)  # noqa: S606 - Windows desktop app
         else:
-            messagebox.showinfo(APP_NAME, "Output folder does not exist yet.")
+            messagebox.showinfo(APP_NAME, "The output folder does not exist yet.")
 
     def _run_game(self) -> None:
         try:
             launch_generated_game(Path(self.vars["output_dir"].get()))
-            self._log("Launched generated game (main.py) with the bundled interpreter.")
+            self._log("Launched the generated app (main.py) with the bundled interpreter.", "ok")
+        except FileNotFoundError:
+            messagebox.showinfo(APP_NAME, "No generated main.py in the output folder yet — run Generate first.")
         except Exception as exc:
             messagebox.showerror(APP_NAME, str(exc))
 
     def _on_close(self) -> None:
         if self.controller.running:
-            if not messagebox.askyesno(APP_NAME, "A run is in progress. Stop it and quit? (State is saved.)"):
+            if not messagebox.askyesno(APP_NAME, "A run is in progress. Stop it and quit? (Its state is saved.)"):
                 return
             self.controller.stop()
             self.controller.thread.join(timeout=5)
         self.destroy()
 
-    # ------------------------------------------------------------------ event handling
+    # ------------------------------------------------------------------ events from the worker
     def _poll(self) -> None:
         for kind, data in self.controller.drain():
             self._handle(kind, data)
+        if self.controller.running:
+            self._update_status()
         self.after(POLL_MS, self._poll)
 
     def _handle(self, kind: str, d: dict[str, Any]) -> None:
         if kind == "log":
-            self._log(d["text"])
+            text = d["text"]
+            tag = "phase" if text.startswith("===") else "model" if text.startswith("model:") else "info"
+            if text.startswith("verify:"):
+                tag = "ok" if "PASSED" in text else "err"
+            self._log(text, tag)
         elif kind == "phase":
-            self._set_phase(d["phase"])
+            self._on_phase(d["phase"])
         elif kind == "tool_call":
-            self._log(f"→ {d['summary']}")
+            self._log(f"→ {d['summary']}", "tool")
         elif kind == "tool_result":
             first = d["preview"].splitlines()[0][:160] if d["preview"] else ""
-            self._log(f"   {'✓' if d['ok'] else '✗'} {first}")
+            self._log(f"    {'✓' if d['ok'] else '✗'} {first}", "ok" if d["ok"] else "err")
         elif kind == "todos":
-            self._set_text("Todos", "\n".join(f"{TODO_ICON[t['status']]} {t['content']}" for t in d["todos"]))
+            self._set_text("Todos", "\n".join(f"{TODO_ICON[t['status']]}  {t['content']}" for t in d["todos"]))
         elif kind == "usage":
-            self.usage_label.configure(text=self._usage_text(d))
+            self._update_status(d)
         elif kind == "verify":
-            self._log(("✓ VERIFY PASSED\n" if d["ok"] else "✗ VERIFY FAILED\n") + d["report"][-1500:])
+            self._set_phase("verify", "done" if d["ok"] else "failed")
+            self._log(("✓ VERIFY PASSED\n" if d["ok"] else "✗ VERIFY FAILED\n") + d["report"][-1500:],
+                      "ok" if d["ok"] else "err")
         elif kind == "error":
-            self._log(f"ERROR: {d['text']}")
+            self._log(f"ERROR: {d['text']}", "err")
             messagebox.showerror(APP_NAME, d["text"])
         elif kind == "approve":
             req = d["request"]
@@ -358,59 +516,89 @@ class AgentApp(ctk.CTk):
         elif kind == "done":
             self._finish(d["result"])
 
+    def _on_phase(self, phase: str) -> None:
+        for p, s in self.phase_status.items():
+            if s == "running" and p != phase:
+                self._set_phase(p, "done")
+        if phase == "report" and self.phase_status.get("fix") == "pending":
+            self._set_phase("fix", "skipped")
+        self._set_phase(phase, "running")
+
     def _finish(self, result: dict[str, Any]) -> None:
         self._set_running(False)
         status = result.get("status")
-        self._log(f"=== Run {status}{': ' + result['reason'] if result.get('reason') else ''} ===")
+        end_state = {"completed": "done", "stopped": "stopped"}.get(status, "failed")
+        for p, s in self.phase_status.items():
+            if s == "running":
+                self._set_phase(p, end_state)
+        reason = f": {result['reason']}" if result.get("reason") else ""
+        self._log(f"=== Run {status}{reason} ===", "ok" if status == "completed" else "err")
         report = result.get("report_path")
         if report and Path(report).exists():
             self._set_text("Report", Path(report).read_text(encoding="utf-8"))
-        if self._current_phase in self.phase_labels:
-            self.phase_labels[self._current_phase].configure(fg_color=DONE if status == "completed" else FAILED)
-        self._current_phase = None
+        self._update_status(final=True)
+        self._refresh_badge()
 
     # ------------------------------------------------------------------ view helpers
-    def _reset_view(self, replay: bool, mock: bool) -> None:
+    def phase_state(self, phase: str) -> str:
+        return self.phase_status.get(phase, "pending")
+
+    def _set_phase(self, phase: str, status: str) -> None:
+        if phase not in self.phase_widgets:
+            return
+        self.phase_status[phase] = status
+        box, name, caption = self.phase_widgets[phase]
+        bg, fg = T.PHASE_COLORS[status]
+        box.configure(fg_color=bg)
+        name.configure(text_color=fg)
+        caption.configure(text=T.PHASE_CAPTION[status], text_color=fg)
+
+    def _reset_phases(self) -> None:
+        for p in PHASES:
+            self._set_phase(p, "pending")
+
+    def _reset_view(self) -> None:
         for name in ("Log", "Todos", "Report"):
             self._set_text(name, "")
-        self._current_phase = None
-        for lbl in self.phase_labels.values():
-            lbl.configure(fg_color=IDLE)
-        banner, color = "", None
-        if replay:
-            banner, color = f"⏵ {REPLAY_LABEL} — no API calls", "#c80"
-        elif mock:
-            banner, color = "MOCK MODE — scripted demo, no API calls", "#c80"
-        self.mode_banner.configure(text=banner, text_color=color)
-        self.usage_label.configure(text=self._usage_text())
+        self._reset_phases()
+        self._last_usage = None
+        banners = {"replay": f"⏵ {REPLAY_LABEL} — no API calls are made",
+                   "mock": "MOCK MODE — scripted demo, no API calls"}
+        self.mode_banner.configure(text=banners.get(self._run_kind, ""))
+        self._refresh_badge()
         self.tabs.set("Log")
-
-    def _set_phase(self, phase: str) -> None:
-        """Previous phase turns green, the current one orange."""
-        if self._current_phase in self.phase_labels:
-            self.phase_labels[self._current_phase].configure(fg_color=DONE)
-        self._current_phase = phase
-        if phase in self.phase_labels:
-            self.phase_labels[phase].configure(fg_color=ACTIVE)
 
     def _set_running(self, running: bool) -> None:
         for b in (self.generate_btn, self.resume_btn, self.replay_btn, self.test_btn, self.run_game_btn):
             b.configure(state="disabled" if running else "normal")
-        self.stop_btn.configure(state="normal" if running else "disabled", fg_color="#a33" if running else "gray50")
+        self.stop_btn.configure(state="normal" if running else "disabled",
+                                fg_color=T.ERR if running else T.NEUTRAL_BTN,
+                                text_color="#FFFFFF" if running else T.TEXT)
 
-    @staticmethod
-    def _usage_text(d: dict[str, Any] | None = None) -> str:
+    def _update_status(self, d: dict[str, Any] | None = None, final: bool = False) -> None:
+        if d:
+            self._last_usage = d
+        d = self._last_usage
+        max_req, max_cost = self._max
+        elapsed = int(time.time() - self._started_at) if self._started_at else 0
         if not d:
-            return "requests 0 | tokens 0 (cache hit 0) | cost $0.0000"
-        u = d["usage"]
-        total = u["prompt_tokens"] + u["completion_tokens"]
-        return (f"requests {d['requests']} | tokens {total:,} (prompt {u['prompt_tokens']:,}, cache hit "
-                f"{u['cache_hit_tokens']:,}, output {u['completion_tokens']:,}) | cost ${d['cost_usd']:.4f}")
+            text = f"Requests 0 / {max_req}   ·   Tokens 0   ·   Cost $0.0000 / ${max_cost:.2f}"
+        else:
+            u = d["usage"]
+            total = u["prompt_tokens"] + u["completion_tokens"]
+            hit = 100 * u["cache_hit_tokens"] / u["prompt_tokens"] if u["prompt_tokens"] else 0
+            text = (f"Requests {d['requests']} / {max_req}   ·   Tokens {total:,} (cache hit {hit:.0f}%)   ·   "
+                    f"Cost ${d['cost_usd']:.4f} / ${max_cost:.2f}")
+        if elapsed:
+            text += f"   ·   {elapsed // 60}:{elapsed % 60:02d}"
+        self.status.configure(text=text)
+        if final:
+            self._started_at = 0.0
 
-    def _log(self, text: str) -> None:
+    def _log(self, text: str, tag: str = "info") -> None:
         box = self.text["Log"]
         box.configure(state="normal")
-        box.insert("end", text + "\n")
+        box.insert("end", text + "\n", tag)
         box.see("end")
         box.configure(state="disabled")
 

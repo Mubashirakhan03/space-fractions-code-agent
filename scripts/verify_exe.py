@@ -40,17 +40,41 @@ def run(args: list[str], cwd: Path = WORK, timeout: int = 300) -> tuple[int, str
     return code, out.read_text(encoding="utf-8", errors="replace") if out.exists() else ""
 
 
+def windows_titled(title: str) -> set[int]:
+    """Handles of all top-level windows with exactly this title."""
+    found: set[int] = set()
+    user32 = ctypes.windll.user32
+
+    @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+    def callback(hwnd, _):
+        buf = ctypes.create_unicode_buffer(256)
+        user32.GetWindowTextW(hwnd, buf, 256)
+        if buf.value == title:
+            found.add(hwnd)
+        return True
+
+    user32.EnumWindows(callback, 0)
+    return found
+
+
 def window_appears(args: list[str], title: str, cwd: Path = WORK, wait: float = 25) -> bool:
+    """True if a NEW window with `title` appears (windows already open, e.g. the user's, are ignored)."""
+    before = windows_titled(title)
     proc = subprocess.Popen([str(EXE), *args], cwd=cwd, env=no_python_env())
+    window_pid = ctypes.c_ulong(0)
     try:
         end = time.time() + wait
         while time.time() < end:
-            if ctypes.windll.user32.FindWindowW(None, title):
+            new = windows_titled(title) - before
+            if new:
+                ctypes.windll.user32.GetWindowThreadProcessId(next(iter(new)), ctypes.byref(window_pid))
                 return True
             time.sleep(0.5)
         return False
     finally:
-        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
+        # one-file exes run as bootloader + child; kill both trees so nothing is left running
+        for pid in {proc.pid, window_pid.value} - {0}:
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], capture_output=True)
 
 
 def main() -> int:

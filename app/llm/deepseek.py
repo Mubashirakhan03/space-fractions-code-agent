@@ -21,8 +21,8 @@ DEEPSEEK_MODEL = "deepseek-v4-pro"
 RETRYABLE_STATUS = {429, 500, 502, 503}
 FRIENDLY = {
     400: "Bad request format (400).",
-    401: "Authentication failed (401): check your DeepSeek API key.",
-    402: "Insufficient balance (402): add balance on platform.deepseek.com.",
+    401: "Invalid API key (401) — DeepSeek keys start with sk-. Check it on platform.deepseek.com → API keys.",
+    402: "Insufficient balance (402) — please top up on platform.deepseek.com.",
     422: "Invalid parameters (422).",
     429: "Rate limit reached (429): waiting and retrying.",
     500: "DeepSeek server error (500).",
