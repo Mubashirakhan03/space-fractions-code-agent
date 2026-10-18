@@ -1,0 +1,212 @@
+FAILED
+..................................E.E...E.E...E                          [100%]
+=================================== ERRORS ====================================
+___________________ ERROR at teardown of test_intro_screen ____________________
+
+tk_root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-46/test_intro_screen0')
+
+    @pytest.fixture
+    def app(tk_root, tmp_path):
+        from ui.app import create_app
+        a = create_app(tk_root, db_path=str(tmp_path / "smoke.db"))
+        tk_root.update_idletasks()
+        yield a
+        # Destroy children of root so a fresh app can be built next test.
+        for child in tk_root.winfo_children():
+            if isinstance(child, tk_root.__class__):
+                continue
+>           child.destroy()
+
+tests\test_ui_smoke.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python312\Lib\tkinter\__init__.py:2666: in destroy
+    for c in list(self.children.values()): c.destroy()
+                                           ^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:2670: in destroy
+    Misc.destroy(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.widgets.SpaceCanvas object .!introscreen2.!spacecanvas>
+
+    def destroy(self):
+        """Internal function.
+    
+        Delete all Tcl commands created for
+        this widget in the Tcl interpreter."""
+        if self._tclCommands is not None:
+            for name in self._tclCommands:
+>               self.tk.deletecommand(name)
+E               _tkinter.TclError: can't delete Tcl command
+
+C:\Python312\Lib\tkinter\__init__.py:689: TclError
+____________________ ERROR at teardown of test_menu_screen ____________________
+
+tk_root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-46/test_menu_screen0')
+
+    @pytest.fixture
+    def app(tk_root, tmp_path):
+        from ui.app import create_app
+        a = create_app(tk_root, db_path=str(tmp_path / "smoke.db"))
+        tk_root.update_idletasks()
+        yield a
+        # Destroy children of root so a fresh app can be built next test.
+        for child in tk_root.winfo_children():
+            if isinstance(child, tk_root.__class__):
+                continue
+>           child.destroy()
+
+tests\test_ui_smoke.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python312\Lib\tkinter\__init__.py:2670: in destroy
+    Misc.destroy(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.intro_screen.IntroScreen object .!introscreen2>
+
+    def destroy(self):
+        """Internal function.
+    
+        Delete all Tcl commands created for
+        this widget in the Tcl interpreter."""
+        if self._tclCommands is not None:
+            for name in self._tclCommands:
+>               self.tk.deletecommand(name)
+E               _tkinter.TclError: can't delete Tcl command
+
+C:\Python312\Lib\tkinter\__init__.py:689: TclError
+___________ ERROR at teardown of test_question_answer_input_cleared ___________
+
+tk_root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-46/test_question_answer_input_cle0')
+
+    @pytest.fixture
+    def app(tk_root, tmp_path):
+        from ui.app import create_app
+        a = create_app(tk_root, db_path=str(tmp_path / "smoke.db"))
+        tk_root.update_idletasks()
+        yield a
+        # Destroy children of root so a fresh app can be built next test.
+        for child in tk_root.winfo_children():
+            if isinstance(child, tk_root.__class__):
+                continue
+>           child.destroy()
+
+tests\test_ui_smoke.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python312\Lib\tkinter\__init__.py:2666: in destroy
+    for c in list(self.children.values()): c.destroy()
+                                           ^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:2670: in destroy
+    Misc.destroy(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.widgets.SpaceCanvas object .!introscreen6.!spacecanvas>
+
+    def destroy(self):
+        """Internal function.
+    
+        Delete all Tcl commands created for
+        this widget in the Tcl interpreter."""
+        if self._tclCommands is not None:
+            for name in self._tclCommands:
+>               self.tk.deletecommand(name)
+E               _tkinter.TclError: can't delete Tcl command
+
+C:\Python312\Lib\tkinter\__init__.py:689: TclError
+___________________ ERROR at teardown of test_pause_overlay ___________________
+
+tk_root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-46/test_pause_overlay0')
+
+    @pytest.fixture
+    def app(tk_root, tmp_path):
+        from ui.app import create_app
+        a = create_app(tk_root, db_path=str(tmp_path / "smoke.db"))
+        tk_root.update_idletasks()
+        yield a
+        # Destroy children of root so a fresh app can be built next test.
+        for child in tk_root.winfo_children():
+            if isinstance(child, tk_root.__class__):
+                continue
+>           child.destroy()
+
+tests\test_ui_smoke.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python312\Lib\tkinter\__init__.py:2670: in destroy
+    Misc.destroy(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.intro_screen.IntroScreen object .!introscreen6>
+
+    def destroy(self):
+        """Internal function.
+    
+        Delete all Tcl commands created for
+        this widget in the Tcl interpreter."""
+        if self._tclCommands is not None:
+            for name in self._tclCommands:
+>               self.tk.deletecommand(name)
+E               _tkinter.TclError: can't delete Tcl command
+
+C:\Python312\Lib\tkinter\__init__.py:689: TclError
+____________________ ERROR at teardown of test_view_score _____________________
+
+    @pytest.fixture(scope="session")
+    def tk_root():
+        import tkinter as tk
+    
+        last_err = None
+        for _ in range(3):
+            try:
+                root = tk.Tk()
+                break
+            except tk.TclError as e:
+                last_err = e
+                import time
+                time.sleep(0.2)
+        else:
+            pytest.skip(f"tk.Tk unavailable: {last_err}")
+        root.withdraw()
+        yield root
+        # Cancel pending callbacks and destroy the root once.
+        pending = root.tk.call("after", "info")
+        for p in pending:
+            try:
+                root.after_cancel(p)
+            except tk.TclError:
+                pass
+>       root.destroy()
+
+tests\test_ui_smoke.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python312\Lib\tkinter\__init__.py:2389: in destroy
+    for c in list(self.children.values()): c.destroy()
+                                           ^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:2666: in destroy
+    for c in list(self.children.values()): c.destroy()
+                                           ^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:2670: in destroy
+    Misc.destroy(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.widgets.SpaceCanvas object .!namescreen6.!spacecanvas>
+
+    def destroy(self):
+        """Internal function.
+    
+        Delete all Tcl commands created for
+        this widget in the Tcl interpreter."""
+        if self._tclCommands is not None:
+            for name in self._tclCommands:
+>               self.tk.deletecommand(name)
+E               _tkinter.TclError: can't delete Tcl command
+
+C:\Python312\Lib\tkinter\__init__.py:689: TclError
+=========================== short test summary info ===========================
+ERROR tests\test_ui_smoke.py::test_intro_screen - _tkinter.TclError: can't de...
+ERROR tests\test_ui_smoke.py::test_menu_screen - _tkinter.TclError: can't del...
+ERROR tests\test_ui_smoke.py::test_question_answer_input_cleared - _tkinter.T...
+ERROR tests\test_ui_smoke.py::test_pause_overlay - _tkinter.TclError: can't d...
+ERROR tests\test_users.py::test_view_score - _tkinter.TclError: can't delete ...

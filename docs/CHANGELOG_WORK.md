@@ -130,3 +130,15 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Tests: 98 passed, 1 skipped. Frozen exe: demo UI tests 8/8 runs green; verify_exe 2/2 ALL PASSED.
 - Screenshots: `docs/screenshots/gui_success.png`, `mock_demo_feedback.png`, `mock_demo_end.png`.
 - Rollback: `git revert <this hash>`.
+
+### 2026-10-19 — Phase 5, real run 1 + agent improvements
+- `scripts/run_agent_cli.py`: headless run (same Agent as the GUI) printing one line per event.
+- Balance check via `GET /user/balance` (no tokens): $2.00 topped up.
+- Real run 1 (deepseek-v4-pro, profile space_fractions): 40 requests → stopped at cap → Resume +4 → completed,
+  VERIFY PASSED, $0.103 total. Saved as `examples/space_fractions_run1/` (+ CLI logs). Details: `docs/REAL_RUNS.md`.
+- Visual check found canvas drawn with `winfo_width()==1` (stars collapsed, title/question text invisible).
+  NOT fixed by hand. Instead: `app/agent/ui_probe.py` (harness UI layout probe in Verify), new UI rules in the system
+  prompt (<Configure> drawing, create_app/screens/show contract), batch-edit rule; mock demo follows the contract.
+  Tests: `tests/test_ui_probe.py` (bad layout flagged, good passes, crashing screen flagged, no-UI skipped).
+- Tests: 102 passed, 1 skipped.
+- Rollback: `git revert <this hash>`; run-1 folder can be deleted without affecting the agent.

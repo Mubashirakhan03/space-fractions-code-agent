@@ -1,0 +1,13 @@
+requirement,use_case_or_feature,component,file,test
+FR-1,Play Game,GameComponent,game/game.py;ui/menu_screen.py;ui/question_screen.py,tests/test_game.py;tests/test_ui_smoke.py
+FR-2,Introductory movie,GameComponent,ui/intro_screen.py;ui/widgets.py,tests/test_ui_smoke.py::test_intro_screen
+FR-3,Main menu,GameComponent,ui/menu_screen.py,tests/test_ui_smoke.py::test_menu_screen
+FR-4,Series of fraction questions,QuestionComponent,questions/checker.py;ui/question_screen.py,tests/test_questions.py;tests/test_ui_smoke.py
+FR-5,Ending scene with feedback,GameComponent,game/game.py;ui/end_screen.py,tests/test_game.py;tests/test_ui_smoke.py
+FR-6,View Score (High Scores),UserComponent,users/repository.py;ui/highscores_screen.py,tests/test_scores.py;tests/test_ui_smoke.py
+FR-7,View Help,GameComponent,ui/help_screen.py,tests/test_ui_smoke.py
+FR-8,Update Questions,AdminComponent,admin/admin.py;ui/admin_screen.py,tests/test_admin.py;tests/test_ui_smoke.py
+FR-9,Pause/Resume state machine,GameComponent,game/state.py;ui/pause_overlay.py,tests/test_state.py;tests/test_ui_smoke.py
+ASR-1,Data durability (question persistence),QuestionComponent,sql/schema.sql;questions/repository.py;data/questions.json,tests/test_persistence.py
+ASR-2,Security (admin PIN, local auth),UserComponent;AdminComponent,admin/admin.py;ui/admin_screen.py,tests/test_admin.py::test_verify_pin
+NFR-1,Performance (responsive in-process),GameComponent,game/game.py;questions/checker.py,tests/test_game.py;tests/test_questions.py

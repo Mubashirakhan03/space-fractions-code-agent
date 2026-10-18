@@ -81,7 +81,11 @@ class DemoApp:
         self.panel = tk.Frame(root, bg=PANEL, padx=50, pady=36)
         self.panel.place(relx=0.5, rely=0.52, anchor="center")
         self.screen = ""
+        self.screens = {{"question": self.panel, "end": self.panel}}  # create_app contract: screens + show()
         self.start()
+
+    def show(self, name):
+        {{"question": self.start, "end": self.show_end}}[name]()
 
     def _centre(self, w, h):
         sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()

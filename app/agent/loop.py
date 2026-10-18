@@ -26,6 +26,7 @@ from app.agent.profile import TaskProfile
 from app.agent.report import REQUIRED_FILES, missing_deliverables, write_report
 from app.agent.state import RunState
 from app.agent.transcript import Transcript
+from app.agent.ui_probe import run_ui_probe
 from app.config import AppConfig
 from app.llm.pricing import estimate_cost
 from app.llm.provider import LLMError, LLMProvider, LLMResponse
@@ -303,6 +304,10 @@ class Agent:
             t_ok, t_out = self.runner.run_pytest("tests")
             parts.append(("TESTS PASSED:\n" if t_ok else "TESTS FAILED:\n") + _tail(t_out, 6000))
             ok &= t_ok
+        if c_ok:
+            u_ok, u_out = run_ui_probe(self.runner)
+            parts.append(u_out)
+            ok &= u_ok
         report = "\n\n".join(parts)
         self.state.verify_ok, self.state.verify_report = ok, report
         self.transcript.append("verify", ok=ok, report=report[:8000])

@@ -36,8 +36,10 @@ RULES_TEMPLATE = """# Rules
 3. Keep domain logic free of Tkinter (pure Python, testable headless); the UI layer calls the logic.
 4. Prefer edit_file (exact, unique search-and-replace) over rewriting a file. You must read_file a
    whole file before editing it. Create new files with write_files, several per call.
-5. Be request-efficient: every model call costs money. Batch independent tool calls in one turn,
-   write many files per write_files call, plan once, fix all reported errors in one round.
+5. Be request-efficient: every model call costs money and runs have a request limit. Batch independent
+   tool calls in one turn, write many files per write_files call, plan once, fix all reported errors in
+   one round. When several files need changes, send ALL the edit_file calls in ONE reply (several tool
+   calls in the same message), never one edit per reply.
 6. Paths are relative to the project root. The folder agent_run/ belongs to the harness (read-only).
 7. Never run main.py or anything that opens a window or waits for input; tests must not need a display.
 8. Keep AGENT_NOTES.md (your memory file) up to date with key decisions when they change.
@@ -55,8 +57,15 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Forms: the main input has keyboard focus, Enter submits, the input is cleared automatically after each
   submission, and feedback is clear and coloured (green = success, red = error) in the window itself.
   Use messagebox only for confirmations.
-- Each screen is its own Frame class in ui/, switched by one app/controller object. Expose a factory such as
-  `create_app(root) -> App` that builds everything WITHOUT calling mainloop(), so tests can build the UI.
+- Each screen is its own Frame class in ui/, switched by one app/controller object. Contract (the harness
+  uses it): ui/app.py defines `create_app(root) -> App`, which builds everything WITHOUT calling mainloop();
+  App has `screens: dict[str, tk.Frame]` and `show(name)`. Every screen must render safely when shown
+  directly (e.g. the end or question screen with no game in progress shows defaults instead of crashing).
+- Canvas drawing: winfo_width()/winfo_height() return 1 until the window is actually shown, so NEVER compute
+  positions from them at construction time. Bind <Configure> on the canvas and (re)draw backgrounds, stars,
+  planets and canvas text from event.width/event.height; lay out normal widgets with pack/grid or
+  place(relx=…, rely=…). The harness opens the real window, shows every screen and FAILS verification if
+  widgets or canvas items are outside the visible area or squeezed into a corner.
 - Required test tests/test_ui_smoke.py (pytest): create ONE tk.Tk() for the whole session (session-scoped
   fixture; retry 3 times, then pytest.skip on tk.TclError). Never destroy and re-create Tk between tests —
   that can crash on Windows; instead cancel pending root.after() callbacks and destroy the root's children
