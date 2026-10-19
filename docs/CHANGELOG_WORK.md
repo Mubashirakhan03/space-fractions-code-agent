@@ -152,3 +152,9 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - `submit_plan` rejects design_decisions without a "UI design brief" section.
 - Tests: generic prompt contains none of 21 Space-Fractions words (whole-word check, stdlib module names excluded);
   plan/contract/implement mention the brief; submit_plan brief enforcement. 120 passed, 1 skipped.
+
+### 2026-10-19 — Phase 5, real run 2 (final example)
+- Run 2 with the improved agent: completed on the first attempt, VERIFY PASSED + UI PROBE OK on 9 screens,
+  27 requests, $0.096 (balance $1.89 → $1.72). Output: `examples/space_fractions_generated/` (+ `agent_run/cli_log.txt`).
+- Screenshots of every screen: `docs/screenshots/run2/`. Findings (incl. the feedback-shows-next-answer logic bug,
+  left unedited) in `docs/REAL_RUNS.md`. `.gitignore`: `examples/**/*.db` (created when the generated app runs).

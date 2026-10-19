@@ -34,4 +34,32 @@ Agent improvements made in response (generic, not Space-Fractions specific):
   `screens` / `show` contract is now explicit. Every screen must render safely when shown directly.
 - Rule 5: send all `edit_file` calls for several files in ONE reply.
 
-## Run 2 — pending (needs the user's approval)
+## Run 2 — 2026-10-18 20:12 UTC (off-peak) → `examples/space_fractions_generated/` (final)
+
+Same inputs, profile and limits ($1.00 / 60 requests), with the improved agent (UI design brief, UI layout probe,
+<Configure> drawing rule, batch-edit rule).
+
+| Item | Value |
+|---|---|
+| Result | completed **on the first attempt**: VERIFY PASSED (compile + tests) and **UI PROBE OK on all 9 screens** (intro, menu, name, question, end, high_scores, help, admin + startup), 0 fix rounds, no resume needed |
+| Requests | **27** (run 1: 44) |
+| Tokens | 902,320 prompt (98 % cache hits), 32,561 completion |
+| Cost | **$0.096** estimated by the agent; account balance went from $1.89 to $1.72 |
+| Recovered errors | one malformed tool-call JSON ("Invalid JSON arguments… re-send") and one missing `path` argument. Both came back to the model as `is_error` results and were corrected |
+| UI design brief | DESIGN_DECISIONS.md §5: users (11–12-year-olds + admin), mood, 11-colour hex palette with roles, font sizes, layout (<Configure> redraw), 9 screens |
+
+Screenshots of every screen: `docs/screenshots/run2/` (intro, menu, name, high scores, help, admin, question,
+feedback, pause, end). Taken from a copy of the folder with Win32 PrintWindow, the way `main.py` opens it (maximized).
+
+Honest review of the result:
+- ✅ Animated space intro with title and Skip; menu with icons; name entry; 2×2 multiple-choice question screen
+  with progress bar, score and Pause; pause overlay; end screen with "Congratulations, <name>!", 3 stars and
+  confetti; SQLite high scores; admin list with Edit / ✕ / Add Question.
+- ✅ Input is cleared automatically after an answer; coloured feedback; the next question follows after a delay.
+- ⚠️ **Logic bug:** after a wrong answer the feedback shows the **next** question's answer ("Not quite — the
+  answer is 2/3" for a question whose answer is 1/2), because the game advances before the message is built.
+  The generated tests did not cover this. It is left as generated (no hand edits) and recorded here.
+- ⚠️ Help screen: at 125 % display scaling the "← Menu" button overlaps the last line of help text.
+- ℹ️ Maximizing is done in `main.py`, not in `create_app()`. Opening via `create_app` alone gives a normal window.
+
+Total real-API spend for runs 1 + 2: about **$0.28** of the $2.00 top-up.

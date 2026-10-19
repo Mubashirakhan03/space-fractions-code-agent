@@ -1,0 +1,13 @@
+requirement,use_case_or_feature,component,file,test
+ASR-1,Data durability (question persistence),QuestionComponent,questions/repository.py + sql/schema.sql,tests/test_persistence.py::test_add_update_delete
+ASR-2,Authn/authz (admin gating),AdminComponent,admin/admin.py + ui/admin_screen.py,tests/test_users.py::test_admin_update_questions
+FR-1,Play game,GameComponent,game/game.py + ui/question_screen.py,tests/test_game.py::test_correct_answer_increments_score
+FR-1,Play game (API Play),GameComponent,game/game.py (Game.play),tests/test_users.py::test_user_play_and_score
+NFR-1,Performance (responsive input),GameComponent,ui/question_screen.py (direct calls),tests/test_ui_smoke.py::test_question_input_cleared_after_answer
+(implied),Introductory movie,GameComponent/UI,ui/intro_screen.py + ui/space_canvas.py,tests/test_ui_smoke.py::test_all_screens_have_title
+(implied),Main menu,UI,ui/menu_screen.py,tests/test_ui_smoke.py::test_menu_buttons
+(implied),Series of fraction questions,QuestionComponent,questions/* + ui/question_screen.py,tests/test_questions.py::test_equivalent_fraction_equality
+(implied),Ending scene with feedback,GameComponent/UI,ui/end_screen.py,tests/test_game.py::test_percentage_and_stars
+(use case),View Score,UserComponent,ui/high_scores_screen.py,tests/test_ui_smoke.py::test_all_screens_have_title
+(use case),View Help,UI,ui/help_screen.py,tests/test_ui_smoke.py::test_all_screens_have_title
+(use case),Update Questions,AdminComponent,admin/admin.py + ui/admin_screen.py,tests/test_users.py::test_admin_delete
