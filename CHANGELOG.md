@@ -9,6 +9,10 @@
 - "Create a new run folder" no longer nests runs: if the chosen folder is itself a run folder (it holds `agent_run/`
   or has a `run-…` name), the new run is created next to it. The dialog shows the full path.
 - Resume shows the phases completed in the previous session as **done**, not pending.
+- Mock demo end screen: 0–3 stars (0 correct → 0 stars) and a score-dependent message ("Good try! Keep
+  practising" / "Well done!" / "Congratulations!"); confetti only for a full score.
+- Space Fractions profile and the generic prompt: result screens must match the outcome (no praise or positive
+  rating for a zero score).
 - Default max LLM requests per run is now 80 (and the token cap 6M); older saved settings with the old defaults are
   migrated automatically.
 

@@ -143,7 +143,11 @@ Total API spend for all five runs: about **$0.68**.
 
 ## Known limitations
 
-- **Generated game (run 5):** the intro schedules an 8-second auto-advance that Skip does not cancel. A player who
+- **Generated game (run 5):** the end screen title always reads "Congratulations, <name>!", even at 0/10 (the
+  stars (0) and the line below it, "Every astronaut needs practice. Keep going!", do match the score; see
+  [screenshot](docs/screenshots/run5/14_end_zero_score.png)). The old profile asked for that title unconditionally;
+  the profile and the generic prompt now require a score-dependent message and 0–3 stars, but run 5 was generated
+  before that change. The intro schedules an 8-second auto-advance that Skip does not cancel. A player who
   starts a round within 8 s of launching is sent back to the menu once. The choice buttons are left-aligned rather
   than centred, and the intro screen is sparse. LLM output varies from run to run, and earlier runs (`examples/`)
   show different strengths and weaknesses, documented in [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).

@@ -62,7 +62,8 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Large readable fonts: titles 32+ pt, main content 24-28+ pt, buttons and inputs 18+ pt.
 - High-contrast text. Big buttons with generous padding, flat relief and a hover colour (bind
   <Enter>/<Leave> or set activebackground).
-- Where a flow ends (a round, a task, a booking…), show a clear result / summary screen.
+- Where a flow ends (a round, a task, a booking…), show a clear result / summary screen whose message and
+  rating match the actual outcome (no praise and no positive rating for a zero or failing result).
 - Forms: every text input has a clearly visible Submit/Check button next to it, the main input has keyboard
   focus, Enter also submits, the input is cleared automatically after each submission, and feedback is clear
   and coloured (green = success, red = error) in the window itself. Use messagebox only for confirmations.

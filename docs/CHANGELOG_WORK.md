@@ -234,3 +234,12 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - After the user closed the old exe: copied the new build to `dist/`; verify_exe on `dist/SpaceFractionsAgent.exe` 6/6 PASS.
   Import check run INSIDE the frozen exe on a copy of the user's quiz app reports the `centered` ImportError → works
   with the bundled interpreter too. Next: v1.0.1 release (version bump + tag) when the user approves.
+
+### 2026-10-19 — Zero-score end screen (user report on the mock demo)
+- Mock demo (written by Claude, so editing it is allowed): `stars_for` 0–3 (0 correct → 0), new `end_message`
+  (<50 % "Good try! Keep practising", 50–79 % "Well done!", ≥80 % "Congratulations!"), confetti only at 3 stars,
+  percentage shown; demo tests for 0/1/2/3 and a zero-score UI test (8 demo tests pass).
+- `profiles/space_fractions.md`: end screen rule rewritten (score-dependent message, 0–3 stars, test zero and full
+  score). Generic prompt: result message/rating must match the outcome (no praise for zero/failing).
+- Run 5 checked at 0/10 (copy, not edited): title "Congratulations, Ayesha!" (wrong), ☆☆☆ (right), sub-message
+  right → documented as a known limitation (README, REAL_RUNS) + screenshot `run5/14_end_zero_score.png`. No run 6.

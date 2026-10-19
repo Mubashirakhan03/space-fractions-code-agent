@@ -155,6 +155,12 @@ Honest review:
   the script was fast; screenshots were retaken after waiting 9 s.)
 - ⚠️ The choice buttons are left-aligned instead of centred. The intro screen is sparse, with the rocket partly
   hidden at the top.
+- ⚠️ **Zero-score check (added later):** playing all 10 questions wrong gives the title "Congratulations, Ayesha!"
+  with 0 stars and the message "Every astronaut needs practice. Keep going!" (`docs/screenshots/run5/14_end_zero_score.png`).
+  The cause is the old profile text, which asked for a "Congratulations, <name>!" end screen with 1–3 stars in every
+  case. The profile now asks for a score-dependent message (0–49 % "Good try! Keep practising", 50–79 % "Well done!",
+  80 %+ "Congratulations, <name>!") and 0–3 stars with 0 stars for 0 correct answers. A generic prompt rule now says
+  "no praise and no positive rating for a zero or failing result". Run 5's code was left as generated.
 
 ## Summary of all real runs
 

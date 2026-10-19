@@ -31,8 +31,10 @@ Kid-friendly look and feel (players are 11–12 years old; this matters as much 
 - After every answer: big coloured feedback in the window — green "Correct! 🎉" or red
   "Not quite — the answer is 3/4" — the input is CLEARED automatically and the next question appears after
   about a second (no manual clearing, no popup).
-- End screen: big "Congratulations, <name>!", the score and percentage, 1–3 stars earned (by percentage),
-  a short Canvas confetti/star animation, and buttons "Play again" / "Main menu".
+- End screen: the score and percentage, a message that MATCHES the score — 0–49 %: "Good try! Keep practising",
+  50–79 %: "Well done!", 80 %+: "Congratulations, <name>!" — and 0–3 stars by percentage (0 correct answers → 0 stars;
+  never praise or stars for a zero score). Confetti/star animation only for a high score. Buttons "Play again" /
+  "Main menu". Test the zero-score and the full-score end screens.
 - Intro: animated rocket flying across moving stars with the game title, a Skip button, auto-advance.
 - tests/test_ui_smoke.py must build every screen (intro, menu, name entry, question, pause overlay, end,
   high scores, help, admin) and check the answer input is cleared after a submission.

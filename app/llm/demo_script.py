@@ -40,16 +40,28 @@ def check_answer(text: str, expected: Fraction) -> bool:
 
 
 def stars_for(score: int, total: int) -> int:
-    """1-3 stars by percentage."""
+    """0-3 stars by percentage; no correct answers means 0 stars."""
+    if total <= 0 or score <= 0:
+        return 0
+    pct = score / total
+    return 3 if pct >= 0.8 else 2 if pct >= 0.5 else 1
+
+
+def end_message(score: int, total: int) -> str:
+    """The message matches the result: no congratulations for a low score."""
     pct = score / total if total else 0
-    return 3 if pct >= 0.99 else 2 if pct >= 0.6 else 1
+    if pct >= 0.8:
+        return "Congratulations!"
+    if pct >= 0.5:
+        return "Well done!"
+    return "Good try! Keep practising"
 '''
 
 _UI = f'''"""Tkinter UI for the mock demo. create_app(root) builds everything without mainloop()."""
 import random
 import tkinter as tk
 
-from game.logic import QUESTIONS, check_answer, stars_for
+from game.logic import QUESTIONS, check_answer, end_message, stars_for
 
 BANNER = "{BANNER}"
 BG, PANEL, TEXT = "#0B1736", "#13254F", "#FFFFFF"
@@ -156,18 +168,21 @@ class DemoApp:
     def show_end(self):
         self._clear()
         self.screen = "end"
-        stars = stars_for(self.score, len(QUESTIONS))
-        tk.Label(self.panel, text="Congratulations, Space Explorer!", font=("Segoe UI", 36, "bold"), fg=ACCENT,
-                 bg=PANEL).pack()
+        total = len(QUESTIONS)
+        stars = stars_for(self.score, total)
+        self.end_title = tk.Label(self.panel, text=end_message(self.score, total), font=("Segoe UI", 36, "bold"),
+                                  fg=ACCENT, bg=PANEL)
+        self.end_title.pack()
         tk.Label(self.panel, text="★" * stars + "☆" * (3 - stars), font=("Segoe UI", 56), fg="#FFD60A",
                  bg=PANEL).pack(pady=6)
-        tk.Label(self.panel, text=f"You scored {{self.score}} of {{len(QUESTIONS)}}", font=("Segoe UI", 26),
-                 fg=TEXT, bg=PANEL).pack(pady=6)
+        tk.Label(self.panel, text=f"You scored {{self.score}} of {{total}} ({{round(100 * self.score / total)}}%)",
+                 font=("Segoe UI", 26), fg=TEXT, bg=PANEL).pack(pady=6)
         row = tk.Frame(self.panel, bg=PANEL)
         row.pack(pady=18)
         big_button(row, "Play again", self.start).pack(side="left", padx=10)
         big_button(row, "Quit", self.root.destroy).pack(side="left", padx=10)
-        self._confetti(40)
+        if stars == 3:  # celebrate only a high score
+            self._confetti(40)
 
     def _confetti(self, frames):
         c = self.canvas
@@ -213,7 +228,7 @@ if __name__ == "__main__":
 
 _TEST_LOGIC = '''from fractions import Fraction
 
-from game.logic import QUESTIONS, check_answer, stars_for
+from game.logic import QUESTIONS, check_answer, end_message, stars_for
 
 
 def test_equivalent_forms_accepted():
@@ -229,7 +244,15 @@ def test_bad_input_rejected():
 
 def test_stars_and_questions():
     assert len(QUESTIONS) == 3
-    assert [stars_for(s, 3) for s in (0, 2, 3)] == [1, 2, 3]
+    assert [stars_for(s, 3) for s in (0, 1, 2, 3)] == [0, 1, 2, 3]   # zero correct -> zero stars
+    assert stars_for(0, 0) == 0
+
+
+def test_message_matches_score():
+    assert end_message(0, 3) == "Good try! Keep practising"
+    assert end_message(1, 3) == "Good try! Keep practising"
+    assert end_message(2, 3) == "Well done!"
+    assert end_message(3, 3) == "Congratulations!"
 '''
 
 _TEST_UI = '''"""Headless UI smoke test: builds every screen without mainloop()."""
@@ -298,6 +321,13 @@ def test_end_screen(app):
     app.index = len(QUESTIONS) - 1
     app.next_question()
     assert app.screen == "end"
+
+
+def test_zero_score_gets_no_congratulations(app):
+    app.score = 0
+    app.index = len(QUESTIONS) - 1
+    app.next_question()
+    assert app.end_title.cget("text") == "Good try! Keep practising"
 '''
 
 _DESIGN = f"""# DESIGN_DECISIONS.md ({BANNER})
