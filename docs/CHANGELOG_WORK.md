@@ -231,3 +231,6 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Resume: agent emits `resume` event; GUI marks completed phases done.
 - Defaults: max_requests 80, config migration (CONFIG_VERSION 2).
 - Tests: test_import_check.py, sibling folders, resume phases, config migration. 139 passed, 1 skipped.
+- After the user closed the old exe: copied the new build to `dist/`; verify_exe on `dist/SpaceFractionsAgent.exe` 6/6 PASS.
+  Import check run INSIDE the frozen exe on a copy of the user's quiz app reports the `centered` ImportError → works
+  with the bundled interpreter too. Next: v1.0.1 release (version bump + tag) when the user approves.
