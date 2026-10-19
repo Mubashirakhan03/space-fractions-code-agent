@@ -1,0 +1,1 @@
+# AdminComponent / Admin domain object.

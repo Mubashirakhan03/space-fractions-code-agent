@@ -1,0 +1,18 @@
+requirement,use_case_or_feature,component,file,test
+FR-1,Play game,GameComponent,game/game.py,tests/test_game.py
+FR-1,Play game,GameComponent,game/game_service.py,tests/test_sequences.py
+FR-1,Play game,GameComponent,ui/question_screen.py,tests/test_ui_smoke.py
+FR-2,Introductory movie,GameComponent,ui/intro.py,tests/test_ui_smoke.py
+FR-3,Main menu,GameComponent,ui/menu.py,tests/test_ui_smoke.py
+FR-4,Series of fraction questions,QuestionComponent,questions/question.py,tests/test_questions.py
+FR-5,Ending scene with feedback,GameComponent,ui/end_screen.py,tests/test_ui_smoke.py
+FR-6,Update Questions,AdminComponent,admin/admin.py,tests/test_admin.py
+FR-6,Update Questions,AdminComponent,ui/admin_screen.py,tests/test_ui_smoke.py
+FR-7,View Score,UserComponent,users/user.py,tests/test_users.py
+FR-7,View Score,UserComponent,ui/high_scores.py,tests/test_persistence.py
+FR-8,View Help,GameComponent,ui/help_screen.py,tests/test_ui_smoke.py
+FR-9,Player name entry,UserComponent,ui/name_entry.py,tests/test_ui_smoke.py
+FR-10,Pause/Resume,GameComponent,game/game_state.py,tests/test_state_machine.py
+ASR-1,Data durability,QuestionComponent,sql/schema.sql,tests/test_persistence.py
+ASR-2,Security (local),AdminComponent,admin/admin.py,tests/test_admin.py
+NFR-1,Performance responsiveness,GameComponent,questions/question.py,tests/test_questions.py

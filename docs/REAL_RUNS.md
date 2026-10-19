@@ -63,3 +63,40 @@ Honest review of the result:
 - ℹ️ Maximizing is done in `main.py`, not in `create_app()`. Opening via `create_app` alone gives a normal window.
 
 Total real-API spend for runs 1 + 2: about **$0.28** of the $2.00 top-up.
+
+## Run 3 — 2026-10-19 10:09 UTC (15:09 PKT, off-peak) → `examples/space_fractions_run3/`
+
+Agent changes since run 2: rule 10 (build user-visible messages from values saved BEFORE changing state, test the
+wrong-input path), the UI smoke test must cover a correct and a wrong submission, buttons must never cover text,
+and the probe now checks button-over-text overlap and fails on a broken `ui/app.py`.
+
+| Item | Value |
+|---|---|
+| Result | completed. Verify FAILED once: the UI probe found the "Main Menu" button **outside the window** on the Scores and Help screens, plus an empty startup view. **The agent fixed this itself in 1 fix round.** Then VERIFY PASSED and UI PROBE OK on all 9 screens |
+| Requests | 54 (cap 60) |
+| Tokens | 1,981,416 prompt (99 % cache hits), 38,384 completion |
+| Cost | **$0.131** estimated; balance $1.72 → $1.59 |
+
+How the agent fixed the probe findings, all through its tools: it wrote `diag.py` to measure widget positions, ran
+it, then made the Help/Scores text scrollable so the buttons moved inside the window. It made `create_app` show
+the intro, re-ran compile and tests, and removed its diagnostic files.
+
+Screenshots: `docs/screenshots/run3/`. They were taken while playing through the real flow with the game's own timers
+(Skip → name → round → wrong answer → pause → … → end).
+
+Honest review:
+- ✅ **Rule 10 worked.** A wrong answer now shows the SAME question's answer ("Which fraction is equivalent to
+  5/10?" → "Not quite — the answer is 1/2"). The code saves `q = current_question` before `submit()`.
+- ✅ Help is scrollable and the button sits below the text. The end screen ("Congratulations, Ayesha!", ★★★,
+  confetti), the admin form (Type / Prompt / Options / Answer, Save / Delete / New), the name screen, the menu and the
+  intro all look good.
+- ❌ **Freeze bug:** when a *typed* question is followed by a *multiple-choice* one, `_build_answers` calls `grid()`
+  in a frame where the Entry is still `pack`ed. The result is `TclError: cannot use geometry manager grid … managed by
+  pack`, and the round stops advancing. This was reproduced in round 1 (order C, C, T → stuck). Neither the generated
+  tests nor the probe play a whole round with mixed item kinds, so neither caught it.
+- ⚠️ The feedback text sits partly behind the answer buttons. The pause overlay does not cover the answer buttons.
+- ⚠️ Sandbox observation: the agent has no delete tool, so it deleted `diag.py` by running a small Python script
+  through `run_python`. Scripts run with cwd = the output folder and no API keys, but they are ordinary Python. A
+  `delete_file` tool inside the sandbox would remove the need for this.
+
+Total real-API spend for runs 1–3: about **$0.41** of the $2.00 top-up.

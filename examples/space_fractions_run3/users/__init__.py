@@ -1,0 +1,1 @@
+# UserComponent / User domain object.

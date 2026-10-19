@@ -167,3 +167,9 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - UI probe: detects a button covering a text label on the visible screen (flags run 2's Help screen, no false
   positives on its other 8 screens); a broken `ui/app.py` is now a failure instead of "skipped".
 - Tests: 123 passed, 1 skipped.
+
+### 2026-10-19 — Phase 5, real run 3 (after 15:00 PKT, off-peak)
+- Run 3 → `examples/space_fractions_run3/`: probe caught off-window buttons → agent fixed in 1 fix round → VERIFY PASSED
+  + UI PROBE OK; 54 requests, $0.131 (balance $1.59). Rule 10 fixed the wrong-feedback bug; Help overlap fixed.
+- New finding: pack/grid mix freezes the round after a typed→choice transition; feedback text partly behind buttons.
+  Screenshots `docs/screenshots/run3/`; review in `docs/REAL_RUNS.md`. Generated code not edited.
