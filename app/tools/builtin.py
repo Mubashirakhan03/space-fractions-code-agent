@@ -133,12 +133,19 @@ def write_files(ctx: ToolContext, a: dict) -> str:
     if not isinstance(files, list) or not files:
         raise ToolError("files must be a non-empty list of {path, content}.")
     report, failed = [], 0
-    for f in files:
+    for i, f in enumerate(files, start=1):
+        missing = [k for k in ("path", "content") if not isinstance(f, dict) or k not in f]
+        if missing:  # the model sometimes drops "path" after a long "content"
+            failed += 1
+            keys = sorted(f) if isinstance(f, dict) else type(f).__name__
+            report.append(f"FAILED entry #{i}: missing {', '.join(missing)} (got {keys}). Every entry needs BOTH "
+                          "'path' and 'content' — write 'path' FIRST. Re-send this file.")
+            continue
         try:
             report.append(_write(ctx, f["path"], f["content"]))
-        except (ToolError, KeyError, TypeError, Exception) as exc:  # one bad file must not block the rest
+        except Exception as exc:  # one bad file must not block the rest
             failed += 1
-            report.append(f"FAILED {f.get('path') if isinstance(f, dict) else f}: {exc}")
+            report.append(f"FAILED {f['path']}: {exc}")
     if failed == len(files):
         raise ToolError("\n".join(report))
     return "\n".join(report)
@@ -268,7 +275,8 @@ def build_registry(ctx: ToolContext) -> ToolRegistry:
              _obj({"pattern": S, "path": S, "glob": S}, ["pattern"]), search_text, read_only=True),
         Tool("write_file", "Create a new file (or fully rewrite a file you have read). Paths are relative.",
              file_entry, write_file, modes=WORK_MODES),
-        Tool("write_files", "Create several files in ONE call (preferred: saves requests).",
+        Tool("write_files", "Create several files in ONE call (preferred: saves requests). Each entry is "
+             "{\"path\": …, \"content\": …} — always write \"path\" first.",
              _obj({"files": {"type": "array", "items": file_entry}}, ["files"]), write_files, modes=WORK_MODES),
         Tool("edit_file", "Replace an exact, unique string in a file you have read. Prefer this over rewriting.",
              _obj({"path": S, "old_string": S, "new_string": S, "replace_all": {"type": "boolean"}},

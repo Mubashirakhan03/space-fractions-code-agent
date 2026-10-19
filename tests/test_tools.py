@@ -228,3 +228,9 @@ def test_delete_file_is_sandboxed(reg, ctx):
     denied = build_registry(ctx)
     assert "denied" in call(denied, "delete_file", path="pkg/a.py").content
     assert (ctx.sandbox.root / "pkg" / "a.py").exists()
+
+
+def test_write_files_explains_missing_path(reg, ctx):
+    r = call(reg, "write_files", files=[{"path": "ok.py", "content": "x = 1\n"}, {"content": "lost path"}])
+    assert not r.is_error and "wrote ok.py" in r.content
+    assert "FAILED entry #2: missing path" in r.content and "'path' FIRST" in r.content

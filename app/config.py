@@ -24,7 +24,7 @@ class AppConfig:
     max_steps: int = 60  # agent loop iterations
     max_requests: int = 40  # LLM calls per run
     max_cost_usd: float = 1.00
-    max_total_tokens: int = 2_000_000
+    max_total_tokens: int = 6_000_000  # cumulative; ~98 % are cheap cache hits — the cost cap is the real guard
     max_output_tokens: int = 32768  # a write_files batch of several modules needs more than 8K
     fix_rounds: int = 3  # verify → fix cycles
     ask_before_write: bool = False

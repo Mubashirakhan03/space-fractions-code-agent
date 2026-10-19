@@ -141,3 +141,29 @@ TIMER_CRASH = GOOD.replace('''        self.screens = {"menu": self.title, "end":
 def test_probe_reports_tk_callback_errors(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, TIMER_CRASH))
     assert not ok and "a Tk callback raised ZeroDivisionError" in report
+
+
+NO_ROOM = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root):
+        panel = tk.Frame(root, bg="navy", height=300)
+        panel.pack(fill="x")
+        panel.pack_propagate(False)
+        for i in range(8):
+            tk.Button(panel, text=f"Option {i}", font=("Segoe UI", 20)).pack(pady=6)
+        self.screens = {"menu": panel}
+
+    def show(self, name):
+        pass
+
+
+def create_app(root):
+    return App(root)
+'''
+
+
+def test_probe_flags_buttons_without_room(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, NO_ROOM))
+    assert not ok and "is laid out but not shown" in report

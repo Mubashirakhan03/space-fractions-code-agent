@@ -40,8 +40,8 @@ def main() -> int:
     a = ap.parse_args()
 
     cfg = AppConfig(provider="mock" if a.mock else "deepseek", max_cost_usd=a.max_cost, max_requests=a.max_requests,
-                    fix_rounds=a.fix_rounds, max_total_tokens=a.max_tokens, doc_path=a.doc, view_path=a.view, output_dir=a.out,
-                    profile_path=a.profile)
+                    fix_rounds=a.fix_rounds, max_total_tokens=a.max_tokens, doc_path=a.doc, view_path=a.view,
+                    output_dir=a.out, profile_path=a.profile)
     provider = build_provider(cfg)
     spec = build_spec(Path(a.doc), Path(a.view))
     started = time.time()

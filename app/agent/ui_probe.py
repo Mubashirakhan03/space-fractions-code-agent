@@ -129,6 +129,16 @@ def is_ancestor(a, b):
     return False
 
 
+def check_unfitted(label, screen):
+    """A button that is managed (pack/grid/place) inside a visible container but got no room to be shown."""
+    for w in walk(screen):
+        if (w.winfo_class() in ("Button", "TButton") and not w.winfo_ismapped() and w.winfo_manager()
+                and w.master is not None and w.master.winfo_ismapped()):
+            result["problems"].append(
+                f"{label}: button '{text_of(w)[:25]}' is laid out but not shown — there was no room for it in a "
+                f"{root.winfo_width()}x{root.winfo_height()} window. Reduce sizes/padding or let the container grow.")
+
+
 def check_overlaps(label, screen):
     """A button drawn over a text label on the visible screen (e.g. a fixed-position 'Back' over help text)."""
     widgets = [w for w in walk(screen) if w.winfo_ismapped() and text_of(w)]
@@ -162,6 +172,7 @@ for name in list(screens) if isinstance(screens, dict) else []:
     check(f"screen '{name}'")
     if isinstance(screens[name], tk.Misc):
         check_overlaps(f"screen '{name}'", screens[name])
+        check_unfitted(f"screen '{name}'", screens[name])
 
 print("UI_PROBE_RESULT " + json.dumps(result), flush=True)  # report before teardown can fail
 try:
