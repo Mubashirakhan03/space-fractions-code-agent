@@ -83,6 +83,14 @@ UI_QUALITY = """# UI quality rules (any desktop app)
   screen in turn and assert its key widgets exist (title label, main buttons, inputs), exercise one CORRECT
   and one WRONG form submission (input cleared; feedback text names the expected value of the item just
   submitted), then root.destroy(). This catches poor or broken UIs.
+- Geometry managers: NEVER mix pack and grid for widgets that share the same parent container (Tk raises
+  "cannot use geometry manager grid inside … managed by pack" and the screen stops updating). When a screen
+  switches between layouts (e.g. a text input vs. a grid of choice buttons), give each layout its own inner
+  frame, or destroy/forget the previous widgets BEFORE adding the new ones.
+- The UI smoke test must also play ONE complete flow from the start screen to the result screen through the
+  UI's own callbacks, covering every variant the app has (e.g. typed and choice inputs, in an order that
+  switches between them). Pump root.update() for real time so the app's own after() timers run, and record
+  errors with root.report_callback_exception; assert that no Tk callback error occurred.
 - Text-heavy screens: buttons must never cover text. Put long text in a frame laid out with pack/grid (or a
   scrollable Text) ABOVE the button row instead of placing a button at a fixed position over it."""
 
@@ -91,6 +99,9 @@ TOOL_USAGE = """# Tool usage
 - PLAN phase: only read-only tools, update_todos and submit_plan are allowed.
 - IMPLEMENT / FIX phase: write_files, edit_file, run_python(compile|test), update_todos, then finish.
 - Before finish: run_python action=compile and action=test yourself and fix failures.
+- Change project files only with write_files / edit_file / delete_file. run_python scripts are for checks and
+  diagnostics; they must not create, modify or delete project files. Delete temporary helper files with
+  delete_file before finish.
 - Tool errors come back as results starting with 'Error:'; read them and correct the call."""
 
 OUTPUT_CONTRACT = """# Output contract (applies to any input spec)

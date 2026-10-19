@@ -61,6 +61,10 @@ class ReadState:
         with self._lock:
             self._mtimes[full] = os.stat(full).st_mtime_ns
 
+    def forget(self, full: Path) -> None:
+        with self._lock:
+            self._mtimes.pop(full, None)
+
     def has_read(self, full: Path) -> bool:
         with self._lock:
             return full in self._mtimes

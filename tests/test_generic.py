@@ -139,3 +139,9 @@ def test_list_profiles_dev_mode():
 def test_rule_capture_message_data_before_state_change():
     assert "BEFORE you advance or mutate" in prompts.RULES
     assert "wrong-input path" in prompts.RULES and "WRONG form" in prompts.UI_QUALITY
+
+
+def test_rules_from_run3_findings():
+    assert "NEVER mix pack and grid" in prompts.UI_QUALITY
+    assert "ONE complete flow" in prompts.UI_QUALITY and "report_callback_exception" in prompts.UI_QUALITY
+    assert "delete_file" in prompts.TOOL_USAGE and "must not create, modify or delete" in prompts.TOOL_USAGE

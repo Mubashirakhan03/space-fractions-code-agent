@@ -17,8 +17,9 @@ from app.tools.runner import PythonRunner
 PROBE_REL = "agent_run/ui_probe.py"
 
 PROBE_SOURCE = r'''
-import json, sys, tkinter as tk
+import json, sys, time, tkinter as tk
 sys.path.insert(0, ".")
+PUMP_SECONDS = 1.2
 result = {"checked": [], "problems": []}
 try:
     from ui.app import create_app
@@ -28,6 +29,8 @@ except Exception as exc:  # ui/app.py exists (checked by the harness) but cannot
     sys.exit(0)
 
 root = tk.Tk()
+callback_errors = []
+root.report_callback_exception = lambda et, ev, tb: callback_errors.append(f"{et.__name__}: {ev}")
 try:
     app = create_app(root)
 except Exception as exc:
@@ -49,9 +52,20 @@ def walk(widget):
         yield from walk(child)
 
 
-def check(label):
-    for _ in range(3):
+def pump(seconds):
+    """Run the event loop for real time so the app's own after() timers (animations, auto-advance) fire."""
+    end = time.time() + seconds
+    while time.time() < end:
         root.update()
+        time.sleep(0.02)
+
+
+def check(label):
+    before = len(callback_errors)
+    pump(PUMP_SECONDS)
+    for err in callback_errors[before:][:3]:
+        result["problems"].append(f"{label}: a Tk callback raised {err} while the screen was running "
+                                  "(timers/animations/events must not crash)")
     width, height = root.winfo_width(), root.winfo_height()
     ox, oy = root.winfo_rootx(), root.winfo_rooty()
     visible = 0
@@ -159,7 +173,7 @@ except tk.TclError:
 '''
 
 
-def run_ui_probe(runner: PythonRunner, timeout: int = 60) -> tuple[bool, str]:
+def run_ui_probe(runner: PythonRunner, timeout: int = 120) -> tuple[bool, str]:
     """Write and run the probe with the bundled interpreter. Returns (ok, report text)."""
     target = runner.root / PROBE_REL
     target.parent.mkdir(parents=True, exist_ok=True)

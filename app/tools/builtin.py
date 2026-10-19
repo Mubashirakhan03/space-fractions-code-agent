@@ -173,6 +173,21 @@ def edit_file(ctx: ToolContext, a: dict) -> str:
     return f"edited {rel}: replaced {count if a.get('replace_all') else 1} occurrence(s)"
 
 
+def delete_file(ctx: ToolContext, a: dict) -> str:
+    """Delete one file inside the sandbox (e.g. a temporary diagnostic script). Directories are never deleted."""
+    full = ctx.sandbox.resolve(a["path"])
+    ctx.sandbox.check_writable(full)
+    rel = ctx.sandbox.rel(full)
+    if not full.is_file():
+        raise ToolError(f"File not found: {rel}")
+    if ctx.approve_write and not ctx.approve_write(rel, "--- delete this file ---"):
+        raise ToolError(f"The user denied deleting '{rel}'.")
+    full.unlink()
+    ctx.read_state.forget(full)
+    ctx.written.discard(rel)
+    return f"deleted {rel}"
+
+
 # ---------- execution ----------
 
 def run_python(ctx: ToolContext, a: dict) -> str:
@@ -258,6 +273,8 @@ def build_registry(ctx: ToolContext) -> ToolRegistry:
         Tool("edit_file", "Replace an exact, unique string in a file you have read. Prefer this over rewriting.",
              _obj({"path": S, "old_string": S, "new_string": S, "replace_all": {"type": "boolean"}},
                   ["path", "old_string", "new_string"]), edit_file, modes=WORK_MODES),
+        Tool("delete_file", "Delete one project file (e.g. a temporary diagnostic script). Never a directory.",
+             _obj({"path": S}, ["path"]), delete_file, modes=WORK_MODES),
         Tool("run_python", "Run checks with the bundled Python: action='compile' (syntax-check all files), "
              "'test' (pytest, target default 'tests'), or 'script' (run a .py file that terminates; never main.py).",
              _obj({"action": {"type": "string", "enum": ["compile", "test", "script"]}, "target": S,

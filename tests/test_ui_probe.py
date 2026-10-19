@@ -131,3 +131,13 @@ def test_probe_flags_button_covering_text(tmp_path):
 def test_probe_fails_when_ui_module_is_broken(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, "def create_app(root:\n"))
     assert not ok and "failed: SyntaxError" in report
+
+
+TIMER_CRASH = GOOD.replace('''        self.screens = {"menu": self.title, "end": self.title}''',
+                           '''        self.screens = {"menu": self.title, "end": self.title}
+        root.after(200, lambda: 1 / 0)  # a timer that crashes while the screen is running''')
+
+
+def test_probe_reports_tk_callback_errors(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, TIMER_CRASH))
+    assert not ok and "a Tk callback raised ZeroDivisionError" in report

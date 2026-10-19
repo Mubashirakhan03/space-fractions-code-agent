@@ -213,3 +213,18 @@ def test_runner_script_timeout_and_no_secrets(reg, monkeypatch):
     assert "KEY None" in r.content
     r = call(reg, "run_python", action="script", target="hang.py", timeout=2)
     assert r.content.startswith("FAILED") and "timed out" in r.content
+
+
+def test_delete_file_is_sandboxed(reg, ctx):
+    call(reg, "write_files", files=[{"path": "diag.py", "content": "print(1)\n"}, {"path": "pkg/a.py", "content": ""}])
+    assert call(reg, "delete_file", path="diag.py").content == "deleted diag.py"
+    assert not (ctx.sandbox.root / "diag.py").exists() and "diag.py" not in ctx.written
+    assert call(reg, "delete_file", path="diag.py").is_error            # already gone
+    assert call(reg, "delete_file", path="pkg").is_error                # directories are never deleted
+    assert call(reg, "delete_file", path="../outside.txt").is_error     # path traversal
+    assert call(reg, "delete_file", path="agent_run/state.json").is_error
+    assert call(reg, "delete_file", mode="plan", path="pkg/a.py").is_error  # not in plan mode
+    ctx.approve_write = lambda path, preview: False
+    denied = build_registry(ctx)
+    assert "denied" in call(denied, "delete_file", path="pkg/a.py").content
+    assert (ctx.sandbox.root / "pkg" / "a.py").exists()

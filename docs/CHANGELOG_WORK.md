@@ -173,3 +173,12 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   + UI PROBE OK; 54 requests, $0.131 (balance $1.59). Rule 10 fixed the wrong-feedback bug; Help overlap fixed.
 - New finding: pack/grid mix freezes the round after a typed→choice transition; feedback text partly behind buttons.
   Screenshots `docs/screenshots/run3/`; review in `docs/REAL_RUNS.md`. Generated code not edited.
+
+### 2026-10-19 — Option C: agent improvements from run 3 (before run 4)
+- UI rules: never mix pack and grid in one container (separate inner frames per layout); the UI smoke test must
+  play ONE complete flow to the result screen covering every input variant with real-time pumping and
+  `report_callback_exception` (no Tk callback errors allowed).
+- Tool usage: project files change only via write_files/edit_file/**delete_file**; run_python scripts are for
+  checks only. New sandboxed `delete_file` tool (files only, not agent_run/, not in plan mode, ask-before-write aware).
+- UI probe: pumps each screen for 1.2 s so the app's timers run and fails on any Tk callback exception; timeout 120 s.
+- Tests: delete_file sandbox, probe callback-error detection, rule presence. 126 passed, 1 skipped.
