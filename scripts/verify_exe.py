@@ -19,6 +19,9 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+from app import __version__  # noqa: E402
+
 EXE = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "dist" / "SpaceFractionsAgent.exe"
 WORK = Path(tempfile.mkdtemp(prefix="sfa_verify_"))
 DEMO_TITLE = "Space Fractions — MOCK DEMO"  # window title of the mock demo app
@@ -102,7 +105,7 @@ def main() -> int:
     code, out = run(["--run-script", "probe.py"])
     results.append(("--run-script uses bundled interpreter", code == 0 and "frozen True" in out, out.strip()))
 
-    results.append(("GUI window opens", window_appears([], "Space Fractions Code Agent  v0.1.0"), ""))
+    results.append(("GUI window opens", window_appears([], f"Space Fractions Code Agent  v{__version__}"), ""))
     results.append(("generated game window opens",
                     window_appears(["--run-script", "main.py"], DEMO_TITLE, cwd=st_dir), "mock demo main.py"))
 

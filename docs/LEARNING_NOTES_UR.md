@@ -217,3 +217,38 @@ prompt mein bhi di jati hai. CI har commit par exe build kar ke bina-Python envi
 - Exe ke andar Tk window ko band kar ke **dobara** banana kabhi kabhi Windows par crash karta tha.
   Hal: tests mein poore session ke liye **ek hi** Tk window; yeh qaida AI ke prompt mein bhi daal diya taake
   generated game ke tests bhi crash na hon. 8 dafa exe mein chala kar confirm kiya — sab green.
+
+---
+
+## Phase 5 — Asal DeepSeek runs (4 dafa) aur agent ko behtar banana
+
+### Sab se ahem usool
+- **Generated game ko kabhi haath se theek nahi kiya.** Har run ke baad asal window khol kar dekha; jo kharabi mili,
+  us ke liye **agent** ko behtar banaya (rule, tool, ya verification) aur dobara chalaya. Professor ke liye ye sab
+  se mazboot baat hai: "main ne AI ka code nahi, AI agent ko behtar kiya".
+
+### Chaar runs ki kahani (kul kharcha ≈ $0.55)
+| Run | Kya hua | Agent mein kya badla |
+|---|---|---|
+| 1 ($0.10) | Tests pass, lekin window mein sitare/title gayab (canvas width=1 par draw hua) | **UI probe**: harness asal window khol kar har screen check karta hai |
+| 2 ($0.10) | Pehli koshish mein pass; ghalat jawab par **agle** sawal ka jawab dikhata | **Rule 10**: message ka data state badalne se *pehle* utha lo + test |
+| 3 ($0.13) | Probe ne bahar gire buttons pakre → **agent ne khud fix round mein theek kiya** | pack/grid rule, poora-round smoke test, `delete_file` tool |
+| 4 ($0.14) | 5 rounds khel kar 0 errors; feedback sahi | final example |
+
+### Kuch concepts jo video/interview mein bolne hain
+- **Prompt caching:** har request ka shuru ka hissa same → DeepSeek ~98% tokens cache se deta hai → 1 run ≈ 10–15 cents.
+- **Resume:** run 1 aur 4 limit par ruke, `state.json` se wahin se dobara chale — Claude Code / claw-code jaisa.
+- **Error recovery:** model ne ghalat JSON / missing `path` bheja → crash nahi, error wapas model ko → khud theek.
+- **Sandbox zinda saboot:** run 4 mein model ne `/tmp/debug.py` likhna chaha → "Absolute paths are not allowed".
+- **UI design brief:** plan mein agent khud tay karta hai kaun use karega, kaun se rang/fonts — Tic-Tac-Toe aur
+  library app ke liye alag look.
+
+## Phase 6 — README, Architecture, Video script
+- `README.md`: download, quick start, diagram, **mechanism table** (16 mechanisms), web→desktop, input issues,
+  real runs ka imaandar khulasa, **known limitations**, build/test, credits.
+- `docs/ARCHITECTURE.md`: flow + sequence diagrams, modules, safety layers.
+- `docs/VIDEO_SCRIPT.md`: 6 minute ka script (kya dikhana, kya bolna) + backup plan (Replay).
+
+### Interview line
+"Main ne 4 asal runs kiye, har run ke baad window khud dekhi, aur jo bhi kharabi mili use agent ke rules aur
+verification mein generic tareeqe se theek kiya — aakhri run mein 5 poore rounds bina kisi error ke chale."

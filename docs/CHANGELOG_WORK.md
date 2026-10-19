@@ -189,3 +189,10 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Renamed `examples/space_fractions_generated` (run 2) → `examples/space_fractions_run2` so all runs are named
   consistently (older log entries above refer to the old name). `scripts/run_agent_cli.py --max-tokens`.
 - Screenshots `docs/screenshots/run4/`; review + summary of all runs in `docs/REAL_RUNS.md`. Total spend ≈ $0.55.
+
+### 2026-10-19 — Phase 6 (README, docs, v1.0.0 build)
+- README rewritten for the professor (quick start, diagram, 16-mechanism table, web→desktop, input issues, real-run
+  summary, known limitations, build/test, credits); `docs/ARCHITECTURE.md`; `docs/VIDEO_SCRIPT.md`; `CHANGELOG.md`.
+- Version 1.0.0 (`app/__init__.py`, `pyproject.toml`); `verify_exe.py` reads the version from `app`.
+- Exe rebuilt from the final code: verify_exe 6/6 PASS without Python. Tests: 128 passed, 1 skipped.
+- Release v1.0.0 = push tag `v1.0.0` (CI builds, verifies and attaches the exe) — waiting for the user's OK.

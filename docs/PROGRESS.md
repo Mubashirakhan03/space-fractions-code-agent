@@ -3,7 +3,7 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-18
-**Current phase:** Phase 4 done (tag `phase-4`) → next: Phase 5 (ONE real DeepSeek run) — WAITING for user to add balance
+**Current phase:** Phase 6 in progress — README, ARCHITECTURE, VIDEO_SCRIPT done; next: rebuild exe, tags, **Release v1.0.0 (ask user first)**
 
 | Phase | Status | Tag |
 |---|---|---|
@@ -12,8 +12,8 @@ Read this first when resuming work in a new session.
 | 2 — Tools, sandbox, loop, context, prompts | ✅ done | `phase-2` |
 | 3 — GUI | ✅ done | `phase-3` |
 | 4 — Exe build + GitHub Actions | ✅ done | `phase-4` |
-| 5 — One real run → examples/ | ⏸ waiting for balance | |
-| 6 — README, video script, release | ⬜ | |
+| 5 — Real runs → examples/ | ✅ done (4 runs, ≈ $0.55, final = run 4) | `phase-5` |
+| 6 — README, video script, release | ⏳ in progress | |
 
 ## Environment facts
 - Python 3.12.6 via `py`; tkinter 8.6; sqlite 3.45 — OK
@@ -36,6 +36,11 @@ Read this first when resuming work in a new session.
 - GUI: `python -m app.main` (dev). Mock mode checkbox = zero-cost scripted demo.
 - Exe: `scripts\build_exe.bat` → `dist\SpaceFractionsAgent.exe` (26 MB); check with `python scripts/verify_exe.py`.
 - CI: `.github/workflows/build-windows.yml` builds + verifies on every push; `v*` tag → GitHub Release with exe.
+
+## Real runs
+- See `docs/REAL_RUNS.md`. Final example: `examples/space_fractions_run4/`. Balance after run 4: $1.45.
+- Headless run: `PYTHONIOENCODING=utf-8 .venv/Scripts/python scripts/run_agent_cli.py --out <empty dir> --profile profiles/space_fractions.md`
+  (off-peak only: avoid Mon–Fri 06–09 and 11–15 PKT). Always ask the user before a paid run.
 
 ## Open decisions / waiting on user
 - none right now
