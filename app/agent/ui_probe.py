@@ -22,8 +22,9 @@ sys.path.insert(0, ".")
 result = {"checked": [], "problems": []}
 try:
     from ui.app import create_app
-except Exception as exc:
-    print("UI_PROBE_RESULT " + json.dumps({"skipped": f"ui.app.create_app not importable: {exc}"}))
+except Exception as exc:  # ui/app.py exists (checked by the harness) but cannot be imported: a real failure
+    msg = f"ui/app.py exists but `from ui.app import create_app` failed: {type(exc).__name__}: {exc}"
+    print("UI_PROBE_RESULT " + json.dumps({"checked": [], "problems": [msg]}))
     sys.exit(0)
 
 root = tk.Tk()
@@ -93,6 +94,48 @@ def check(label):
     result["checked"].append(label)
 
 
+def text_of(w):
+    try:
+        return str(w.cget("text")).strip()
+    except tk.TclError:
+        return ""
+
+
+def rect(w):
+    x, y = w.winfo_rootx(), w.winfo_rooty()
+    return x, y, x + w.winfo_width(), y + w.winfo_height()
+
+
+def is_ancestor(a, b):
+    p = b.master
+    while p is not None:
+        if p is a:
+            return True
+        p = p.master
+    return False
+
+
+def check_overlaps(label, screen):
+    """A button drawn over a text label on the visible screen (e.g. a fixed-position 'Back' over help text)."""
+    widgets = [w for w in walk(screen) if w.winfo_ismapped() and text_of(w)]
+    labels = [w for w in widgets if w.winfo_class() in ("Label", "TLabel", "Message")]
+    buttons = [w for w in widgets if w.winfo_class() in ("Button", "TButton")]
+    for b in buttons:
+        bx0, by0, bx1, by1 = rect(b)
+        for t in labels:
+            if is_ancestor(t, b) or is_ancestor(b, t):
+                continue
+            tx0, ty0, tx1, ty1 = rect(t)
+            iw, ih = min(bx1, tx1) - max(bx0, tx0), min(by1, ty1) - max(by0, ty0)
+            if iw <= 0 or ih <= 0:
+                continue
+            smaller = min((bx1 - bx0) * (by1 - by0), (tx1 - tx0) * (ty1 - ty0)) or 1
+            if iw * ih > 0.25 * smaller:
+                result["problems"].append(
+                    f"{label}: button '{text_of(b)[:25]}' covers the text '{text_of(t)[:40]}' — lay text and buttons "
+                    "out with pack/grid (text frame above the button row) instead of fixed overlapping positions.")
+
+
 check("startup view")
 screens = getattr(app, "screens", None) or getattr(app, "_screens", None) or {}
 for name in list(screens) if isinstance(screens, dict) else []:
@@ -103,6 +146,8 @@ for name in list(screens) if isinstance(screens, dict) else []:
                                   "(screens must render safely even when shown directly)")
         continue
     check(f"screen '{name}'")
+    if isinstance(screens[name], tk.Misc):
+        check_overlaps(f"screen '{name}'", screens[name])
 
 print("UI_PROBE_RESULT " + json.dumps(result), flush=True)  # report before teardown can fail
 try:

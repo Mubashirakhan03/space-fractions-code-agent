@@ -100,3 +100,34 @@ def test_probe_reports_screens_that_crash(tmp_path):
 def test_probe_skips_projects_without_ui_contract(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, None))
     assert ok and "SKIPPED" in report
+
+
+OVERLAP = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root):
+        frame = tk.Frame(root, bg="white")
+        frame.place(relwidth=1, relheight=1)
+        tk.Label(frame, text="help text " * 60, wraplength=700, font=("Segoe UI", 20)).place(
+            relx=0.5, rely=0.5, anchor="center")
+        tk.Button(frame, text="Back", font=("Segoe UI", 18)).place(relx=0.5, rely=0.55, anchor="center")
+        self.screens = {"help": frame}
+
+    def show(self, name):
+        self.screens[name].tkraise()
+
+
+def create_app(root):
+    return App(root)
+'''
+
+
+def test_probe_flags_button_covering_text(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, OVERLAP))
+    assert not ok and "button 'Back' covers the text" in report
+
+
+def test_probe_fails_when_ui_module_is_broken(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, "def create_app(root:\n"))
+    assert not ok and "failed: SyntaxError" in report

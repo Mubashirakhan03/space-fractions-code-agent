@@ -158,3 +158,12 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   27 requests, $0.096 (balance $1.89 → $1.72). Output: `examples/space_fractions_generated/` (+ `agent_run/cli_log.txt`).
 - Screenshots of every screen: `docs/screenshots/run2/`. Findings (incl. the feedback-shows-next-answer logic bug,
   left unedited) in `docs/REAL_RUNS.md`. `.gitignore`: `examples/**/*.db` (created when the generated app runs).
+
+### 2026-10-19 — Option B: agent rules from run 2's findings (Run 3 deferred to off-peak, after 15:00 PKT)
+- System prompt rule 10: compute every value a user-visible message needs BEFORE advancing/mutating state and
+  test every message incl. the wrong-input path (generic wording — targets run 2's "feedback shows the next
+  item's expected value" bug). UI smoke test must cover one correct AND one wrong submission. New rule: buttons
+  never cover text on text-heavy screens.
+- UI probe: detects a button covering a text label on the visible screen (flags run 2's Help screen, no false
+  positives on its other 8 screens); a broken `ui/app.py` is now a failure instead of "skipped".
+- Tests: 123 passed, 1 skipped.

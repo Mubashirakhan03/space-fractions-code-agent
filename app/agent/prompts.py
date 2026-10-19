@@ -45,7 +45,12 @@ RULES_TEMPLATE = """# Rules
 8. Keep AGENT_NOTES.md (your memory file) up to date with key decisions when they change.
 9. Build what the spec describes. Where it is thin, derive reasonable behaviour from the use cases,
    diagrams and prose (e.g. features named only in a summary) and document each assumption.
-   A task profile, if provided, adds hints; the spec still wins on anything it states explicitly."""
+   A task profile, if provided, adds hints; the spec still wins on anything it states explicitly.
+10. State changes vs messages: compute every value a user-visible message needs (e.g. the expected value
+   of the item that was just submitted, the name of the record just deleted) BEFORE you advance or mutate
+   state, and build the message from those saved values. Write a test for every user-visible message that
+   asserts it refers to the RIGHT item — including the wrong-input path (e.g. an incorrect submission shows
+   that same item's expected value, not the next item's)."""
 
 UI_QUALITY = """# UI quality rules (any desktop app)
 - Main window: at least 1100x750 (root.minsize(1100, 750)), resizable, centred, and opened MAXIMIZED on
@@ -75,8 +80,11 @@ UI_QUALITY = """# UI quality rules (any desktop app)
   that can crash on Windows; instead cancel pending root.after() callbacks and destroy the root's widgets
   after each test, and destroy the root once at the end. root.withdraw(),
   build the app with the factory, call root.update_idletasks(), assert root.minsize() >= (1100, 750), show every
-  screen in turn and assert its key widgets exist (title label, main buttons, inputs), exercise one form
-  submission (input cleared, feedback shown), then root.destroy(). This catches poor or broken UIs."""
+  screen in turn and assert its key widgets exist (title label, main buttons, inputs), exercise one CORRECT
+  and one WRONG form submission (input cleared; feedback text names the expected value of the item just
+  submitted), then root.destroy(). This catches poor or broken UIs.
+- Text-heavy screens: buttons must never cover text. Put long text in a frame laid out with pack/grid (or a
+  scrollable Text) ABOVE the button row instead of placing a button at a fixed position over it."""
 
 TOOL_USAGE = """# Tool usage
 - update_todos: keep a todo list; exactly one item in_progress; mark items completed as you go.

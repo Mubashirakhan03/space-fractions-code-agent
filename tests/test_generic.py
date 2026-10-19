@@ -134,3 +134,8 @@ def test_frozen_resources_are_copied_out_of_temp_bundle(tmp_path, monkeypatch):
 
 def test_list_profiles_dev_mode():
     assert SF_PROFILE in controller.list_profiles()
+
+
+def test_rule_capture_message_data_before_state_change():
+    assert "BEFORE you advance or mutate" in prompts.RULES
+    assert "wrong-input path" in prompts.RULES and "WRONG form" in prompts.UI_QUALITY
