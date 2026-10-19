@@ -150,3 +150,15 @@ def test_rules_from_run3_findings():
 def test_rule_visible_submit_button_and_min_size_probe():
     assert "every text input has a clearly visible Submit/Check button" in prompts.UI_QUALITY
     assert "AND at the minimum size (1100x750)" in prompts.UI_QUALITY
+
+
+def test_rules_complete_forms_seed_data_and_title():
+    assert "include an input for EVERY field" in prompts.UI_QUALITY
+    assert "Never fill a required field silently" in prompts.UI_QUALITY
+    assert "Never ship empty" in prompts.UI_QUALITY and "at least 20" in prompts.UI_QUALITY
+    assert 'never the default "tk"' in prompts.UI_QUALITY
+
+
+def test_profile_asks_for_generated_items_and_seed_set():
+    hints = load_profile(SF_PROFILE).hints
+    assert "at least 20 seed questions" in hints and "generates NEW fraction questions in code" in hints

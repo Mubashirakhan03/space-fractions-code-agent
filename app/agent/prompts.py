@@ -67,6 +67,14 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Forms: every text input has a clearly visible Submit/Check button next to it, the main input has keyboard
   focus, Enter also submits, the input is cleared automatically after each submission, and feedback is clear
   and coloured (green = success, red = error) in the window itself. Use messagebox only for confirmations.
+- Add/edit forms: include an input for EVERY field the entity needs to work (e.g. for a quiz item: prompt,
+  correct value, kind, and the choices when it has choices). Never fill a required field silently with a
+  hard-coded default; validate the input and show an error in the form instead. Test adding and editing an item
+  through the form and then using it.
+- Never ship empty: provide sensible seed data (data/*.json or SQL inserts) that is loaded automatically on first
+  start when the store is empty, enough to use every feature immediately (for a quiz-style app at least 20
+  items covering every kind). Test that a fresh database is seeded.
+- Window title: `create_app(root)` sets root.title() to the application's real name, never the default "tk".
 - Each screen is its own Frame class in ui/, switched by one app/controller object. Contract (the harness
   uses it): ui/app.py defines `create_app(root) -> App`, which builds everything WITHOUT calling mainloop();
   App has `screens: dict[str, tk.Frame]` and `show(name)`. Every screen must render safely when shown
@@ -121,7 +129,7 @@ Project layout:
                         that were REST/gRPC become in-process Python interfaces with the same operations
   ui/                   Tkinter screens / dialogs, one per use case or major state
   sql/schema.sql        if the spec has persisted entities or DDL: SQLite DDL adapted from it
-  data/                 seed data files, if the application needs initial content
+  data/                 seed data files loaded on first start (required whenever the app manages content)
   tests/                pytest, headless: domain logic, every state machine (valid AND invalid
                         transitions), sequences, persistence with a temporary SQLite file, plus the
                         required UI smoke test tests/test_ui_smoke.py (see UI quality rules)

@@ -37,6 +37,17 @@ except Exception as exc:
     msg = f"create_app(root) raised {type(exc).__name__}: {exc}"
     print("UI_PROBE_RESULT " + json.dumps({"checked": [], "problems": [msg]}))
     sys.exit(0)
+def _main_sets_title():
+    try:
+        import re
+        return re.search(r"\.title\(\s*[fru]?['\"]\s*[^'\"\s]", open("main.py", encoding="utf-8").read()) is not None
+    except OSError:
+        return False
+
+
+if root.title().strip().lower() in ("", "tk") and not _main_sets_title():
+    result["problems"].append("the window title is the default 'tk' — create_app(root) must call "
+                              "root.title('<application name>')")
 for attempt in (lambda: root.state("normal"), lambda: root.attributes("-fullscreen", False)):
     try:
         attempt()

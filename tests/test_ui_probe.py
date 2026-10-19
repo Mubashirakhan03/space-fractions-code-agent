@@ -46,6 +46,7 @@ GOOD = '''import tkinter as tk
 class App:
     def __init__(self, root):
         self.root = root
+        root.title("Good App")
         self.canvas = tk.Canvas(root, bg="navy", highlightthickness=0)
         self.canvas.place(relwidth=1, relheight=1)
         self.canvas.bind("<Configure>", self.draw)
@@ -259,6 +260,7 @@ SCROLL_LIST = '''import tkinter as tk
 class App:
     def __init__(self, root):
         root.minsize(1100, 750)
+        root.title("Scroll App")
         frame = tk.Frame(root)
         frame.place(relwidth=1, relheight=1)
         tk.Label(frame, text="Questions", font=("Segoe UI", 28)).pack()
@@ -286,4 +288,19 @@ def create_app(root):
 
 def test_probe_allows_rows_of_a_scrollable_list(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, SCROLL_LIST))
+    assert ok, report
+
+
+def test_probe_flags_default_tk_title(tmp_path):
+    untitled = GOOD.replace('        root.title("Good App")\n', "")
+    ok, report = run_ui_probe(make(tmp_path, untitled))
+    assert not ok and "default 'tk'" in report
+
+
+def test_probe_accepts_title_set_in_main(tmp_path):
+    untitled = GOOD.replace('        root.title("Good App")\n', "")
+    runner = make(tmp_path, untitled)
+    (tmp_path / "main.py").write_text('import tkinter as tk\n\nroot = None\n\n\ndef main():\n'
+                                      '    root = tk.Tk()\n    root.title("My Real App")\n')
+    ok, report = run_ui_probe(runner)
     assert ok, report

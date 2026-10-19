@@ -40,7 +40,15 @@ Kid-friendly look and feel (players are 11–12 years old; this matters as much 
   high scores, help, admin) and check the answer input is cleared after a submission.
 
 Data
-- `data/questions.json`: at least 20 seed questions covering all four question types.
+- `data/questions.json`: at least 20 seed questions covering all four question types (equivalent, compare,
+  add/subtract, simplify), with both typed and multiple-choice items; loaded into SQLite on first start.
+- Random questions: besides the seed set, the game generates NEW fraction questions in code (no API) for
+  every round — equivalent fractions, compare two fractions, add/subtract with unlike denominators, simplify —
+  with random numerators/denominators, the correct answer computed with `fractions.Fraction`, and plausible
+  wrong options for multiple choice (distinct, never equal to the answer). A round mixes seed and generated
+  questions so every round is different. Test the generator: each type, valid answers, no duplicate options.
+- Admin add/edit form: prompt, type, correct answer and options (for multiple choice); validate that the answer
+  is a valid fraction and that the options contain it.
 - `sql/schema.sql`: adapt the document's `games` table and add `questions` and `scores` tables.
 
 Packages

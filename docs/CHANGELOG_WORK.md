@@ -243,3 +243,11 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   score). Generic prompt: result message/rating must match the outcome (no praise for zero/failing).
 - Run 5 checked at 0/10 (copy, not edited): title "Congratulations, Ayesha!" (wrong), ☆☆☆ (right), sub-message
   right → documented as a known limitation (README, REAL_RUNS) + screenshot `run5/14_end_zero_score.png`. No run 6.
+
+### 2026-10-19 — User's quiz run (profile none): incomplete admin form, no seed data, "tk" title
+- Generic UI rules added: forms include every required field (no silent defaults, validate, test add/edit),
+  never ship empty (seed data on first start, ≥ 20 items for quiz-style apps, test seeding), `create_app` sets the
+  window title. Output contract: data/ is required when the app manages content.
+- UI probe: fails a default "tk" title unless main.py sets one (run 5 OK, user's quiz app flagged) + 2 tests.
+- Profile: ≥ 20 seed questions (typed + choice), code-generated random questions every round, full admin form.
+- Tests: 144 total (143 passed, 1 skipped). No paid run (run 6 only with the user's permission).

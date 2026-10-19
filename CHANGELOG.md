@@ -13,6 +13,12 @@
   practising" / "Well done!" / "Congratulations!"); confetti only for a full score.
 - Space Fractions profile and the generic prompt: result screens must match the outcome (no praise or positive
   rating for a zero score).
+- Generic rules: add/edit forms must include every field the entity needs (e.g. answer and choices) with no
+  silent hard-coded defaults; apps must ship with seed data loaded on first start (≥ 20 items for quiz-style
+  apps); `create_app` sets a real window title. The UI probe now fails a default "tk" title (a title set in
+  `main.py` is accepted).
+- Space Fractions profile: ≥ 20 seed questions plus fraction questions generated in code for every round
+  (equivalent, compare, add/subtract, simplify; answers via `fractions.Fraction`); full admin form.
 - Default max LLM requests per run is now 80 (and the token cap 6M); older saved settings with the old defaults are
   migrated automatically.
 
