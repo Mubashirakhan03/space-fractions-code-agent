@@ -45,3 +45,4 @@ def test_checklist_goes_into_the_first_user_message_not_the_system_prompt():
     assert lib[0] == msgs[0]  # same system prompt for every spec → stable cache prefix
     system = msgs[0]["content"]
     assert "Animated scenes:" in system and "Protected roles:" in system and "Spec coverage:" in system
+    assert "exactly ONE option that satisfies" in system  # run 8: options outside the pair, unreduced answers

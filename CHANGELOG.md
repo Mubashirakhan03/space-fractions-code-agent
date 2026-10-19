@@ -6,8 +6,13 @@
 - `write_files` takes `files` as an object keyed by path (`{"pkg/a.py": "<full content>"}`), so a path can no
   longer be lost. In run 7, 6 of 12 calls in the old list form dropped `"path"` and the files had to be re-sent.
   The list form still works; a missing path now points the model to the object form.
-- Final example is real run 7 (`examples/space_fractions_run7_gui/`, the user's GUI run, profile none), with
-  re-verification evidence `docs/run7_reverification.txt` and screenshots `docs/screenshots/run7/`.
+- Generic rules: every screen/scene the spec names is implemented; a movie/animation in the spec becomes a 5–10 s
+  Canvas animation with moving objects, Skip and auto-advance; administrator-type roles get an in-window PIN screen;
+  every choice item has exactly one option that satisfies the prompt. The first message lists the spec's own names
+  ("Harness checklist"), and the UI probe fails a missing animation, Skip button or masked PIN input.
+- Mock demo: animated intro with Skip and an admin PIN screen.
+- Final example is real run 8 (`examples/space_fractions_run8_final/`, profile none), with re-verification evidence
+  `docs/run8_reverification.txt` and screenshots `docs/screenshots/run8/`. Run 7 (the user's GUI run) is kept.
 
 ### Fixed
 - Verify now runs an **import check**: it imports every module and loads `main.py` without running `main()`. A wrong

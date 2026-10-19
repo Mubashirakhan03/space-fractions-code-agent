@@ -1,0 +1,10 @@
+Re-verification of examples/space_fractions_run8_final with the v1.0.1 harness (no API calls)
+Source: final real run 8 (CLI, profile none, $1 cap), output folder runs/run8_final. Generated code: unchanged copy.
+Date (UTC): 2026-10-19 19:25
+
+MISSING DELIVERABLES: none
+COMPILE: OK All 35 Python files compile.
+PYTEST: PASSED 34 passed in 4.59s
+IMPORT CHECK OK: 26 modules incl. main.py
+PROBE REQUIREMENTS (from the spec): {'animation': ['introductory movie'], 'protected_roles': ['Admin']}
+UI PROBE OK: startup view @1280x800, screen 'intro' @1280x800, screen 'menu' @1280x800, screen 'play' @1280x800, screen 'results' @1280x800, screen 'score' @1280x800, screen 'help' @1280x800, screen 'pin' @1280x800, screen 'admin' @1280x800, screen 'intro' @1100x750, screen 'menu' @1100x750, screen 'play' @1100x750, screen 'results' @1100x750, screen 'score' @1100x750, screen 'help' @1100x750, screen 'pin' @1100x750, screen 'admin' @1100x750

@@ -1,0 +1,18 @@
+requirement,use_case_or_feature,component,file,test
+ASR-1,Data durability (question persistence),QuestionComponent,store/database.py,tests/test_persistence.py
+ASR-1,Data durability (games persistence),QuestionComponent,store/database.py,tests/test_persistence.py
+ASR-2,Security (PIN-gated admin area),AdminComponent,ui/pin_screen.py,tests/test_ui_smoke.py
+FR-1,Play game,GameComponent,game/game.py,tests/test_game.py
+FR-2,Introductory movie,GameComponent,ui/intro_screen.py,tests/test_ui_smoke.py
+FR-3,Main menu,GameComponent,ui/menu_screen.py,tests/test_ui_smoke.py
+FR-4,Series of fraction questions,QuestionComponent,ui/play_screen.py,tests/test_ui_smoke.py
+FR-5,Ending scene with feedback,GameComponent,ui/results_screen.py,tests/test_ui_smoke.py
+NFR-1,Performance (responsive input),GameComponent,game/service.py,tests/test_game.py
+UC-1,Play Game,GameComponent,ui/play_screen.py,tests/test_ui_smoke.py
+UC-2,View Score,UserComponent,ui/score_screen.py,tests/test_ui_smoke.py
+UC-3,View Help,UserComponent,ui/help_screen.py,tests/test_ui_smoke.py
+UC-4,Update Questions,AdminComponent,ui/admin_screen.py,tests/test_admin.py
+IMPLIED,Introductory movie,GameComponent,ui/intro_screen.py,tests/test_ui_smoke.py
+IMPLIED,Main menu,GameComponent,ui/menu_screen.py,tests/test_ui_smoke.py
+IMPLIED,Series of fraction questions,QuestionComponent,ui/play_screen.py,tests/test_ui_smoke.py
+IMPLIED,Ending scene with feedback,GameComponent,ui/results_screen.py,tests/test_ui_smoke.py

@@ -101,7 +101,10 @@ UI_QUALITY = """# UI quality rules (any desktop app)
   generated item has a correct computed value and valid distinct choices. Generator tests must RECOMPUTE the
   expected value independently from the item's own data (parse its operands and calculate again) for each kind
   over many random seeds, not just check that the stored answer is among the choices; reject ambiguous items
-  (e.g. two equal operands in a "which is larger" item).
+  (e.g. two equal operands in a "which is larger" item). Every choice item has exactly ONE option that satisfies
+  the prompt: "which of A or B …" offers only A and B; grading follows the prompt's own criterion ("lowest terms"
+  accepts only the reduced form, not every equal value); and the correct option never repeats the prompt's own
+  operand text (an "equivalent to X" answer must look different from X). Test these three properties.
 - Text inputs must be clearly visible: their background differs from the surrounding container or they have a
   visible border (relief + borderwidth, or highlightthickness with a contrasting highlight colour).
 - Window title: `create_app(root)` sets root.title() to the application's real name, never the default "tk".

@@ -172,9 +172,10 @@ Honest review:
 | 4 | 57 (resume) | $0.142 | passed | hidden Exit / clipped text at small sizes → probe at min size, clipped-text and submit-button checks |
 | 5 | 47 | $0.122 | probe false positive during the run → **passed on re-verification** | scrollable-list false positive fixed in the probe |
 | 6 | 110 (2 resumes) | $0.378 | passed, profile none | generated `app/` package shadowed the agent → `sfagent`; wrong equivalent answers → recompute rule |
-| 7 | 42 | $0.144 | passed after 2 self-fix rounds, profile none, **GUI run by the user** | **final example**; `write_files` lost `path` in 6 of 12 calls → path-keyed `files` object |
+| 7 | 42 | $0.144 | passed after 2 self-fix rounds, profile none, **GUI run by the user** | `write_files` lost `path` in 6 of 12 calls → path-keyed `files` object |
+| 8 | 58 | $0.159 | passed after 1 self-fix round, profile none | **final example**; animated intro + admin PIN as required; flawed choice items → "exactly one option" rule |
 
-Total: about **$1.20**. The generated code was never edited by hand.
+Total: about **$1.36**. The generated code was never edited by hand.
 
 ## Run 6 — 2026-10-19 17:43 UTC (22:43 PKT, off-peak), **profile: none** → `examples/space_fractions_run6_noprofile/`
 
@@ -204,7 +205,7 @@ must recompute the expected value independently over many seeds" and "reject amb
 clearly visible", plus a UI probe check (flags run 6's admin inputs, run 5 stays OK); a profile hint for building
 equivalent-fraction display text. Screenshots: `docs/screenshots/run6/`. **Final example stays run 5.**
 
-## Run 7 — 2026-10-19 18:20 UTC (23:20 PKT, off-peak), **profile: none**, started by the user from the exe's GUI → `examples/space_fractions_run7_gui/` (**final example**)
+## Run 7 — 2026-10-19 18:20 UTC (23:20 PKT, off-peak), **profile: none**, started by the user from the exe's GUI → `examples/space_fractions_run7_gui/` (final example until run 8)
 
 The user ran the released agent from its GUI with all the generic rules added after run 6 (path `run-2026-10-19_2320`);
 the folder was copied into `examples/` without any change.
@@ -236,4 +237,43 @@ Checked by playing a copy, without editing the code:
 Agent improvement from run 7: `write_files` now takes `files` as an object **keyed by path**
 (`{"ui/theme.py": "<content>"}`), so the path is the key and cannot be dropped; the old list form is still
 accepted, and a missing path now tells the model to use the object form (tests in `tests/test_tools.py`).
-Screenshots: `docs/screenshots/run7/`. **Run 7 replaces run 5 as the final example.**
+Screenshots: `docs/screenshots/run7/`. Run 7 replaced run 5 as the final example (later replaced by run 8).
+
+## Run 8 — 2026-10-19 19:16 UTC (00:16 PKT, off-peak), **profile: none**, $1 cap → `examples/space_fractions_run8_final/` (**final example**)
+
+Agent changes since run 7 (user request): `write_files` keyed by path; generic rules "spec coverage" (every named
+screen/scene is implemented), "animated scenes" (Canvas, moving objects, 5–10 s, Skip, auto-advance, test) and
+"protected roles" (in-window PIN); a harness checklist with the spec's own names ("introductory movie", role "Admin")
+in the first message; the UI probe fails a missing animation, a missing Skip button or a missing masked PIN input.
+
+| Item | Value |
+|---|---|
+| Result | **VERIFY PASSED after 1 fix round** (round 1: "Pause"/"Menu" button text cut off by 4 px at 1100×750; the agent fixed it) |
+| Requests / cost | 58 requests, **$0.159**; 2.58M prompt tokens with 99 % cache hits, 44K output tokens, 390 s; balance $0.43 before |
+| `write_files` | **0 "missing path" errors** (run 7: 6 of 12 calls); the model used the path-keyed form, up to 11 files per call |
+| Re-verification | 35 files compile, **34 tests passed**, import check OK, **UI PROBE OK incl. the animation and PIN checks** for 8 screens at both sizes → `docs/run8_reverification.txt` |
+
+Checked by playing a copy, without editing the code:
+- ✅ **Introductory movie:** 41 canvas objects (stars + rocket) move; auto-advance to the menu after 5.1 s; Skip goes to
+  the menu and leaves 0 pending `after()` callbacks.
+- ✅ **Admin PIN:** menu "🔒 Admin" → PIN screen with a masked input; a wrong PIN shows "Incorrect PIN. Try again." in red
+  and stays locked; PIN 1234 (in `data/settings.json`, documented in README) opens "Manage Questions"; leaving locks it.
+- ✅ Admin form: prompt, correct answer, wrong options and a **Kind drop-down**; an added question appeared in 16 of 40
+  new rounds **without a restart**.
+- ✅ Game screen shows **"1 / 10   Score: 0"**; wrong-answer feedback names the same item's answer; the result screen
+  shows the score, a score-dependent line and a ✔/✘ review of every item. 0 Tk callback errors.
+- ✅ **Answer keys:** 2000 generated items (equivalent, simplify, decimal, larger) and 20 seeds recomputed
+  independently, 0 wrong answers, choices always distinct.
+- ❌ Generated equivalent items are trivial (all 523 of 2000): `Fraction(a*k, b*k)` reduces, so the answer reads like
+  the prompt. The seed equivalents are fine (1/2 → 2/4).
+- ❌ Generated "which is larger: A or B" items offer two extra values that are neither A nor B (all 471), sometimes
+  larger than both (e.g. "2").
+- ❌ "Reduce 8/12 to lowest terms" accepts the unreduced option 4/6 (value equality), so an all-wrong play scored 1/10.
+- ⚠️ Decimal answers have 6 digits (0.666667); the rocket is a black emoji on a dark sky; the result title is always
+  "Mission Complete!".
+
+Agent improvement from run 8 (not yet tested in a real run): a generic rule that every choice item has exactly one
+option satisfying the prompt ("which of A or B" offers only A and B; grading follows the prompt's own criterion; the
+answer never repeats the prompt's operand text), with a test. Screenshots: `docs/screenshots/run8/`.
+**Run 8 replaces run 7 as the final example:** it has every feature asked for (animated intro, admin PIN, progress,
+correct answer keys) and the fewest problems; its weaknesses are listed above and in the README.

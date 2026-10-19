@@ -306,3 +306,11 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Mock demo: 6-second rocket intro with Skip + auto-advance, admin PIN screen (1234) and admin screen; 2 new UI tests.
   Profile: admin behind a PIN. Tests: test_spec_rules.py (4), test_ui_probe.py (+4). 159 passed, 1 skipped.
 - Rollback: `git revert <this commit>`.
+
+### 2026-10-19 — Real run 8 (final example) + choice-item rule
+- Run 8: profile none, $1 cap, off-peak (19:16 UTC), `runs/run8_final` → VERIFY PASSED after 1 fix round, 58 requests,
+  $0.159, 0 write_files errors. Copied to `examples/space_fractions_run8_final/` (without the `game.db` its tests
+  created; CLI log in `agent_run/cli_log.txt`). Re-verified incl. animation/PIN checks → `docs/run8_reverification.txt`.
+  Play-check + screenshots `docs/screenshots/run8/`. Findings → REAL_RUNS run 8, README known limitations, D-022.
+- Prompt: "every choice item has exactly ONE option that satisfies the prompt" (+ test). Not tested in a real run.
+- Rollback: `git revert <this commit>`; previous final example = run 7 (D-020).

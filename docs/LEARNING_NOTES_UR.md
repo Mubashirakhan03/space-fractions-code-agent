@@ -274,3 +274,14 @@ verification mein generic tareeqe se theek kiya — aakhri run mein 5 poore roun
   se 6 calls aisi thi, aur har dafa poori file dobara bhejni padti thi (paise aur requests zaya). **Hal:** ab `files` ek
   object hai jis ki *key hi path hai*: `{"ui/theme.py": "...code..."}`. Key ke baghair value likhi hi nahi ja sakti, is
   liye path gum nahi ho sakta. Purana list wala tareeqa bhi chalta hai (pichhle transcripts/replay ke liye).
+
+## Run 8 (aakhri run) — intro movie, admin PIN
+
+- **Naye generic rules:** spec mein jo screen/scene ka naam hai woh banana zaroori hai; "movie/animation" likha ho to
+  Canvas par 5–10 second ki chalti hui animation, Skip button ke saath; admin jaisa role ho to window ke andar PIN screen.
+  Harness spec se khud naam nikalta hai ("introductory movie", "Admin") aur UI probe check karta hai ke cheezein
+  waqai hil rahi hain, Skip button hai, aur PIN wala chhupa (`*`) input hai.
+- **Nateeja:** 58 requests, $0.159, verify PASSED. Intro mein sitare aur rocket chalte hain (5 s), PIN 1234 se admin
+  khulta hai, ghalat PIN par laal error. Khelte waqt "1 / 10 Score: 0" nazar aata hai. write_files ka ek bhi error nahi.
+- **Kamzoriyan:** generated "equivalent" sawal phir bekaar (jawab sawal jaisa), "which is larger" mein faltu options,
+  aur "lowest terms" mein 4/6 bhi sahi maan liya jata hai. Is ke liye naya generic rule add kiya (abhi run se test nahi hua).

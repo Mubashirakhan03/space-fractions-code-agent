@@ -1,0 +1,277 @@
+FAILED
+......F....................FFFFFF.                                       [100%]
+================================== FAILURES ===================================
+_______________________ test_generator_over_many_seeds ________________________
+
+    def test_generator_over_many_seeds():
+        for seed in range(200):
+>           _check_all(seed)
+
+tests\test_generator.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+seed = 0
+
+    def _check_all(seed):
+        gen = FractionGenerator(Random(seed))
+        for q in gen.generate(100, seed=seed):
+            expected = _recompute(q)
+            correct_str = q.correct_answer
+            if q.kind == QuestionKind.DECIMAL:
+                assert abs(float(correct_str) - float(expected)) < 1e-4, (
+                    seed, q.prompt, correct_str, expected)
+            else:
+>               assert _parse(correct_str) == expected, (seed, q.prompt, correct_str, expected)
+E               AssertionError: (0, 'Which fraction equals 3/2?', '1/2', Fraction(3, 2))
+E               assert Fraction(1, 2) == Fraction(3, 2)
+E                +  where Fraction(1, 2) = _parse('1/2')
+
+tests\test_generator.py:63: AssertionError
+__________________________ test_every_screen_renders __________________________
+
+app = <ui.app.App object at 0x000001AB06D13E30>
+
+    def test_every_screen_renders(app):
+        for name, screen in app.screens.items():
+            if name == "admin":
+                app.admin_unlocked = True
+>           app.show(name)
+
+tests\test_ui_smoke.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:109: in show
+    screen.on_show()
+ui\play_screen.py:64: in on_show
+    self._render()
+ui\play_screen.py:79: in _render
+    self._render_choices(q)
+ui\play_screen.py:88: in _render_choices
+    b = make_button(self.content, opt, lambda o=opt: self._submit(o),
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+parent = <tkinter.Frame object .!frame3.!playscreen.!frame2>, text = '3/4'
+command = <function PlayScreen._render_choices.<locals>.<lambda> at 0x000001AB06E4B880>
+kw = {'bg': '#1A2140', 'activebackground': '#4C5BF0'}
+
+    def make_button(parent, text, command, **kw):
+        font = kw.pop("font", theme.button_font())
+>       btn = tk.Button(
+            parent, text=text, command=command,
+            bg=theme.PRIMARY, fg=theme.TEXT, activebackground=theme.PRIMARY_HOVER,
+            activeforeground=theme.TEXT, relief="flat", bd=0,
+            font=font, cursor="hand2", padx=24, pady=12, **kw,
+        )
+E       TypeError: tkinter.Button() got multiple values for keyword argument 'bg'
+
+ui\base_screen.py:9: TypeError
+________________________ test_intro_animates_and_skip _________________________
+
+app = <ui.app.App object at 0x000001AB06D17920>
+
+    def test_intro_animates_and_skip(app):
+        errors = []
+        app.root.report_callback_exception = lambda *a: errors.append(a)
+        app.show("intro")
+        screen = app.screens["intro"]
+        app.root.update()
+        _pump(app.root, 0.5)
+        # item coordinates must have changed (stars/rocket moved)
+        star = screen._stars[0]["item"]
+        x0, y0, _, _ = screen.canvas.coords(star)
+        _pump(app.root, 0.3)
+        _, ny, _, _ = screen.canvas.coords(star)
+>       assert ny > y0, "stars should have moved downward"
+E       AssertionError: stars should have moved downward
+E       assert 57.0 > 57.0
+
+tests\test_ui_smoke.py:92: AssertionError
+_____________________________ test_pin_protection _____________________________
+
+app = <ui.app.App object at 0x000001AB06D1B800>
+
+    def test_pin_protection(app):
+        app.show("pin")
+        pin = app.screens["pin"]
+        app.root.update()
+        # ensure entry is masked
+        assert pin.entry.cget("show") == "*"
+        # wrong pin
+        pin.entry.insert(0, "0000")
+        pin._unlock()
+        app.root.update()
+        assert not app.admin_unlocked
+        assert "Incorrect" in pin.error.cget("text")
+        # correct pin
+        pin.entry.delete(0, "end")
+        pin.entry.insert(0, app.get_pin())
+>       pin._unlock()
+
+tests\test_ui_smoke.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\pin_screen.py:49: in _unlock
+    self.app.show("admin")
+ui\app.py:109: in show
+    screen.on_show()
+ui\admin_screen.py:104: in on_show
+    self._refresh_list()
+ui\admin_screen.py:116: in _refresh_list
+    edit_btn = make_button(row, "Edit", lambda qid=q.id: self._edit(qid),
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+parent = <tkinter.Frame object .!frame5.!adminscreen.!frame3.!canvas.!frame.!frame>
+text = 'Edit'
+command = <function AdminScreen._refresh_list.<locals>.<lambda> at 0x000001AB0703B380>
+kw = {'padx': 10, 'pady': 4}
+
+    def make_button(parent, text, command, **kw):
+        font = kw.pop("font", theme.button_font())
+>       btn = tk.Button(
+            parent, text=text, command=command,
+            bg=theme.PRIMARY, fg=theme.TEXT, activebackground=theme.PRIMARY_HOVER,
+            activeforeground=theme.TEXT, relief="flat", bd=0,
+            font=font, cursor="hand2", padx=24, pady=12, **kw,
+        )
+E       TypeError: tkinter.Button() got multiple values for keyword argument 'padx'
+
+ui\base_screen.py:9: TypeError
+____________________________ test_form_submissions ____________________________
+
+app = <ui.app.App object at 0x000001AB06D9F9B0>
+
+    def test_form_submissions(app):
+        errors = []
+        app.root.report_callback_exception = lambda *a: errors.append(a)
+        # use a deterministic small game with a known question
+        from question.question import Question
+        from game.game import Game
+        q = Question("Which equals 1/2?", ["2/4", "1/3", "2/5", "3/4"], 0)
+        app.current_game = Game([q])
+>       app.show("play")
+
+tests\test_ui_smoke.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:109: in show
+    screen.on_show()
+ui\play_screen.py:64: in on_show
+    self._render()
+ui\play_screen.py:79: in _render
+    self._render_choices(q)
+ui\play_screen.py:88: in _render_choices
+    b = make_button(self.content, opt, lambda o=opt: self._submit(o),
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+parent = <tkinter.Frame object .!frame6.!playscreen.!frame2>, text = '2/4'
+command = <function PlayScreen._render_choices.<locals>.<lambda> at 0x000001AB07030A40>
+kw = {'bg': '#1A2140', 'activebackground': '#4C5BF0'}
+
+    def make_button(parent, text, command, **kw):
+        font = kw.pop("font", theme.button_font())
+>       btn = tk.Button(
+            parent, text=text, command=command,
+            bg=theme.PRIMARY, fg=theme.TEXT, activebackground=theme.PRIMARY_HOVER,
+            activeforeground=theme.TEXT, relief="flat", bd=0,
+            font=font, cursor="hand2", padx=24, pady=12, **kw,
+        )
+E       TypeError: tkinter.Button() got multiple values for keyword argument 'bg'
+
+ui\base_screen.py:9: TypeError
+_________________ test_wrong_submission_names_expected_value __________________
+
+app = <ui.app.App object at 0x000001AB06DA78C0>
+
+    def test_wrong_submission_names_expected_value(app):
+        errors = []
+        app.root.report_callback_exception = lambda *a: errors.append(a)
+        from question.question import Question
+        from game.game import Game
+        q = Question("Which equals 1/2?", ["2/4", "1/3", "2/5", "3/4"], 0)
+        app.current_game = Game([q])
+>       app.show("play")
+
+tests\test_ui_smoke.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:109: in show
+    screen.on_show()
+ui\play_screen.py:64: in on_show
+    self._render()
+ui\play_screen.py:79: in _render
+    self._render_choices(q)
+ui\play_screen.py:88: in _render_choices
+    b = make_button(self.content, opt, lambda o=opt: self._submit(o),
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+parent = <tkinter.Frame object .!frame7.!playscreen.!frame2>, text = '2/4'
+command = <function PlayScreen._render_choices.<locals>.<lambda> at 0x000001AB07031300>
+kw = {'bg': '#1A2140', 'activebackground': '#4C5BF0'}
+
+    def make_button(parent, text, command, **kw):
+        font = kw.pop("font", theme.button_font())
+>       btn = tk.Button(
+            parent, text=text, command=command,
+            bg=theme.PRIMARY, fg=theme.TEXT, activebackground=theme.PRIMARY_HOVER,
+            activeforeground=theme.TEXT, relief="flat", bd=0,
+            font=font, cursor="hand2", padx=24, pady=12, **kw,
+        )
+E       TypeError: tkinter.Button() got multiple values for keyword argument 'bg'
+
+ui\base_screen.py:9: TypeError
+__________________________ test_full_flow_to_results __________________________
+
+app = <ui.app.App object at 0x000001AB06D19F10>
+
+    def test_full_flow_to_results(app):
+        errors = []
+        app.root.report_callback_exception = lambda *a: errors.append(a)
+        from question.question import Question, QuestionKind
+        from game.game import Game
+    
+        # two questions: one typed (decimal), one choice — switches between variants
+        q1 = Question("What is 1/2 as a decimal?", ["0.5", "0.2", "0.25", "0.1"],
+                      0, kind=QuestionKind.DECIMAL)
+        q2 = Question("Which is larger: 1/4 or 1/2?", ["1/2", "1/4", "1/3", "1/8"],
+                      0, kind=QuestionKind.LARGER)
+        app.current_game = Game([q1, q2])
+        app.show("play")
+        play = app.screens["play"]
+        app.root.update()
+    
+        # first is decimal -> typed input
+        assert play.entry.winfo_exists()
+        play.entry.insert(0, "0.5")
+>       play._submit_text()
+
+tests\test_ui_smoke.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\play_screen.py:130: in _submit_text
+    self._submit(val)
+ui\play_screen.py:123: in _submit
+    self._render()
+ui\play_screen.py:79: in _render
+    self._render_choices(q)
+ui\play_screen.py:88: in _render_choices
+    b = make_button(self.content, opt, lambda o=opt: self._submit(o),
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+parent = <tkinter.Frame object .!frame8.!playscreen.!frame2>, text = '1/2'
+command = <function PlayScreen._render_choices.<locals>.<lambda> at 0x000001AB06D502C0>
+kw = {'bg': '#1A2140', 'activebackground': '#4C5BF0'}
+
+    def make_button(parent, text, command, **kw):
+        font = kw.pop("font", theme.button_font())
+>       btn = tk.Button(
+            parent, text=text, command=command,
+            bg=theme.PRIMARY, fg=theme.TEXT, activebackground=theme.PRIMARY_HOVER,
+            activeforeground=theme.TEXT, relief="flat", bd=0,
+            font=font, cursor="hand2", padx=24, pady=12, **kw,
+        )
+E       TypeError: tkinter.Button() got multiple values for keyword argument 'bg'
+
+ui\base_screen.py:9: TypeError
+=========================== short test summary info ===========================
+FAILED tests\test_generator.py::test_generator_over_many_seeds - AssertionErr...
+FAILED tests\test_ui_smoke.py::test_every_screen_renders - TypeError: tkinter...
+FAILED tests\test_ui_smoke.py::test_intro_animates_and_skip - AssertionError:...
+FAILED tests\test_ui_smoke.py::test_pin_protection - TypeError: tkinter.Butto...
+FAILED tests\test_ui_smoke.py::test_form_submissions - TypeError: tkinter.But...
+FAILED tests\test_ui_smoke.py::test_wrong_submission_names_expected_value - T...
+FAILED tests\test_ui_smoke.py::test_full_flow_to_results - TypeError: tkinter...
