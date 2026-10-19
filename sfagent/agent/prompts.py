@@ -16,6 +16,7 @@ import hashlib
 import json
 from typing import Any
 
+from sfagent.agent import spec_rules
 from sfagent.agent.profile import TaskProfile
 from sfagent.bundled import BUNDLED_STDLIB
 
@@ -63,6 +64,22 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Large readable fonts: titles 32+ pt, main content 24-28+ pt, buttons and inputs 18+ pt.
 - High-contrast text. Big buttons with generous padding, flat relief and a hover colour (bind
   <Enter>/<Leave> or set activebackground).
+- Spec coverage: every screen, scene, menu or movie the spec names anywhere (summary prose included) is
+  implemented as its own screen in App.screens and reachable in the normal flow; never replace a named scene with
+  a plain text label. The harness lists the names it found in the first message and checks them.
+- Animated scenes: when the spec asks for a movie, animation, animated or opening scene (or similar), build it on a
+  tk.Canvas as a real 5-10 second animation in which several objects MOVE (canvas.move()/coords() about every
+  33 ms via after()), drawn from the real canvas size and started when the screen is shown. It has a visible Skip
+  button and advances by itself when it ends; Skip and leaving the screen cancel its pending after() callbacks
+  (keep the after ids). Static text, or only changing colours, is not enough. Test: show the scene, pump
+  root.update() for about 0.5 s and assert that an item's coordinates changed; Skip shows the next screen; no
+  scene callback runs after Skip.
+- Protected roles: when the spec has an administrator-type actor (admin, operator, moderator…), navigation to that
+  actor's screens goes through a PIN screen INSIDE the window (no modal dialog): a masked tk.Entry(show="*"), an
+  Unlock button, Enter submits; a wrong PIN shows a red error and stays locked; the correct PIN opens the screen.
+  Keep the PIN in a settings file with a default documented in README.md (not on screen), and lock again when the
+  user leaves the protected area. App.show(name) itself stays unguarded (the harness shows screens directly).
+  Tests: a wrong PIN is refused, the correct PIN opens the screen, it is locked again after leaving.
 - Where a flow ends (a round, a task, a booking…), show a clear result / summary screen whose message and
   rating match the actual outcome (no praise and no positive rating for a zero or failing result).
 - Forms: every text input has a clearly visible Submit/Check button next to it, the main input has keyboard
@@ -232,6 +249,9 @@ def initial_messages(spec: dict[str, Any], profile: TaskProfile | None = None) -
     names = " and ".join(s.get("file", "?") for s in sources.values()) or "the input files"
     user = (f"# Input specification (compact spec.json)\nPreprocessed deterministically from {names}. "
             "The full version is at agent_run/spec.json.\n\n```json\n" + spec_json + "\n```")
+    block = spec_rules.checklist(spec_rules.derive(spec))
+    if block:
+        user += "\n\n" + block
     if profile:
         user += (f"\n\n# Task profile: {profile.name} (selected by the user)\n"
                  f"Additional task-specific hints:\n\n{profile.hints}")

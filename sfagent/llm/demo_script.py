@@ -47,6 +47,13 @@ def stars_for(score: int, total: int) -> int:
     return 3 if pct >= 0.8 else 2 if pct >= 0.5 else 1
 
 
+ADMIN_PIN = "1234"  # default admin PIN (documented in README.md)
+
+
+def pin_ok(text: str) -> bool:
+    return text.strip() == ADMIN_PIN
+
+
 def end_message(score: int, total: int) -> str:
     """The message matches the result: no congratulations for a low score."""
     pct = score / total if total else 0
@@ -61,7 +68,7 @@ _UI = f'''"""Tkinter UI for the mock demo. create_app(root) builds everything wi
 import random
 import tkinter as tk
 
-from game.logic import QUESTIONS, check_answer, end_message, stars_for
+from game.logic import QUESTIONS, check_answer, end_message, pin_ok, stars_for
 
 BANNER = "{BANNER}"
 BG, PANEL, TEXT = "#0B1736", "#13254F", "#FFFFFF"
@@ -93,11 +100,14 @@ class DemoApp:
         self.panel = tk.Frame(root, bg=PANEL, padx=50, pady=36)
         self.panel.place(relx=0.5, rely=0.52, anchor="center")
         self.screen = ""
-        self.screens = {{"question": self.panel, "end": self.panel}}  # create_app contract: screens + show()
-        self.start()
+        self.intro_jobs = []
+        # create_app contract: screens + show()
+        self.screens = {{name: self.panel for name in ("intro", "question", "end", "admin_pin", "admin")}}
+        self.show_intro()
 
     def show(self, name):
-        {{"question": self.start, "end": self.show_end}}[name]()
+        {{"intro": self.show_intro, "question": self.start, "end": self.show_end, "admin_pin": self.show_pin,
+         "admin": self.show_admin}}[name]()
 
     def _centre(self, w, h):
         sw, sh = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
@@ -117,8 +127,80 @@ class DemoApp:
         c.tag_lower("space")
 
     def _clear(self):
+        self._stop_intro()
         for child in self.panel.winfo_children():
             child.destroy()
+
+    # --- animated introductory scene: a rocket flies across the sky for 6 s, Skip or auto-advance ---
+    INTRO_FRAMES = 180  # 180 x 33 ms = 6 s
+
+    def show_intro(self):
+        self._clear()
+        self.screen = "intro"
+        tk.Label(self.panel, text="Space Fractions", font=("Segoe UI", 40, "bold"), fg=ACCENT, bg=PANEL).pack()
+        tk.Label(self.panel, text="Mission briefing: get ready for fraction practice!", font=("Segoe UI", 22),
+                 fg=TEXT, bg=PANEL).pack(pady=(6, 18))
+        self.skip_btn = big_button(self.panel, "Skip ⏭", self.skip_intro)
+        self.skip_btn.pack()
+        c = self.canvas
+        h = max(c.winfo_height(), 750)
+        y = 0.16 * h
+        c.create_polygon(0, y - 18, 70, y, 0, y + 18, fill="#E0E7FF", outline="", tags="ship")
+        c.create_oval(30, y - 8, 46, y + 8, fill="#4CC9F0", outline="", tags="ship")
+        c.create_polygon(0, y - 10, -28, y, 0, y + 10, fill="#FF8C42", outline="", tags="ship")
+        self._intro_step(0)
+
+    def _intro_step(self, frame):
+        if self.screen != "intro":
+            return
+        if frame >= self.INTRO_FRAMES:
+            self.skip_intro()
+            return
+        self.canvas.move("ship", 7, -0.2 if frame % 20 < 10 else 0.2)
+        self.intro_jobs.append(self.root.after(33, lambda: self._intro_step(frame + 1)))
+
+    def _stop_intro(self):
+        for job in self.intro_jobs:
+            self.root.after_cancel(job)
+        self.intro_jobs = []
+        self.canvas.delete("ship")
+
+    def skip_intro(self):
+        self._stop_intro()
+        self.start()
+
+    # --- admin area behind an in-window PIN ---
+    def show_pin(self):
+        self._clear()
+        self.screen = "admin_pin"
+        tk.Label(self.panel, text="Admin — enter PIN", font=("Segoe UI", 32, "bold"), fg=ACCENT, bg=PANEL).pack()
+        self.pin_entry = tk.Entry(self.panel, show="*", font=("Segoe UI", 26), width=8, justify="center",
+                                  relief="solid", bd=2)
+        self.pin_entry.pack(pady=14, ipady=4)
+        self.pin_entry.bind("<Return>", lambda e: self.unlock())
+        self.pin_entry.focus_set()
+        row = tk.Frame(self.panel, bg=PANEL)
+        row.pack()
+        big_button(row, "Unlock 🔓", self.unlock).pack(side="left", padx=8)
+        big_button(row, "Back", self.start).pack(side="left", padx=8)
+        self.pin_feedback = tk.Label(self.panel, text="", font=("Segoe UI", 20, "bold"), fg=BAD, bg=PANEL)
+        self.pin_feedback.pack(pady=(12, 0))
+
+    def unlock(self):
+        if pin_ok(self.pin_entry.get()):
+            self.show_admin()
+        else:
+            self.pin_entry.delete(0, "end")
+            self.pin_feedback.config(text="Wrong PIN — try again", fg=BAD)
+
+    def show_admin(self):
+        self._clear()
+        self.screen = "admin"
+        tk.Label(self.panel, text="Admin (mock demo)", font=("Segoe UI", 32, "bold"), fg=ACCENT, bg=PANEL).pack()
+        for q in QUESTIONS:
+            tk.Label(self.panel, text=f"{{q.prompt}}   →   {{q.answer}}", font=("Segoe UI", 20), fg=TEXT,
+                     bg=PANEL).pack(anchor="w")
+        big_button(self.panel, "Lock and leave", self.start).pack(pady=(16, 0))
 
     def start(self):
         self.index, self.score = 0, 0
@@ -180,6 +262,7 @@ class DemoApp:
         row = tk.Frame(self.panel, bg=PANEL)
         row.pack(pady=18)
         big_button(row, "Play again", self.start).pack(side="left", padx=10)
+        big_button(row, "Admin 🔒", self.show_pin).pack(side="left", padx=10)
         big_button(row, "Quit", self.root.destroy).pack(side="left", padx=10)
         if stars == 3:  # celebrate only a high score
             self._confetti(40)
@@ -261,7 +344,7 @@ import tkinter as tk
 
 import pytest
 
-from game.logic import QUESTIONS
+from game.logic import ADMIN_PIN, QUESTIONS
 from ui.app import create_app
 
 
@@ -292,12 +375,49 @@ def root():
     r.destroy()
 
 
+def pump(root, seconds):
+    end = time.time() + seconds
+    while time.time() < end:
+        root.update()
+        time.sleep(0.02)
+
+
 @pytest.fixture
-def app(root):
+def fresh(root):
     yield create_app(root)
     cancel_pending(root)
     for child in root.winfo_children():
         child.destroy()
+
+
+@pytest.fixture
+def app(fresh):
+    fresh.skip_intro()
+    return fresh
+
+
+def test_intro_is_animated_and_skip_works(fresh):
+    assert fresh.screen == "intro" and fresh.skip_btn.winfo_exists()
+    before = fresh.canvas.coords(fresh.canvas.find_withtag("ship")[0])
+    pump(fresh.root, 0.4)
+    assert fresh.canvas.coords(fresh.canvas.find_withtag("ship")[0]) != before
+    fresh.skip_intro()
+    assert fresh.screen == "question" and fresh.intro_jobs == [] and not fresh.canvas.find_withtag("ship")
+    pump(fresh.root, 0.2)
+    assert fresh.screen == "question"  # no intro callback ran after Skip
+
+
+def test_admin_pin(app):
+    app.show_pin()
+    app.pin_entry.insert(0, "0000")
+    app.unlock()
+    assert app.screen == "admin_pin" and "Wrong" in app.pin_feedback.cget("text") and app.pin_entry.get() == ""
+    app.pin_entry.insert(0, ADMIN_PIN)
+    app.unlock()
+    assert app.screen == "admin"
+    app.start()  # leaving locks it again: the next visit asks for the PIN
+    app.show_pin()
+    assert app.screen == "admin_pin"
 
 
 def test_window_is_large_and_question_screen_built(app):
@@ -353,7 +473,8 @@ FILES = [
     {"path": "ui/app.py", "content": _UI},
     {"path": "tests/test_logic.py", "content": _TEST_LOGIC},
     {"path": "tests/test_ui_smoke.py", "content": _TEST_UI},
-    {"path": "README.md", "content": f"# Mock demo\n\n**{BANNER}.**\n\nRun: `python main.py` (F11 full screen, "
+    {"path": "README.md", "content": f"# Mock demo\n\n**{BANNER}.**\n\nRun: `python main.py` (admin PIN: 1234; "
+                                    "F11 full screen, "
                                     "Esc to leave it)\n"},
     {"path": "requirements.txt", "content": "# standard library only\npytest\n"},
     {"path": "TRACEABILITY.csv", "content": "requirement,use_case_or_feature,component,file,test\nFR-1,Play game,"

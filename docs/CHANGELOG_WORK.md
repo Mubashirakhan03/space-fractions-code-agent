@@ -290,3 +290,19 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Exe rebuilt → `build/dist_new/SpaceFractionsAgent.exe` (26 MB), `verify_exe.py` 6/6 PASSED without Python
   (self-test exercises the path-keyed `write_files`). Not copied to `dist/` yet: the old exe was still open.
   Version is still 1.0.0; it is bumped to 1.0.1 only when the release is approved.
+
+### 2026-10-19 — Spec coverage, animated scene and admin PIN (generic rules + harness checks)
+- New `sfagent/agent/spec_rules.py`: derives from the spec the named screens/scenes (`implied_features`), use cases,
+  animation phrases ("introductory movie", "animated …", "splash screen", "opening scene"…) and administrator-type
+  actors. A "Harness checklist" with this spec's exact names is appended to the first user message (system prompt
+  unchanged per spec → cache prefix stable).
+- System prompt (generic, no app words): "Spec coverage", "Animated scenes" (Canvas, moving objects, 5–10 s, Skip,
+  auto-advance, cancel after() on leave, test) and "Protected roles" (in-window PIN screen, masked Entry, wrong PIN
+  refused, lock on leave, default PIN in README, tests).
+- UI probe: canvas snapshots at 0 / 0.6 / 1.2 s per screen; fails if the spec asks for an animation and nothing
+  moves, or the animated screen has no Skip button; fails if a protected role exists and no screen has a masked
+  input. Real examples: run 7 (static intro, no PIN) is flagged for both; run 5 (rocket intro) passes the animation
+  check and is flagged only for the missing PIN.
+- Mock demo: 6-second rocket intro with Skip + auto-advance, admin PIN screen (1234) and admin screen; 2 new UI tests.
+  Profile: admin behind a PIN. Tests: test_spec_rules.py (4), test_ui_probe.py (+4). 159 passed, 1 skipped.
+- Rollback: `git revert <this commit>`.

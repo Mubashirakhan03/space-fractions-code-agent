@@ -11,6 +11,7 @@ and screens that raise when shown. It is generic: it knows nothing about the spe
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from sfagent.tools.runner import PythonRunner
 
@@ -20,7 +21,11 @@ PROBE_SOURCE = r'''
 import json, sys, time, tkinter as tk
 sys.path.insert(0, ".")
 PUMP_SECONDS = 1.2
+REQUIREMENTS = json.loads(r"""__REQUIREMENTS__""")  # from the spec: {"animation": [...], "protected_roles": [...]}
 result = {"checked": [], "problems": []}
+animated = []  # labels of checks during which canvas objects moved
+skip_on_animated = []
+masked_inputs = []
 try:
     from ui.app import create_app
 except Exception as exc:  # ui/app.py exists (checked by the harness) but cannot be imported: a real failure
@@ -97,9 +102,42 @@ def mapped_widgets():
     return sum(1 for w in walk(root) if w.winfo_class() in WIDGET_CLASSES and w.winfo_ismapped())
 
 
+def canvas_shapes():
+    shapes = set()
+    for w in walk(root):
+        if w.winfo_class() == "Canvas" and w.winfo_ismapped():
+            for item in w.find_all():
+                try:
+                    shapes.add((str(w), w.type(item), tuple(round(c) for c in w.coords(item))))
+                except tk.TclError:
+                    pass
+    return shapes
+
+
+def note_animation_and_inputs(label, s0, s1, s2):
+    """Movement in BOTH halves of the pump = an animation (a one-off redraw changes only one half)."""
+    if s1 - s0 and s2 - s1:
+        animated.append(label)
+        if any(w.winfo_class() in ("Button", "TButton") and w.winfo_ismapped() and "skip" in text_of(w).lower()
+               for w in walk(root)):
+            skip_on_animated.append(label)
+    for w in walk(root):
+        if w.winfo_class() in ("Entry", "TEntry") and w.winfo_ismapped():
+            try:
+                if str(w.cget("show")):
+                    masked_inputs.append(label)
+            except tk.TclError:
+                pass
+
+
 def check(label):
     before = len(callback_errors)
-    pump(PUMP_SECONDS)
+    s0 = canvas_shapes()
+    pump(PUMP_SECONDS / 2)
+    s1 = canvas_shapes()
+    pump(PUMP_SECONDS / 2)
+    s2 = canvas_shapes()
+    note_animation_and_inputs(label, s0, s1, s2)
     if mapped_widgets() == 0:  # right after a geometry change Windows may briefly report nothing mapped
         root.deiconify()
         root.lift()
@@ -276,6 +314,21 @@ for index, (width, height) in enumerate(SIZES):
                           check_inputs_visible):
                 extra(tag, screens[name])
 
+if REQUIREMENTS.get("animation"):
+    asked = ", ".join(repr(a) for a in REQUIREMENTS["animation"])
+    if not animated:
+        result["problems"].append(
+            f"the spec asks for {asked}, but no screen shows moving objects: on every screen the canvas items kept "
+            f"their positions for {PUMP_SECONDS} s after it was shown. Build that scene on a tk.Canvas and move items "
+            "with after() (5-10 s animation, Skip button, auto-advance).")
+    elif not skip_on_animated:
+        result["problems"].append(f"the animated scene ({animated[0]}) has no visible 'Skip' button.")
+if REQUIREMENTS.get("protected_roles") and not masked_inputs:
+    roles = ", ".join(REQUIREMENTS["protected_roles"])
+    result["problems"].append(
+        f"the spec has the protected role(s) {roles}, but no screen has a masked PIN input — add a PIN screen "
+        "(in App.screens) with tk.Entry(show='*') and an Unlock button in front of that role's screens.")
+result["animated"] = animated
 print("UI_PROBE_RESULT " + json.dumps(result), flush=True)  # report before teardown can fail
 try:
     for after_id in root.tk.call("after", "info"):
@@ -286,11 +339,14 @@ except tk.TclError:
 '''
 
 
-def run_ui_probe(runner: PythonRunner, timeout: int = 120) -> tuple[bool, str]:
-    """Write and run the probe with the bundled interpreter. Returns (ok, report text)."""
+def run_ui_probe(runner: PythonRunner, timeout: int = 120,
+                 requirements: dict[str, Any] | None = None) -> tuple[bool, str]:
+    """Write and run the probe with the bundled interpreter. Returns (ok, report text).
+
+    `requirements` (from spec_rules.SpecRules.to_probe()) adds the checks for an animated scene and a PIN input."""
     target = runner.root / PROBE_REL
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(PROBE_SOURCE, encoding="utf-8")
+    target.write_text(PROBE_SOURCE.replace("__REQUIREMENTS__", json.dumps(requirements or {})), encoding="utf-8")
     if not (runner.root / "ui" / "app.py").is_file():
         return True, "UI PROBE SKIPPED: ui/app.py not found (create_app contract not used)."
     ok, out = runner.run_script(PROBE_REL, timeout=timeout)

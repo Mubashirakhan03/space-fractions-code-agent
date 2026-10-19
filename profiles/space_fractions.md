@@ -18,7 +18,7 @@ Screens / flow
 - PAUSE / RESUME following the state diagram Playing ⇄ Paused → GameOver (invalid transitions raise).
 - ENDING scene with final score, percentage and encouraging feedback; option to play again.
 - HIGH SCORES (View Score) from SQLite; HELP screen (View Help); ADMIN screen to add / edit / delete
-  questions (Update Questions).
+  questions (Update Questions), reached through an in-window PIN screen (default PIN documented in README).
 
 Kid-friendly look and feel (players are 11–12 years old; this matters as much as correctness)
 - Opens maximized (minimum 1100x750), F11 full screen, Esc leaves full screen.

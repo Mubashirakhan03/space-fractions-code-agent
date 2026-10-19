@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from sfagent.agent import prompts
+from sfagent.agent import prompts, spec_rules
 from sfagent.agent.context import ContextManager
 from sfagent.agent.import_check import run_import_check
 from sfagent.agent.planner import TodoList
@@ -310,7 +310,7 @@ class Agent:
             i_ok, i_out = run_import_check(self.runner)
             parts.append(i_out)
             ok &= i_ok
-            u_ok, u_out = run_ui_probe(self.runner)
+            u_ok, u_out = run_ui_probe(self.runner, requirements=spec_rules.derive(self.spec).to_probe())
             parts.append(u_out)
             ok &= u_ok
         report = "\n\n".join(parts)

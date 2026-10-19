@@ -73,7 +73,7 @@ def create_app(root):
 
 def make(tmp_path, source: str | None):
     if source is not None:
-        (tmp_path / "ui").mkdir()
+        (tmp_path / "ui").mkdir(parents=True)
         (tmp_path / "ui" / "__init__.py").write_text("")
         (tmp_path / "ui" / "app.py").write_text(source)
     return PythonRunner(tmp_path, tmp_path / "agent_run", timeout=60)
@@ -318,3 +318,68 @@ INVISIBLE_INPUT = GOOD.replace(
 def test_probe_flags_invisible_text_input(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, INVISIBLE_INPUT))
     assert not ok and "cannot be seen" in report
+
+
+ANIMATED = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root, skip=True, moving=True, pin=False):
+        self.root = root
+        root.title("Animated App")
+        self.moving = moving
+        self.canvas = tk.Canvas(root, bg="navy", highlightthickness=0)
+        self.canvas.place(relwidth=1, relheight=1)
+        self.ship = self.canvas.create_rectangle(10, 100, 60, 130, fill="white")
+        self.frame = tk.Frame(root, bg="#223")
+        self.frame.place(relx=0.5, rely=0.5, anchor="center")
+        tk.Label(self.frame, text="Opening scene", font=("Segoe UI", 28)).pack()
+        if skip:
+            tk.Button(self.frame, text="Skip", command=lambda: None).pack()
+        if pin:
+            tk.Entry(self.frame, show="*", relief="solid", bd=2).pack()
+            tk.Button(self.frame, text="Unlock").pack()
+        self.screens = {"intro": self.frame, "menu": self.frame}
+        self.step()
+
+    def step(self):
+        if self.moving:
+            self.canvas.move(self.ship, 5, 0)
+        self.root.after(33, self.step)
+
+    def show(self, name):
+        pass
+
+
+def create_app(root):
+    return App(root, **OPTIONS)
+'''
+SPEC_REQ = {"animation": ["introductory movie"], "protected_roles": ["Admin"]}
+
+
+def animated(tmp_path, **options):
+    return make(tmp_path, f"OPTIONS = {options!r}\n" + ANIMATED)
+
+
+def test_probe_flags_missing_animation_when_the_spec_asks_for_one(tmp_path):
+    ok, report = run_ui_probe(animated(tmp_path, moving=False), requirements={"animation": ["introductory movie"]})
+    assert not ok and "the spec asks for 'introductory movie', but no screen shows moving objects" in report
+
+
+def test_probe_accepts_animation_with_skip_and_ignores_it_when_not_required(tmp_path):
+    ok, report = run_ui_probe(animated(tmp_path), requirements={"animation": ["introductory movie"]})
+    assert ok, report
+    ok, report = run_ui_probe(make(tmp_path / "plain", GOOD), requirements={})  # no requirement → no check
+    assert ok, report
+
+
+def test_probe_flags_animation_without_skip_button(tmp_path):
+    ok, report = run_ui_probe(animated(tmp_path, skip=False), requirements={"animation": ["introductory movie"]})
+    assert not ok and "has no visible 'Skip' button" in report
+
+
+def test_probe_requires_a_masked_pin_input_for_protected_roles(tmp_path):
+    ok, report = run_ui_probe(animated(tmp_path / "a"), requirements=SPEC_REQ)
+    assert not ok and "protected role(s) Admin, but no screen has a masked PIN input" in report
+    ok, report = run_ui_probe(animated(tmp_path / "b", pin=True), requirements=SPEC_REQ)
+    assert ok, report
