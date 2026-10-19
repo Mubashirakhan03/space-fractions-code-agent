@@ -294,6 +294,65 @@ def check_inputs_have_button(label, screen):
                 "(Enter can still submit).")
 
 
+def seed_record_count():
+    """Largest list of records in data/*.json (top level or a list value of a top-level object)."""
+    import glob
+    best = 0
+    for path in glob.glob("data/*.json"):
+        try:
+            with open(path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        lists = [data] if isinstance(data, list) else \
+            [v for v in data.values() if isinstance(v, list)] if isinstance(data, dict) else []
+        for records in lists:
+            if records and all(isinstance(r, dict) for r in records):
+                best = max(best, len(records))
+    return best
+
+
+ACTION_WORDS = {"Add": ("add", "new", "create", "save"), "Edit": ("edit", "update", "load", "modify", "change"),
+                "Delete": ("delete", "remove")}
+
+
+def managed_view(screen):
+    """Rows of a record list on a screen (Listbox, Treeview, or one row per Edit/Delete button) and its actions.
+    Hidden widgets count too: a list behind a PIN frame is still built."""
+    rows, actions, per_row = 0, set(), {"Edit": 0, "Delete": 0}
+    for w in walk(screen):
+        cls = w.winfo_class()
+        try:
+            if cls == "Listbox":
+                rows = max(rows, int(w.size()))
+            elif cls == "Treeview":
+                rows = max(rows, len(w.get_children()))
+            elif cls in ("Button", "TButton"):
+                t = text_of(w).lower()
+                for action, words in ACTION_WORDS.items():
+                    if any(x in t for x in words):
+                        actions.add(action)
+                        if action in per_row:
+                            per_row[action] += 1
+        except tk.TclError:
+            pass
+    return max(rows, per_row["Edit"] - 1, per_row["Delete"] - 1), actions
+
+
+def unlock_flags():
+    """Set the app's own False flags such as admin_unlocked / authenticated / logged_in to True."""
+    changed = False
+    for key, value in list(vars(app).items()):
+        if value is False and any(x in key.lower() for x in ("unlock", "auth", "logged")):
+            setattr(app, key, True)
+            changed = True
+    return changed
+
+
+managed_rows, managed_actions, managed_screens = 0, set(), []
+role_words = {"admin", "manage"}
+for m in REQUIREMENTS.get("managed") or []:
+    role_words.update(w.lower() for w in m.get("role", "").replace("_", " ").split() if len(w) > 2)
 screens = getattr(app, "screens", None) or getattr(app, "_screens", None) or {}
 for index, (width, height) in enumerate(SIZES):
     root.geometry(f"{width}x{height}+40+40")
@@ -309,6 +368,18 @@ for index, (width, height) in enumerate(SIZES):
             continue
         tag = f"screen '{name}' @{size}"
         check(tag)
+        if index == 0 and REQUIREMENTS.get("managed") and isinstance(screens[name], tk.Misc) and \
+                any(word in str(name).lower() for word in role_words):
+            rows, actions = managed_view(screens[name])
+            if rows == 0 and unlock_flags():  # a PIN-protected screen may fill its list only when unlocked
+                try:
+                    app.show(name)
+                    pump(0.3)
+                    rows, actions = managed_view(screens[name])
+                except Exception:
+                    pass
+            managed_screens.append(str(name))
+            managed_rows, managed_actions = max(managed_rows, rows), managed_actions | actions
         if isinstance(screens[name], tk.Misc):
             for extra in (check_overlaps, check_unfitted, check_clipped, check_inputs_have_button,
                           check_inputs_visible):
@@ -328,6 +399,23 @@ if REQUIREMENTS.get("protected_roles") and not masked_inputs:
     result["problems"].append(
         f"the spec has the protected role(s) {roles}, but no screen has a masked PIN input — add a PIN screen "
         "(in App.screens) with tk.Entry(show='*') and an Unlock button in front of that role's screens.")
+if REQUIREMENTS.get("managed"):
+    what = ", ".join(f"'{m['use_case']}' ({m['role']})" for m in REQUIREMENTS["managed"])
+    seeds = seed_record_count()
+    if not managed_screens:
+        result["problems"].append(
+            f"the spec's use case {what} needs a screen named after the role in App.screens (none of "
+            f"{sorted(screens)} contains {sorted(role_words)}).")
+    else:
+        if seeds and managed_rows == 0:
+            result["problems"].append(
+                f"the {'/'.join(managed_screens)} screen shows no records although data/ holds {seeds} seed records — "
+                f"{what} needs a list of ALL records (seed data included).")
+        missing = [a for a in ("Add", "Edit", "Delete") if a not in managed_actions]
+        if missing:
+            result["problems"].append(
+                f"the {'/'.join(managed_screens)} screen has no {', '.join(missing)} button(s) — {what} needs Add, "
+                "Edit and Delete for the listed records.")
 result["animated"] = animated
 print("UI_PROBE_RESULT " + json.dumps(result), flush=True)  # report before teardown can fail
 try:

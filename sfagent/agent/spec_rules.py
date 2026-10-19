@@ -19,6 +19,7 @@ ANIMATION_RE = re.compile(
     r"\b(?:[a-z]+\s+)?(?:movie|film|video clip|animation|animated\s+\w+|cinematic|cut-?scene|splash screen|"
     r"intro(?:duction|ductory)?\s+(?:scene|sequence)|opening\s+(?:scene|sequence))\b", re.IGNORECASE)
 ADMIN_RE = re.compile(r"\b(admin|administrator|moderator|operator|supervisor)s?\b", re.IGNORECASE)
+MANAGE_RE = re.compile(r"^\s*(update|manage|maintain|administer|edit|curate)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -27,9 +28,10 @@ class SpecRules:
     use_cases: list[str] = field(default_factory=list)
     animation: list[str] = field(default_factory=list)  # the spec's own phrases, e.g. "introductory movie"
     protected_roles: list[str] = field(default_factory=list)
+    managed: list[dict[str, str]] = field(default_factory=list)  # {"role", "use_case"}: a role that manages records
 
     def to_probe(self) -> dict[str, Any]:
-        return {"animation": self.animation, "protected_roles": self.protected_roles}
+        return {"animation": self.animation, "protected_roles": self.protected_roles, "managed": self.managed}
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -61,7 +63,14 @@ def derive(spec: dict[str, Any]) -> SpecRules:
     actors = [str(a.get("name", a) if isinstance(a, dict) else a) for a in dm.get("actors") or []]
     actors += [str(u.get("actor", "")) for u in dm.get("use_cases") or [] if isinstance(u, dict)]
     protected = _unique([a for a in actors if ADMIN_RE.search(a)])
-    return SpecRules(screens, use_cases, animation, protected)
+    managed, seen = [], set()
+    for u in dm.get("use_cases") or []:
+        if isinstance(u, dict) and MANAGE_RE.search(str(u.get("use_case", ""))):
+            key = (str(u.get("actor", "")).strip(), str(u.get("use_case", "")).strip())
+            if key not in seen:
+                seen.add(key)
+                managed.append({"role": key[0], "use_case": key[1]})
+    return SpecRules(screens, use_cases, animation, protected, managed)
 
 
 def checklist(rules: SpecRules) -> str:
@@ -82,6 +91,10 @@ def checklist(rules: SpecRules) -> str:
         lines.append(f"- Protected role(s): {', '.join(rules.protected_roles)}. Their screens are reached only through "
                      "an in-window PIN screen (UI rules). Verification fails if no screen has a masked input "
                      "(tk.Entry(show='*')).")
+    for m in rules.managed:
+        lines.append(f"- Data management: '{m['use_case']}' ({m['role']}). The {m['role']} screen lists ALL records "
+                     "(seed data included) with Add, Edit and Delete (UI rules). Verification fails if that list is "
+                     "empty while seed data exists, or an action is missing.")
     if not lines:
         return ""
     return "# Harness checklist (derived from this spec; verification checks it)\n" + "\n".join(lines)

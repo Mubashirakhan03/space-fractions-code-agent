@@ -18,7 +18,8 @@ def test_space_fractions_spec_needs_animation_and_admin_pin():
     assert rules.protected_roles == ["Admin"]
     assert "introductory movie" in rules.screens and "ending scene with feedback" in rules.screens
     assert "Update Questions" in rules.use_cases
-    assert rules.to_probe() == {"animation": ["introductory movie"], "protected_roles": ["Admin"]}
+    assert rules.to_probe()["animation"] == ["introductory movie"]
+    assert rules.to_probe()["protected_roles"] == ["Admin"]
 
 
 def test_library_spec_has_no_animation_or_protected_role():
@@ -46,3 +47,15 @@ def test_checklist_goes_into_the_first_user_message_not_the_system_prompt():
     system = msgs[0]["content"]
     assert "Animated scenes:" in system and "Protected roles:" in system and "Spec coverage:" in system
     assert "exactly ONE option that satisfies" in system  # run 8: options outside the pair, unreduced answers
+
+
+def test_role_that_updates_records_is_detected():
+    rules = spec_rules.derive(_spec(ROOT / "samples"))
+    assert rules.managed == [{"role": "Admin", "use_case": "Update Questions"}]
+    assert rules.to_probe()["managed"] == rules.managed
+    assert "Data management: 'Update Questions' (Admin)" in spec_rules.checklist(rules)
+    lib = spec_rules.derive(_spec(ROOT / "samples" / "library_tracker"))
+    assert lib.managed == []  # "Add Book" alone is not an update/manage/maintain use case
+    other = spec_rules.derive({"domain_model": {"use_cases": [{"actor": "Teacher", "use_case": "Maintain Courses"}]}})
+    assert other.managed == [{"role": "Teacher", "use_case": "Maintain Courses"}]
+    assert "Data management by a role:" in prompts.SYSTEM_PROMPT and "Add, Edit" in prompts.SYSTEM_PROMPT

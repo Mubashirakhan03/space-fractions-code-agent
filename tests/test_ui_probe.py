@@ -383,3 +383,61 @@ def test_probe_requires_a_masked_pin_input_for_protected_roles(tmp_path):
     assert not ok and "protected role(s) Admin, but no screen has a masked PIN input" in report
     ok, report = run_ui_probe(animated(tmp_path / "b", pin=True), requirements=SPEC_REQ)
     assert ok, report
+
+
+MANAGED = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root, rows=3, buttons=("Add", "Edit", "Delete"), locked=False):
+        self.root = root
+        root.title("Records App")
+        self.admin_unlocked = not locked
+        self.rows = rows
+        self.frame = tk.Frame(root)
+        self.frame.place(relx=0.5, rely=0.5, anchor="center")
+        tk.Label(self.frame, text="Manage records", font=("Segoe UI", 24)).pack()
+        self.listbox = tk.Listbox(self.frame, height=5)
+        self.listbox.pack()
+        self.entry = tk.Entry(self.frame, relief="solid", bd=2)
+        self.entry.pack()
+        for text in buttons:
+            tk.Button(self.frame, text=text).pack(side="left")
+        self.screens = {"menu": self.frame, "admin": self.frame}
+
+    def show(self, name):
+        self.listbox.delete(0, "end")
+        if name == "admin" and self.admin_unlocked:  # list filled only when unlocked
+            for i in range(self.rows):
+                self.listbox.insert("end", f"record {i}")
+
+
+def create_app(root):
+    return App(root, **OPTIONS)
+'''
+MANAGED_REQ = {"managed": [{"role": "Admin", "use_case": "Update Records"}]}
+
+
+def managed(tmp_path, seeds=3, **options):
+    runner = make(tmp_path, f"OPTIONS = {options!r}\n" + MANAGED)
+    (tmp_path / "data").mkdir()
+    (tmp_path / "data" / "records.json").write_text(
+        "[" + ",".join(f'{{"id": {i}}}' for i in range(seeds)) + "]")
+    return runner
+
+
+def test_probe_flags_empty_admin_list_when_seed_data_exists(tmp_path):
+    ok, report = run_ui_probe(managed(tmp_path, rows=0), requirements=MANAGED_REQ)
+    assert not ok and "shows no records although data/ holds 3 seed records" in report
+
+
+def test_probe_flags_missing_edit_and_delete(tmp_path):
+    ok, report = run_ui_probe(managed(tmp_path, buttons=("Add Record",)), requirements=MANAGED_REQ)
+    assert not ok and "has no Edit, Delete button(s)" in report
+
+
+def test_probe_accepts_full_admin_list_even_behind_an_unlock_flag(tmp_path):
+    ok, report = run_ui_probe(managed(tmp_path / "a"), requirements=MANAGED_REQ)
+    assert ok, report
+    ok, report = run_ui_probe(managed(tmp_path / "b", locked=True), requirements=MANAGED_REQ)
+    assert ok, report

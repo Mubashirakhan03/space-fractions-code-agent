@@ -197,10 +197,41 @@ class DemoApp:
         self._clear()
         self.screen = "admin"
         tk.Label(self.panel, text="Admin (mock demo)", font=("Segoe UI", 32, "bold"), fg=ACCENT, bg=PANEL).pack()
-        for q in QUESTIONS:
-            tk.Label(self.panel, text=f"{{q.prompt}}   →   {{q.answer}}", font=("Segoe UI", 20), fg=TEXT,
-                     bg=PANEL).pack(anchor="w")
-        big_button(self.panel, "Lock and leave", self.start).pack(pady=(16, 0))
+        if not hasattr(self, "items"):
+            self.items = [f"{{q.prompt}} → {{q.answer}}" for q in QUESTIONS]  # all records, seed data included
+        self.item_list = tk.Listbox(self.panel, font=("Segoe UI", 18), width=36, height=5)
+        self.item_list.pack(pady=8)
+        for item in self.items:
+            self.item_list.insert("end", item)
+        self.item_entry = tk.Entry(self.panel, font=("Segoe UI", 18), width=36, relief="solid", bd=2)
+        self.item_entry.pack(pady=4)
+        row = tk.Frame(self.panel, bg=PANEL)
+        row.pack(pady=6)
+        for text, command in (("Add", self.add_item), ("Edit", self.edit_item), ("Delete", self.delete_item)):
+            big_button(row, text, command).pack(side="left", padx=6)
+        big_button(self.panel, "Lock and leave", self.start).pack(pady=(10, 0))
+
+    def _selected(self):
+        sel = self.item_list.curselection()
+        return sel[0] if sel else None
+
+    def add_item(self):
+        text = self.item_entry.get().strip()
+        if text:
+            self.items.append(text)
+            self.show_admin()
+
+    def edit_item(self):
+        i, text = self._selected(), self.item_entry.get().strip()
+        if i is not None and text:
+            self.items[i] = text
+            self.show_admin()
+
+    def delete_item(self):
+        i = self._selected()
+        if i is not None:
+            del self.items[i]
+            self.show_admin()
 
     def start(self):
         self.index, self.score = 0, 0
@@ -418,6 +449,21 @@ def test_admin_pin(app):
     app.start()  # leaving locks it again: the next visit asks for the PIN
     app.show_pin()
     assert app.screen == "admin_pin"
+
+
+def test_admin_lists_all_records_and_adds_edits_deletes(app):
+    app.show_admin()
+    assert app.item_list.size() == len(QUESTIONS)  # seed records are listed
+    app.item_entry.insert(0, "1/3 + 1/3 → 2/3")
+    app.add_item()
+    assert app.item_list.size() == len(QUESTIONS) + 1 and app.items[-1] == "1/3 + 1/3 → 2/3"
+    app.item_list.selection_set(0)
+    app.item_entry.insert(0, "edited")
+    app.edit_item()
+    assert app.items[0] == "edited"
+    app.item_list.selection_set(0)
+    app.delete_item()
+    assert "edited" not in app.items and app.item_list.size() == len(QUESTIONS)
 
 
 def test_window_is_large_and_question_screen_built(app):

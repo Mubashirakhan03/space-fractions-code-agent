@@ -314,3 +314,15 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   Play-check + screenshots `docs/screenshots/run8/`. Findings → REAL_RUNS run 8, README known limitations, D-022.
 - Prompt: "every choice item has exactly ONE option that satisfies the prompt" (+ test). Not tested in a real run.
 - Rollback: `git revert <this commit>`; previous final example = run 7 (D-020).
+
+### 2026-10-19 — Rule: a role that manages records gets a full list with Add/Edit/Delete
+- User finding: their GUI run `run-2026-10-20_0038` had an admin screen with only "Add Question" (no list of the seed
+  records, no Edit/Delete), although the spec has Admin → "Update Questions".
+- `spec_rules`: use cases starting with update/manage/maintain/administer/edit/curate → `managed` (role, use case),
+  listed in the harness checklist. Prompt rule "Data management by a role" (list of ALL records incl. seed data, Add,
+  Edit, Delete, tests for each).
+- UI probe: on the screen named after the role, fails if data/*.json has seed records but the list is empty, or Add /
+  Edit / Delete buttons are missing (Listbox, Treeview or one row per Edit/Delete button; a list filled only when
+  unlocked is re-checked after setting the app's own unlock flag). Real outputs: run 7 and run 8 pass, the user's
+  0038 run is flagged. Mock demo admin: Listbox + Add/Edit/Delete. Tests 163 passed, 1 skipped.
+- Rollback: `git revert <this commit>`.

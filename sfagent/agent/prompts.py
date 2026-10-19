@@ -80,6 +80,11 @@ UI_QUALITY = """# UI quality rules (any desktop app)
   Keep the PIN in a settings file with a default documented in README.md (not on screen), and lock again when the
   user leaves the protected area. App.show(name) itself stays unguarded (the harness shows screens directly).
   Tests: a wrong PIN is refused, the correct PIN opens the screen, it is locked again after leaving.
+- Data management by a role: when the spec has a role that updates, manages or maintains records (e.g. a use case
+  "Update <records>" for an administrator), that role's screen shows a list of ALL records, seed data included,
+  and supports Add, Edit (change the selected record) and Delete (remove the selected record, after a
+  confirmation). Name the screen after the role (e.g. "<role>" in App.screens). Tests: a fresh store's list shows the
+  seed records, and Add, Edit and Delete each change the list and the store.
 - Where a flow ends (a round, a task, a booking…), show a clear result / summary screen whose message and
   rating match the actual outcome (no praise and no positive rating for a zero or failing result).
 - Forms: every text input has a clearly visible Submit/Check button next to it, the main input has keyboard
