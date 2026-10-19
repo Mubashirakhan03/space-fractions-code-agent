@@ -258,3 +258,13 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - UI probe: if nothing is mapped right after a resize, deiconify/lift and re-check once (fixed an intermittent
   "no labels visible" false alarm, 6/6 stable). Full suite 144 passed, 1 skipped.
 - New exe copied to `dist/` (user closed all windows) and verified 6/6 without Python.
+
+### 2026-10-19 — Real run 6 stopped: generated `app/` package collided with the agent's own `app` package
+- Run 6 (profile none, $1 cap): the model created its own `app/` package (`app/controller.py`). Every `run_python`
+  script/test then failed with "(no output, exit code 1)": dev mode ran `python -m app.main` from the output folder
+  and Python found the GENERATED `app` ("No module named app.main"). In the exe the same name would have shadowed
+  the generated package. The model spent requests diagnosing a harness bug, so the run was STOPPED at 52 requests,
+  $0.127 (state saved → resumable).
+- Fix: renamed the agent package `app/` → **`sfagent/`** (git mv; imports, spec, scripts, tests, docs). Older log
+  entries above still say `app/…` = today's `sfagent/…`. Regression test: a generated project with its own `app/`
+  package runs scripts and pytest. 145 passed, 1 skipped.

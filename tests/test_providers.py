@@ -3,10 +3,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.llm.deepseek import DEEPSEEK_MODEL, DeepSeekProvider
-from app.llm.mock import MockProvider, reply, tool_call
-from app.llm.pricing import estimate_cost, is_peak
-from app.llm.provider import LLMError, LLMResponse, Usage
+from sfagent.llm.deepseek import DEEPSEEK_MODEL, DeepSeekProvider
+from sfagent.llm.mock import MockProvider, reply, tool_call
+from sfagent.llm.pricing import estimate_cost, is_peak
+from sfagent.llm.provider import LLMError, LLMResponse, Usage
 
 
 def _raw(content="hi", tool_calls=None, reasoning=None, finish="stop"):

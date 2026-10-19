@@ -8,12 +8,12 @@ import pytest
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 sys.path.insert(0, str(Path(SPECPATH)))
-from app.bundled import BUNDLED_STDLIB  # noqa: E402
+from sfagent.bundled import BUNDLED_STDLIB  # noqa: E402
 
 hiddenimports = (
     BUNDLED_STDLIB
     + pytest.freeze_includes()
-    + collect_submodules("app")
+    + collect_submodules("sfagent")
     + ["pytest", "pluggy", "iniconfig", "packaging", "jsonschema", "yaml", "dotenv"]
 )
 datas = (

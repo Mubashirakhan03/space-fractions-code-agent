@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from app import __version__  # noqa: E402
+from sfagent import __version__  # noqa: E402
 
 EXE = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "dist" / "SpaceFractionsAgent.exe"
 WORK = Path(tempfile.mkdtemp(prefix="sfa_verify_"))

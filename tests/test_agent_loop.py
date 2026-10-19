@@ -10,15 +10,15 @@ import threading
 
 import pytest
 
-from app.agent.context import COMPACT_PROMPT, ContextManager
-from app.agent.loop import Agent
-from app.agent.replay import ReplayProvider
-from app.agent.state import RunState
-from app.agent.transcript import read_events
-from app.config import AppConfig
-from app.llm.mock import MockProvider, reply, tool_call
-from app.llm.provider import LLMResponse, ToolCall, Usage
-from app.parsers.spec import build_spec
+from sfagent.agent.context import COMPACT_PROMPT, ContextManager
+from sfagent.agent.loop import Agent
+from sfagent.agent.replay import ReplayProvider
+from sfagent.agent.state import RunState
+from sfagent.agent.transcript import read_events
+from sfagent.config import AppConfig
+from sfagent.llm.mock import MockProvider, reply, tool_call
+from sfagent.llm.provider import LLMResponse, ToolCall, Usage
+from sfagent.parsers.spec import build_spec
 
 DESIGN = "# Design decisions\n\n## UI design brief\nCalm.\n\n| Original | Desktop | Reason |\n|---|---|---|\n" + \
          "| PostgreSQL | SQLite | single user desktop |\n" * 8

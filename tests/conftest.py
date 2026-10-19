@@ -12,7 +12,7 @@ SAMPLES = ROOT / "samples"
 def _no_real_key(monkeypatch):
     """Hide any real key from the environment so no test can spend credit by accident."""
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
-    monkeypatch.setattr("app.config.load_dotenv_if_present", lambda: None)
+    monkeypatch.setattr("sfagent.config.load_dotenv_if_present", lambda: None)
 
 
 @pytest.fixture

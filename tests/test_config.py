@@ -1,4 +1,4 @@
-from app.config import AppConfig, load_config, mask_key, save_config
+from sfagent.config import AppConfig, load_config, mask_key, save_config
 
 
 def test_defaults_when_missing(tmp_path):

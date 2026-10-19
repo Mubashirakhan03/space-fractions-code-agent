@@ -4,8 +4,8 @@ import tkinter as tk
 
 import pytest
 
-from app.agent.ui_probe import run_ui_probe
-from app.tools.runner import PythonRunner
+from sfagent.agent.ui_probe import run_ui_probe
+from sfagent.tools.runner import PythonRunner
 
 
 def _tk_ok() -> bool:

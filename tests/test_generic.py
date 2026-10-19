@@ -5,14 +5,14 @@ import sys
 
 import pytest
 
-from app.agent import prompts
-from app.agent.loop import Agent
-from app.agent.profile import load_profile, parse_profile
-from app.bundled import BUNDLED_STDLIB
-from app.config import AppConfig
-from app.gui import controller
-from app.llm.mock import MockProvider, reply, tool_call
-from app.parsers.spec import build_spec, validate_spec
+from sfagent.agent import prompts
+from sfagent.agent.loop import Agent
+from sfagent.agent.profile import load_profile, parse_profile
+from sfagent.bundled import BUNDLED_STDLIB
+from sfagent.config import AppConfig
+from sfagent.gui import controller
+from sfagent.llm.mock import MockProvider, reply, tool_call
+from sfagent.parsers.spec import build_spec, validate_spec
 from tests.conftest import ROOT, SAMPLES
 
 LIB = SAMPLES / "library_tracker"

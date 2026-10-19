@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pytest
 
-from app.config import AppConfig
-from app.gui.controller import RunController, find_default_inputs, launch_generated_game
-from app.llm.demo_script import BANNER
+from sfagent.config import AppConfig
+from sfagent.gui.controller import RunController, find_default_inputs, launch_generated_game
+from sfagent.llm.demo_script import BANNER
 
 
 @pytest.fixture(autouse=True)
@@ -118,7 +118,7 @@ def run_window(window, timeout=90):
 def window(monkeypatch, doc_path, view_path):
     if not _tk_available():
         pytest.skip("no display")
-    from app.gui import app as gui
+    from sfagent.gui import app as gui
 
     monkeypatch.setattr(gui.messagebox, "showerror", lambda *a, **k: pytest.fail(f"error dialog: {a}"))
     w = gui.create_window()
@@ -132,7 +132,7 @@ def window(monkeypatch, doc_path, view_path):
 
 
 def test_gui_smoke_mock_generate(tmp_path, window):
-    from app.gui import app as gui
+    from sfagent.gui import app as gui
 
     window.vars["output_dir"].set(str(tmp_path / "gui_out"))
     assert str(window.run_game_btn.cget("state")) == "disabled"  # nothing generated yet
@@ -196,7 +196,7 @@ def test_show_hide_key_button(window):
 def test_folder_helpers(tmp_path):
     from datetime import datetime
 
-    from app.gui.controller import clear_previous_run, new_run_subfolder, run_succeeded
+    from sfagent.gui.controller import clear_previous_run, new_run_subfolder, run_succeeded
 
     now = datetime(2026, 10, 19, 0, 19)
     first = new_run_subfolder(tmp_path, now)
@@ -223,7 +223,7 @@ def test_folder_helpers(tmp_path):
 
 
 def test_friendly_key_messages():
-    from app.gui.app import friendly_key_problem
+    from sfagent.gui.app import friendly_key_problem
 
     assert "start with sk-" in friendly_key_problem("abc123")
     assert "No API key" in friendly_key_problem("")
@@ -233,7 +233,7 @@ def test_friendly_key_messages():
 def test_new_run_folders_are_siblings_not_nested(tmp_path):
     from datetime import datetime
 
-    from app.gui.controller import new_run_subfolder, run_folder_base
+    from sfagent.gui.controller import new_run_subfolder, run_folder_base
 
     now = datetime(2026, 10, 19, 17, 25)
     workspace = tmp_path / "tictactoe"

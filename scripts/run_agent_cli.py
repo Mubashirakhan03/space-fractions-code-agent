@@ -18,11 +18,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from app.agent.loop import Agent  # noqa: E402
-from app.agent.profile import load_profile  # noqa: E402
-from app.config import AppConfig  # noqa: E402
-from app.gui.controller import build_provider  # noqa: E402
-from app.parsers.spec import build_spec  # noqa: E402
+from sfagent.agent.loop import Agent  # noqa: E402
+from sfagent.agent.profile import load_profile  # noqa: E402
+from sfagent.config import AppConfig  # noqa: E402
+from sfagent.gui.controller import build_provider  # noqa: E402
+from sfagent.parsers.spec import build_spec  # noqa: E402
 
 
 def main() -> int:

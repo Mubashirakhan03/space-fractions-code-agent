@@ -26,7 +26,7 @@ Problems found by looking at the real window. The tests could not catch them:
 2. **Request efficiency.** Late in the run the model made one `edit_file` per request. That used up the 40-request cap.
 
 Agent improvements made in response (generic, not Space-Fractions specific):
-- New harness **UI layout probe** in Verify (`app/agent/ui_probe.py`). It opens the real window, shows every screen
+- New harness **UI layout probe** in Verify (`sfagent/agent/ui_probe.py`). It opens the real window, shows every screen
   through the `create_app(root)` → `screens` / `show(name)` contract, and fails verification when widgets are
   outside the window, canvas items are squeezed into an edge or off-canvas, or a screen crashes when shown.
   On run 1's output it reports 11 problems. On a correct layout it passes.

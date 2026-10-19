@@ -5,12 +5,12 @@ import time
 
 import pytest
 
-from app.agent.planner import TodoList
-from app.llm.provider import ToolCall
-from app.tools.builtin import ToolContext, build_registry
-from app.tools.registry import Tool, ToolRegistry
-from app.tools.runner import PythonRunner
-from app.tools.sandbox import ReadState, Sandbox, SandboxError
+from sfagent.agent.planner import TodoList
+from sfagent.llm.provider import ToolCall
+from sfagent.tools.builtin import ToolContext, build_registry
+from sfagent.tools.registry import Tool, ToolRegistry
+from sfagent.tools.runner import PythonRunner
+from sfagent.tools.sandbox import ReadState, Sandbox, SandboxError
 
 
 @pytest.fixture
@@ -234,3 +234,19 @@ def test_write_files_explains_missing_path(reg, ctx):
     r = call(reg, "write_files", files=[{"path": "ok.py", "content": "x = 1\n"}, {"content": "lost path"}])
     assert not r.is_error and "wrote ok.py" in r.content
     assert "FAILED entry #2: missing path" in r.content and "'path' FIRST" in r.content
+
+
+def test_generated_project_may_have_its_own_app_package(reg, ctx):
+    """Regression (real run 6): a generated `app/` package used to shadow the agent's own package, so every
+    run_python script/test failed with "No module named app.main"."""
+    call(reg, "write_files", files=[
+        {"path": "app/__init__.py", "content": ""},
+        {"path": "app/controller.py", "content": "def answer():\n    return 42\n"},
+        {"path": "check.py", "content": "from app.controller import answer\nprint('ANSWER', answer())\n"},
+        {"path": "tests/test_app.py",
+         "content": "from app.controller import answer\n\n\ndef test_answer():\n    assert answer() == 42\n"},
+    ])
+    r = call(reg, "run_python", action="script", target="check.py")
+    assert r.content.startswith("PASSED") and "ANSWER 42" in r.content
+    r = call(reg, "run_python", action="test")
+    assert r.content.startswith("PASSED") and "1 passed" in r.content

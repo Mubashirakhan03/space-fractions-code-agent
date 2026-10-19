@@ -1,4 +1,4 @@
-from app.parsers.uml_parser import parse_diagram, parse_views
+from sfagent.parsers.uml_parser import parse_diagram, parse_views
 
 
 def _views(view_path):

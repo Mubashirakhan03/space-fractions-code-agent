@@ -29,11 +29,11 @@ Read this first when resuming work in a new session.
 - Phase 5: STOP first → tell user exact balance to add (with margin), runs covered, cost per run → wait for confirmation.
 
 ## How the agent works (quick map)
-- `app/agent/loop.py` Agent.run(): plan (read-only + submit_plan) → implement → verify (harness: deliverables,
+- `sfagent/agent/loop.py` Agent.run(): plan (read-only + submit_plan) → implement → verify (harness: deliverables,
   compile, pytest) ⇄ fix (≤ fix_rounds) → RUN_REPORT.md. State saved after every step → `run(resume=True)`.
-- Tools: `app/tools/builtin.py`; permissions: `sandbox.py`; generated code runs via `runner.py` → `app/main.py`.
+- Tools: `sfagent/tools/builtin.py`; permissions: `sandbox.py`; generated code runs via `runner.py` → `sfagent/main.py`.
 - Replay: `ReplayProvider(transcript.jsonl)` re-runs recorded model replies with zero cost.
-- GUI: `python -m app.main` (dev). Mock mode checkbox = zero-cost scripted demo.
+- GUI: `python -m sfagent.main` (dev). Mock mode checkbox = zero-cost scripted demo.
 - Exe: `scripts\build_exe.bat` → `dist\SpaceFractionsAgent.exe` (26 MB); check with `python scripts/verify_exe.py`.
 - CI: `.github/workflows/build-windows.yml` builds + verifies on every push; `v*` tag → GitHub Release with exe.
 

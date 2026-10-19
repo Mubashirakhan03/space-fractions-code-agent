@@ -1,4 +1,4 @@
-from app.parsers.doc_parser import parse_document, parse_table
+from sfagent.parsers.doc_parser import parse_document, parse_table
 
 
 def _doc(doc_path):

@@ -1,6 +1,6 @@
 import json
 
-from app.parsers.spec import build_spec, save_spec, validate_spec
+from sfagent.parsers.spec import build_spec, save_spec, validate_spec
 
 
 def test_spec_is_schema_valid(doc_path, view_path):

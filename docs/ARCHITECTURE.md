@@ -27,7 +27,7 @@ flowchart LR
     VER -- ok --> REP[RUN_REPORT.md<br/>transcript.jsonl]
 ```
 
-## Pipeline (outer loop, `app/agent/loop.py`)
+## Pipeline (outer loop, `sfagent/agent/loop.py`)
 
 | Phase | Mode | What happens |
 |---|---|---|
@@ -64,19 +64,19 @@ tool, the harness nudges it (up to 2 times).
 
 | Package | Responsibility |
 |---|---|
-| `app/parsers/` | Deterministic Markdown and PlantUML parsing → `spec.json` (JSON Schema in `schemas/`); input-issue detection |
-| `app/llm/` | `LLMProvider` interface; `DeepSeekProvider` (official API, thinking off, retry/backoff); `MockProvider`; pricing |
-| `app/agent/` | Loop, prompts, context management, todo list, state/resume, transcript/replay, report, task profiles, UI probe |
-| `app/tools/` | Registry, sandbox (path guard, read-before-edit, blocked types), built-in tools, runner (bundled interpreter) |
-| `app/gui/` | customtkinter window and controller (worker thread + queue), theme |
-| `app/main.py` | Entry point: GUI, or the hidden `--run-pytest`, `--run-script`, `--doctor` and `--self-test` commands |
+| `sfagent/parsers/` | Deterministic Markdown and PlantUML parsing → `spec.json` (JSON Schema in `schemas/`); input-issue detection |
+| `sfagent/llm/` | `LLMProvider` interface; `DeepSeekProvider` (official API, thinking off, retry/backoff); `MockProvider`; pricing |
+| `sfagent/agent/` | Loop, prompts, context management, todo list, state/resume, transcript/replay, report, task profiles, UI probe |
+| `sfagent/tools/` | Registry, sandbox (path guard, read-before-edit, blocked types), built-in tools, runner (bundled interpreter) |
+| `sfagent/gui/` | customtkinter window and controller (worker thread + queue), theme |
+| `sfagent/main.py` | Entry point: GUI, or the hidden `--run-pytest`, `--run-script`, `--doctor` and `--self-test` commands |
 
 ## Why the exe needs no Python
 
 The exe ships its own interpreter. Generated tests and the generated app run as
 `SpaceFractionsAgent.exe --run-pytest tests` and `SpaceFractionsAgent.exe --run-script main.py`. The child runs with
 the output folder as its working directory, a timeout, and an environment with no API keys. The standard-library
-modules that generated code may use are bundled from one list, `app/bundled.py`. The system prompt gives the model
+modules that generated code may use are bundled from one list, `sfagent/bundled.py`. The system prompt gives the model
 the same list.
 
 ## Safety layers

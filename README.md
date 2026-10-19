@@ -51,7 +51,7 @@ flowchart LR
     Ver -- ok --> R[RUN_REPORT.md<br/>transcript.jsonl]
 ```
 
-1. **Preprocess (no LLM).** `app/parsers/` turns the two Markdown files into `spec.json` (JSON Schema in
+1. **Preprocess (no LLM).** `sfagent/parsers/` turns the two Markdown files into `spec.json` (JSON Schema in
    `schemas/`). The spec holds sections, tables, requirements, components, OpenAPI/SQL/proto blocks, all 13 UML
    diagrams (actors, use cases, classes, states, sequences…) and the **input issues** it detects.
 2. **Plan (plan mode, read-only).** The model reconciles the spec with the desktop constraint. It writes
@@ -74,9 +74,9 @@ Sources: [`docs/RESEARCH_NOTES.md`](docs/RESEARCH_NOTES.md) (how-claude-code-wor
 
 | # | Claude Code mechanism | Implementation here |
 |---|---|---|
-| 1 | Two-layer agent loop | `Agent.run()` owns the session and the pipeline. `_run_phase()` sends messages + tool schemas → model tool calls → execute → `role:"tool"` results → repeat until `submit_plan`/`finish` (`app/agent/loop.py`) |
+| 1 | Two-layer agent loop | `Agent.run()` owns the session and the pipeline. `_run_phase()` sends messages + tool schemas → model tool calls → execute → `role:"tool"` results → repeat until `submit_plan`/`finish` (`sfagent/agent/loop.py`) |
 | 2 | Error recovery | Retry with backoff on 429/5xx/network errors; invalid tool JSON and missing arguments go back to the model as errors; "continue" when the output is cut off; nudges when no tool is called |
-| 3 | Tool system | JSON-schema registry; read-only tools run in parallel, writes serially; errors are returned, never raised; fixed tool order (`app/tools/`) |
+| 3 | Tool system | JSON-schema registry; read-only tools run in parallel, writes serially; errors are returned, never raised; fixed tool order (`sfagent/tools/`) |
 | 4 | Plan mode | Plan phase: only read-only tools + `update_todos` + `submit_plan`. Write tools are denied, and the harness persists the plan |
 | 5 | Code editing strategy | `edit_file`: exact unique match (or `replace_all`), must read the whole file first, mtime check; `write_files` for new files; `delete_file` |
 | 6 | Permissions & sandbox | Paths confined to the output folder (absolute paths, `..` and symlinks blocked); `agent_run/` read-only; no script file types; no shell; optional ask-before-write dialog |
@@ -169,7 +169,7 @@ py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-dev.txt
 .venv\Scripts\python -m pytest            :: 145 tests, MockProvider only, no API cost
 .venv\Scripts\python -m ruff check .
-.venv\Scripts\python -m app.main          :: run the GUI from source
+.venv\Scripts\python -m sfagent.main          :: run the GUI from source
 scripts\build_exe.bat                     :: → dist\SpaceFractionsAgent.exe
 .venv\Scripts\python scripts\verify_exe.py   :: exe checks with no Python on PATH
 ```
@@ -182,7 +182,7 @@ for every push, and attaches the exe to a GitHub Release for `v*` tags. A pre-co
 ## Repository map
 
 ```
-app/            agent (loop, prompts, context, profile, ui_probe…), tools, llm providers, parsers, gui, main
+sfagent/        agent (loop, prompts, context, profile, ui_probe…), tools, llm providers, parsers, gui, main
 schemas/        spec.schema.json            samples/   inputs (+ library_tracker)     profiles/  task profiles
 examples/       five real runs (run5 = final), each with agent_run/ transcript, state, report, logs
 docs/           RESEARCH_NOTES, ARCHITECTURE, REAL_RUNS, DECISIONS, VIDEO_SCRIPT, LEARNING_NOTES_UR, CHANGELOG_WORK

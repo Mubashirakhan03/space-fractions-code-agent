@@ -132,7 +132,7 @@ kharcha track karta hai. Sab kuch MockProvider se deterministic tested hai."
 ## Phase 3 — GUI (desktop window)
 
 ### Kya bana
-- **customtkinter** window (Windows desktop look). Chalane ka tareeqa (dev): `python -m app.main`.
+- **customtkinter** window (Windows desktop look). Chalane ka tareeqa (dev): `python -m sfagent.main`.
 - **Bayen taraf (settings):** DeepSeek API key (•••• chhupi hui, 👁 se dikh sakti hai), "Remember key", Test connection,
   Thinking mode, Mock mode; dono `.md` files ke pickers (samples/ se khud bhar jaate hain); output folder; limits
   (steps, requests, cost $, fix rounds); "Ask before every file write".

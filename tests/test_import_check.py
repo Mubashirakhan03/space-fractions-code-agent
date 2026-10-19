@@ -1,7 +1,7 @@
 """Verify's import check catches wrong imports in main.py and modules that tests never import."""
 
-from app.agent.import_check import run_import_check
-from app.tools.runner import PythonRunner
+from sfagent.agent.import_check import run_import_check
+from sfagent.tools.runner import PythonRunner
 
 
 def project(tmp_path, main_src: str, widgets_src: str = "def styled():\n    return 1\n"):
