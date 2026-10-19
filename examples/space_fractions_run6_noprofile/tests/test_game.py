@@ -3,7 +3,7 @@ import random
 
 import pytest
 
-from game.game import Game, AlreadyAnswered, GameOverError, InvalidTransition
+from game.game import Game, GameOverError, InvalidTransition
 from game.game_state import GameState
 from tests.conftest import make_choice_questions
 
@@ -30,10 +30,11 @@ def test_round_ends_in_gameover():
         g.current_question
 
 
-def test_submit_twice_on_same_question_raises():
-    g = Game("g1", make_choice_questions(2), random.Random(1))
+def test_cannot_submit_after_gameover():
+    g = Game("g1", make_choice_questions(1), random.Random(1))
     g.submit_answer("1/2")
-    with pytest.raises(AlreadyAnswered):
+    assert g.state is GameState.GAMEOVER
+    with pytest.raises(InvalidTransition):
         g.submit_answer("1/2")
 
 
@@ -44,11 +45,11 @@ def test_wrong_answer_does_not_increment_score():
 
 
 def test_message_names_expected_value_before_advance():
-    """The UI uses q.correct BEFORE submit_answer advances state."""
+    """The UI captures q.correct BEFORE submit_answer advances state."""
     qs = make_choice_questions(2)
     g = Game("g1", qs, random.Random(1))
     expected = g.current_question.correct  # capture before submit
     assert expected == "1/2"
-    g.submit_answer("1/4")  # wrong
-    # next question should be Q1, not Q0
+    g.submit_answer("1/4")  # wrong answer for Q0
+    # next question should be Q1 (the round advanced), not Q0
     assert g.current_question.prompt == "Q1"

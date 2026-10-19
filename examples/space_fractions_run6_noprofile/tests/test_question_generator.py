@@ -6,6 +6,15 @@ from fractions import Fraction
 from game.question_generator import generate_questions
 
 
+def _to_fraction(s: str) -> Fraction:
+    """Parse a canonical fraction string, incl. mixed numbers like '2 1/2'."""
+    s = s.strip()
+    if " " in s:
+        whole, frac = s.split(" ", 1)
+        return int(whole) + Fraction(frac)
+    return Fraction(s)
+
+
 def test_generates_correct_and_distinct_choices():
     rng = random.Random(42)
     qs = generate_questions(40, rng)
@@ -16,10 +25,10 @@ def test_generates_correct_and_distinct_choices():
             # all distinct
             assert len(set(q.options)) == len(q.options)
             # no wrong choice equals the correct value
-            correct_val = Fraction(q.correct)
+            correct_val = _to_fraction(q.correct)
             for o in q.options:
                 if o != q.correct:
-                    assert Fraction(o) != correct_val
+                    assert _to_fraction(o) != correct_val
         else:
             assert q.check_answer(q.correct)
             assert q.options == []

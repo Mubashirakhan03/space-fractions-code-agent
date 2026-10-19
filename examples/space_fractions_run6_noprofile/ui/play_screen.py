@@ -36,26 +36,28 @@ class PlayScreen(BaseScreen):
 
         self._choice_buttons = []
         self._entry = None
+        self._transitioning = False
 
     def show(self):
         self.app.controller.new_game()
+        self._transitioning = False
+        self.feedback_label.config(text="")
         self._render_question()
 
     def resume_game(self):
-        \"\"\"Re-render the current question without starting a new round.\"\"\"
+        """Re-render the current question without starting a new round."""
+        self._transitioning = False
         self._render_question()
 
     def _render_question(self):
         game = self.app.controller.game
+        if game is None or game.state.value == "GameOver":
+            return
         q = game.current_question
         self.prompt_label.config(text=q.get_prompt())
         total = game.total
         self.progress_label.config(text=f"Question {game.index + 1} of {total}")
         self._clear_inputs()
-
-        if game.answered_current:
-            # Between questions, briefly: just advance
-            return
 
         if q.kind == "choice":
             self.type_frame.pack_forget()
@@ -98,7 +100,7 @@ class PlayScreen(BaseScreen):
 
     def _handle_answer(self, answer):
         game = self.app.controller.game
-        if game is None or game.answered_current:
+        if game is None or self._transitioning:
             return
         q = game.current_question
         expected = q.correct
@@ -109,10 +111,12 @@ class PlayScreen(BaseScreen):
         else:
             self.feedback_label.config(
                 text=f"Not quite — the answer is {expected}.", fg=theme.ERROR)
+        self._transitioning = True
         self._clear_inputs()
         self.after(800, self._advance)
 
     def _advance(self):
+        self._transitioning = False
         game = self.app.controller.game
         if game is None:
             return

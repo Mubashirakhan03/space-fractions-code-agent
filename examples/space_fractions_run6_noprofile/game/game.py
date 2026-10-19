@@ -26,7 +26,6 @@ class Game:
         self._rng = rng or random.Random()
         self._index: int = 0
         self._state: GameState = GameState.PLAYING
-        self._answered_current: bool = False
 
     # -- state machine -----------------------------------------------------
     @property
@@ -55,15 +54,12 @@ class Game:
         return self.current_question.get_prompt()
 
     def submit_answer(self, answer: str) -> bool:
-        """Score the current question and advance. Returns whether it was correct."""
+        """Score the current question and advance to the next. Returns whether the answer was correct."""
         self._require_playing()
-        if self._answered_current:
-            raise AlreadyAnswered()
         question = self.current_question
         correct = question.check_answer(answer)
         if correct:
             self._score += 1
-        self._answered_current = True
         self._index += 1
         if self._index >= len(self._questions):
             self._state = GameState.GAMEOVER
@@ -80,10 +76,6 @@ class Game:
         return self._questions[self._index]
 
     @property
-    def answered_current(self) -> bool:
-        return self._answered_current
-
-    @property
     def total(self) -> int:
         return len(self._questions)
 
@@ -98,10 +90,6 @@ class Game:
 
 class InvalidTransition(Exception):
     """Raised when an invalid state transition is attempted."""
-
-
-class AlreadyAnswered(Exception):
-    """Raised when the same question is answered twice."""
 
 
 class GameOverError(Exception):

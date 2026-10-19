@@ -6,9 +6,8 @@ wrong choices are guaranteed distinct and never equal to the correct value.
 from __future__ import annotations
 
 import random
-from typing import List
-
 from fractions import Fraction
+from typing import List
 
 from questions.question import Question
 
@@ -31,10 +30,9 @@ def _canonical(value: Fraction) -> str:
 def generate_questions(count: int, rng: random.Random) -> List[Question]:
     """Generate ``count`` fresh fraction questions using ``rng``.
 
-    Half are multiple-choice (visual comparison / equivalence / addition) and
-    half are typed computation. Every generated question has a computed correct
-    value and 3 distinct wrong choices that are never equal to the correct
-    value.
+    Half are multiple-choice and half are typed computation. Every generated
+    question has a computed correct value and distinct wrong choices that are
+    never equal to the correct value.
     """
     questions: List[Question] = []
     for i in range(count):
@@ -53,34 +51,39 @@ def _make_choice(idx: int, rng: random.Random) -> Question:
         b_num = rng.randint(1, 9)
         b_den = rng.randint(1, 9)
         a, b = Fraction(a_num, a_den), Fraction(b_num, b_den)
-        correct = _canonical(a) if a > b else _canonical(b)
+        correct = a if a > b else b
         prompt = f"Which fraction is bigger: {_canonical(a)} or {_canonical(b)}?"
         options = [_canonical(a), _canonical(b)]
+        correct_str = _canonical(correct)
     elif style == "equivalent":
         base = Fraction(rng.randint(1, 6), rng.randint(1, 6))
         factor = rng.randint(2, 4)
         equiv = base * factor
+        correct_str = _canonical(equiv)
         prompt = f"Which fraction equals {_canonical(base)}?"
-        correct = _canonical(equiv)
-        options, used = [correct], {correct}
+        options = [correct_str]
+        used = {equiv}
         while len(options) < 4:
-            w = _canonical(base * rng.randint(1, 6) + Fraction(rng.randint(1, 4), rng.randint(1, 6)))
-            if w not in used and w != correct:
-                options.append(w)
+            w = base * rng.randint(1, 6) + Fraction(rng.randint(1, 4), rng.randint(1, 6))
+            if w not in used and w != equiv:
+                options.append(_canonical(w))
                 used.add(w)
     else:  # add
         a = Fraction(rng.randint(1, 5), rng.randint(2, 6))
         b = Fraction(rng.randint(1, 5), rng.randint(2, 6))
-        correct = _canonical(a + b)
+        total = a + b
+        correct_str = _canonical(total)
         prompt = f"What is {_canonical(a)} + {_canonical(b)}?"
-        options, used = [correct], {correct}
+        options = [correct_str]
+        used = {total}
         while len(options) < 4:
-            w = _canonical((a + b) + Fraction(rng.randint(-3, 3), rng.randint(2, 6)))
-            if w not in used and Fraction(w) != a + b:
-                options.append(w)
+            w = total + Fraction(rng.randint(-3, 3), rng.randint(2, 6))
+            if w not in used and w != total:
+                options.append(_canonical(w))
                 used.add(w)
     rng.shuffle(options)
-    return Question(id=f"gen-{idx}", prompt=prompt, correct=correct, kind="choice", options=options)
+    return Question(id=f"gen-{idx}", prompt=prompt, correct=correct_str,
+                    kind="choice", options=options)
 
 
 def _make_typed(idx: int, rng: random.Random) -> Question:
@@ -88,4 +91,5 @@ def _make_typed(idx: int, rng: random.Random) -> Question:
     b = Fraction(rng.randint(1, 6), rng.randint(2, 8))
     correct = _canonical(a + b)
     prompt = f"Add the fractions and type the answer: {_canonical(a)} + {_canonical(b)}"
-    return Question(id=f"gen-{idx}", prompt=prompt, correct=correct, kind="typed", options=[])
+    return Question(id=f"gen-{idx}", prompt=prompt, correct=correct,
+                    kind="typed", options=[])

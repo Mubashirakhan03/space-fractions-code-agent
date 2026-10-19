@@ -59,14 +59,19 @@ def create_app(root: tk.Tk):
     root.title("Space Fractions")
     root.minsize(1100, 750)
     root.configure(bg=theme.BG)
-    root.geometry("1280x800")
-    try:
-        root.state("zoomed")
-    except tk.TclError:
+
+    # Only maximize when a real window manager is present (not when the root
+    # is withdrawn, e.g. in headless tests): calling state("zoomed") on a
+    # withdrawn window corrupts the Tk window path.
+    if root.state() != "withdrawn":
         try:
-            root.attributes("-zoomed", True)
+            root.state("zoomed")
         except tk.TclError:
-            pass
+            try:
+                root.attributes("-zoomed", True)
+            except tk.TclError:
+                pass
+
     root.bind("<F11>", lambda e: _toggle_fullscreen(root))
     root.bind("<Escape>", lambda e: _leave_fullscreen(root))
     return App(root)

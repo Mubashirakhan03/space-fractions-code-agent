@@ -23,6 +23,10 @@
 - UI probe: re-checks once after bringing the window to the front if nothing is mapped (removes a flaky false alarm).
 - Space Fractions profile: ≥ 20 seed questions plus fraction questions generated in code for every round
   (equivalent, compare, add/subtract, simplify; answers via `fractions.Fraction`); full admin form.
+- The agent's own package is renamed `app` → `sfagent`, so generated projects can have their own `app/` package
+  (before, every script/test failed when they did).
+- Default max agent steps 100 (was 60; migrated). Generator tests must recompute expected values independently and
+  reject ambiguous items; text inputs must be visibly distinct (and the UI probe checks it).
 - Default max LLM requests per run is now 80 (and the token cap 6M); older saved settings with the old defaults are
   migrated automatically.
 

@@ -1,4 +1,4 @@
-"""Admin screen: list + add/edit/delete questions."""
+"""Admin screen: list + add/edit/delete questions (two-column layout)."""
 import tkinter as tk
 from tkinter import messagebox
 
@@ -14,76 +14,85 @@ class AdminScreen(BaseScreen):
     def __init__(self, master, app):
         super().__init__(master, app)
         self._editing = None  # question id being edited
+
+        # Self-contained content frame (not the shared centred body) so we can
+        # lay columns out with grid and keep everything inside the window.
+        self.content = tk.Frame(self, bg=theme.BG)
+        self.content.place(relx=0.5, rely=0.5, anchor="center")
+
         self.title_label = tk.Label(
-            self.body, text="Update Questions", font=theme.HEADING,
+            self.content, text="Update Questions", font=theme.HEADING,
             fg=theme.ACCENT, bg=theme.BG,
         )
-        self.title_label.pack(pady=(0, 8))
+        self.title_label.grid(row=0, column=0, columnspan=2, pady=(0, 16))
 
+        # Left column: question list.
+        self.left = tk.Frame(self.content, bg=theme.BG)
+        self.left.grid(row=1, column=0, sticky="n", padx=(0, 20))
         self.listbox = tk.Listbox(
-            self.body, font=theme.SMALL, bg=theme.SURFACE, fg=theme.TEXT,
-            relief="flat", height=8, width=70,
+            self.left, font=theme.SMALL, bg=theme.SURFACE, fg=theme.TEXT,
+            relief="flat", height=10, width=44,
         )
-        self.listbox.pack(pady=(0, 8))
+        self.listbox.pack()
         self.listbox.bind("<<ListboxSelect>>", self._on_select)
 
-        self.form = tk.Frame(self.body, bg=theme.BG)
-        self.form.pack(pady=8)
-
+        # Right column: add/edit form.
+        self.form = tk.Frame(self.content, bg=theme.SURFACE)
+        self.form.grid(row=1, column=1, sticky="n", padx=(20, 0))
         self._build_form()
 
         self.feedback_label = tk.Label(
-            self.body, text="", font=theme.SMALL, bg=theme.BG,
+            self.content, text="", font=theme.SMALL, bg=theme.BG,
         )
-        self.feedback_label.pack(pady=(4, 8))
+        self.feedback_label.grid(row=2, column=0, columnspan=2, pady=(12, 8))
 
-        self.actions = tk.Frame(self.body, bg=theme.BG)
-        self.actions.pack()
-        self.back_btn = self.make_button("Back to Menu", self._back, primary=False)
-        self.back_btn.pack(pady=(12, 0))
+        self.back_btn = self.make_button("Back to Menu", self._back, primary=False,
+                                         master=self.content)
+        self.back_btn.grid(row=3, column=0, columnspan=2, pady=(0, 4))
 
     def _build_form(self):
         for w in self.form.winfo_children():
             w.destroy()
-        bg = theme.BG
+        bg = theme.SURFACE
         self.prompt_label = tk.Label(self.form, text="Prompt:", font=theme.SMALL,
                                      fg=theme.TEXT, bg=bg)
-        self.prompt_label.grid(row=0, column=0, sticky="e", padx=6, pady=4)
-        self.prompt_entry = tk.Entry(self.form, font=theme.SMALL, width=40,
+        self.prompt_label.grid(row=0, column=0, sticky="e", padx=6, pady=3)
+        self.prompt_entry = tk.Entry(self.form, font=theme.SMALL, width=32,
                                      bg=theme.SURFACE, fg=theme.TEXT,
                                      insertbackground=theme.TEXT, relief="flat")
-        self.prompt_entry.grid(row=0, column=1, sticky="w", padx=6, pady=4, ipady=4)
+        self.prompt_entry.grid(row=0, column=1, sticky="w", padx=6, pady=3, ipady=3)
 
         self.correct_label = tk.Label(self.form, text="Correct value:", font=theme.SMALL,
                                       fg=theme.TEXT, bg=bg)
-        self.correct_label.grid(row=1, column=0, sticky="e", padx=6, pady=4)
-        self.correct_entry = tk.Entry(self.form, font=theme.SMALL, width=20,
+        self.correct_label.grid(row=1, column=0, sticky="e", padx=6, pady=3)
+        self.correct_entry = tk.Entry(self.form, font=theme.SMALL, width=14,
                                       bg=theme.SURFACE, fg=theme.TEXT,
                                       insertbackground=theme.TEXT, relief="flat")
-        self.correct_entry.grid(row=1, column=1, sticky="w", padx=6, pady=4, ipady=4)
+        self.correct_entry.grid(row=1, column=1, sticky="w", padx=6, pady=3, ipady=3)
 
         self.kind_label = tk.Label(self.form, text="Kind:", font=theme.SMALL,
                                    fg=theme.TEXT, bg=bg)
-        self.kind_label.grid(row=2, column=0, sticky="e", padx=6, pady=4)
+        self.kind_label.grid(row=2, column=0, sticky="e", padx=6, pady=3)
         self.kind_var = tk.StringVar(value="choice")
         self.kind_menu = tk.OptionMenu(self.form, self.kind_var, "choice", "typed",
                                        command=self._on_kind_change)
         self.kind_menu.config(font=theme.SMALL, bg=theme.SURFACE, fg=theme.TEXT,
                               relief="flat")
-        self.kind_menu.grid(row=2, column=1, sticky="w", padx=6, pady=4)
+        self.kind_menu.grid(row=2, column=1, sticky="w", padx=6, pady=3)
 
         self.options_label = tk.Label(self.form, text="Choices (comma,sep):",
                                       font=theme.SMALL, fg=theme.TEXT, bg=bg)
-        self.options_label.grid(row=3, column=0, sticky="e", padx=6, pady=4)
-        self.options_entry = tk.Entry(self.form, font=theme.SMALL, width=40,
+        self.options_label.grid(row=3, column=0, sticky="e", padx=6, pady=3)
+        self.options_entry = tk.Entry(self.form, font=theme.SMALL, width=32,
                                       bg=theme.SURFACE, fg=theme.TEXT,
                                       insertbackground=theme.TEXT, relief="flat")
-        self.options_entry.grid(row=3, column=1, sticky="w", padx=6, pady=4, ipady=4)
+        self.options_entry.grid(row=3, column=1, sticky="w", padx=6, pady=3, ipady=3)
 
-        self.save_btn = self.make_button("Save", self._save)
-        self.save_btn.grid(row=4, column=0, columnspan=2, pady=(8, 4))
-        self.delete_btn = self.make_button("Delete Selected", self._delete, primary=False)
-        self.delete_btn.grid(row=5, column=0, columnspan=2, pady=4)
+        self.save_btn = self.make_button("Save", self._save, master=self.form)
+        self.save_btn.grid(row=4, column=0, columnspan=2, pady=(6, 3))
+        self.delete_btn = self.make_button("Delete Selected", self._delete,
+                                           primary=False, master=self.form)
+        self.delete_btn.grid(row=5, column=0, columnspan=2, pady=3)
 
     def _on_kind_change(self, *_):
         if self.kind_var.get() == "typed":

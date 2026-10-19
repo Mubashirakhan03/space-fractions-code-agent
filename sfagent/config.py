@@ -14,7 +14,7 @@ from pathlib import Path
 from sfagent import APP_NAME
 
 ENV_KEY = "DEEPSEEK_API_KEY"
-CONFIG_VERSION = 2  # v2: default max_requests 40 → 80, max_total_tokens 2M → 6M
+CONFIG_VERSION = 3  # v2: max_requests 40 → 80, max_total_tokens 2M → 6M; v3: max_steps 60 → 100
 
 
 @dataclass
@@ -22,7 +22,7 @@ class AppConfig:
     api_key: str = ""
     provider: str = "deepseek"  # "deepseek" or "mock"
     thinking: bool = False
-    max_steps: int = 60  # agent loop iterations
+    max_steps: int = 100  # agent loop iterations (each step is one LLM request)
     max_requests: int = 80  # LLM calls per run (real runs used 27–57)
     max_cost_usd: float = 1.00
     max_total_tokens: int = 6_000_000  # cumulative; ~98 % are cheap cache hits — the cost cap is the real guard
@@ -71,7 +71,9 @@ def _migrate(data: dict) -> dict:
             data["max_requests"] = 80
         if data.get("max_total_tokens") == 2_000_000:
             data["max_total_tokens"] = 6_000_000
-        data["config_version"] = CONFIG_VERSION
+    if int(data.get("config_version", 1)) < 3 and data.get("max_steps") == 60:
+        data["max_steps"] = 100
+    data["config_version"] = CONFIG_VERSION
     return data
 
 

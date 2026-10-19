@@ -80,7 +80,12 @@ UI_QUALITY = """# UI quality rules (any desktop app)
   for every round: the correct value is calculated in code, and wrong choices are distinct and never equal to
   (or equivalent to) the correct value. If the content is not computable, draw randomly from the pool and
   shuffle. Tests: two rounds differ (seeded random), admin-added items can appear in a round, and every
-  generated item has a correct computed value and valid distinct choices.
+  generated item has a correct computed value and valid distinct choices. Generator tests must RECOMPUTE the
+  expected value independently from the item's own data (parse its operands and calculate again) for each kind
+  over many random seeds, not just check that the stored answer is among the choices; reject ambiguous items
+  (e.g. two equal operands in a "which is larger" item).
+- Text inputs must be clearly visible: their background differs from the surrounding container or they have a
+  visible border (relief + borderwidth, or highlightthickness with a contrasting highlight colour).
 - Window title: `create_app(root)` sets root.title() to the application's real name, never the default "tk".
 - Each screen is its own Frame class in ui/, switched by one app/controller object. Contract (the harness
   uses it): ui/app.py defines `create_app(root) -> App`, which builds everything WITHOUT calling mainloop();

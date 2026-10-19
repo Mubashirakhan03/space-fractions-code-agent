@@ -173,3 +173,31 @@ Honest review:
 | 5 | 47 | $0.122 | probe false positive during the run → **passed on re-verification** | **final example**; scrollable-list false positive fixed in the probe |
 
 Total: about **$0.68** of the $2.00 top-up. The generated code was never edited by hand.
+
+## Run 6 — 2026-10-19 17:43 UTC (22:43 PKT, off-peak), **profile: none** → `examples/space_fractions_run6_noprofile/`
+
+Purpose: test the agent without any task profile, with the new generic rules (complete admin forms, seed data,
+random rounds + generated items for computable content, a real window title, score-dependent result screens).
+
+| Item | Value |
+|---|---|
+| Result | completed after 2 resumes: VERIFY PASSED (import check OK, 26 modules; UI probe OK after 1 self-fix round for admin content outside the window) |
+| Requests / cost | 110 requests, **$0.378**, the most expensive run (see below); balance $0.95 → $0.57 |
+| Harness bug found | The model named its own package **`app/`**, the same name as the agent's package. Every `run_python` script/test failed with "(no output, exit code 1)" because `python -m app.main` found the generated `app`. The model spent ~45 requests diagnosing this. I **stopped** the run, renamed the agent package to **`sfagent`** (+ regression test, dev + exe verified) and **resumed**. A second stop came from the old `max_steps` default (60) → now 100, migrated |
+
+Checked by playing a copy, without editing the code:
+- ✅ **24 seed questions** (choice + typed) loaded on first start; window title "Space Fractions" set in `create_app`.
+- ✅ **Random rounds:** two rounds differ (4 of 8 shared); every round contains code-generated questions
+  (`game/question_generator.py`); an admin-added question appeared in 9 of 40 rounds.
+- ✅ **Admin form** has Prompt, Correct value, Kind and Choices. Score screen at 0/8: "No correct answers this time.
+  Check Help for tips and try again." (score-dependent).
+- ❌ **Generated "equivalent" questions are wrong:** all 72 of 400 generated, e.g. "Which fraction equals 1/2?" →
+  stored answer "2". The generator multiplies the value instead of the display form. The generated tests only
+  checked that the answer is among the choices. 2 of 400 "bigger" items compared two equal values.
+- ❌ **Admin inputs invisible:** the entry background equals the panel background, with no border.
+- ⚠️ No Exit button on the menu.
+
+Agent improvements from run 6 (no new run made): the package rename; `max_steps` 100; generic rules "generator tests
+must recompute the expected value independently over many seeds" and "reject ambiguous items"; "text inputs must be
+clearly visible", plus a UI probe check (flags run 6's admin inputs, run 5 stays OK); a profile hint for building
+equivalent-fraction display text. Screenshots: `docs/screenshots/run6/`. **Final example stays run 5.**

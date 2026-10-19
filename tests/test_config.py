@@ -46,3 +46,12 @@ def test_old_saved_defaults_are_migrated(tmp_path):
     path.write_text(json.dumps({"max_requests": 25}))      # a user's own choice is kept
     assert load_config(path).max_requests == 25
     assert AppConfig().max_requests == 80
+
+
+def test_old_max_steps_default_is_migrated(tmp_path):
+    import json
+
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps({"config_version": 2, "max_steps": 60}))
+    assert load_config(path).max_steps == 100
+    assert AppConfig().max_steps == 100

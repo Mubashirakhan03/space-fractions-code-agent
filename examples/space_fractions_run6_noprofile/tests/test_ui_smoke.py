@@ -89,7 +89,6 @@ def test_typed_and_choice_flow(root, tmp_path, monkeypatch):
     steps = 0
     while game.state.value != "GameOver" and steps < 40:
         steps += 1
-        assert not game.answered_current
         q = game.current_question
         if q.kind == "choice":
             choice_seen = True

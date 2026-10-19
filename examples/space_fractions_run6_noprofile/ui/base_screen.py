@@ -19,10 +19,11 @@ class BaseScreen(tk.Frame):
     def show(self):
         """Called when this screen becomes visible; refresh dynamic content."""
 
-    def make_button(self, text, command, primary=True):
+    def make_button(self, text, command, primary=True, master=None):
+        parent = master if master is not None else self.body
         bg = theme.PRIMARY if primary else theme.VIOLET
         btn = tk.Button(
-            self.body, text=text, font=theme.BUTTON, command=command,
+            parent, text=text, font=theme.BUTTON, command=command,
             bg=bg, fg=theme.TEXT, activebackground=theme.ACCENT,
             activeforeground=theme.BG, relief="flat", bd=0,
             padx=24, pady=12, cursor="hand2",

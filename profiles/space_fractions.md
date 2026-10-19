@@ -47,6 +47,9 @@ Data
   with random numerators/denominators, the correct answer computed with `fractions.Fraction`, and plausible
   wrong options for multiple choice (distinct, never equal to the answer). A round mixes seed and generated
   questions so every round is different. Test the generator: each type, valid answers, no duplicate options.
+- Equivalent-fraction items: `Fraction` reduces automatically (Fraction(3, 6) == 1/2 prints "1/2"), so build the
+  display text yourself as f"{n*k}/{d*k}" and keep the VALUE equal to the target (never multiply the value by k).
+  Wrong choices must have a different value. Compare items must not use two equal values.
 - Admin add/edit form: prompt, type, correct answer and options (for multiple choice); validate that the answer
   is a valid fraction and that the options contain it.
 - `sql/schema.sql`: adapt the document's `games` table and add `questions` and `scores` tables.

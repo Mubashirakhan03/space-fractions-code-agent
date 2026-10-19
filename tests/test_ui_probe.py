@@ -304,3 +304,17 @@ def test_probe_accepts_title_set_in_main(tmp_path):
                                       '    root = tk.Tk()\n    root.title("My Real App")\n')
     ok, report = run_ui_probe(runner)
     assert ok, report
+
+
+INVISIBLE_INPUT = GOOD.replace(
+    '''        self.screens = {"menu": self.title, "end": self.title}''',
+    '''        form = tk.Frame(root, bg="#1C2340")
+        form.place(relx=0.5, rely=0.7, anchor="center")
+        tk.Entry(form, bg="#1C2340", relief="flat", highlightthickness=0).pack(side="left")
+        tk.Button(form, text="Save").pack(side="left")
+        self.screens = {"menu": form, "end": form}''')
+
+
+def test_probe_flags_invisible_text_input(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, INVISIBLE_INPUT))
+    assert not ok and "cannot be seen" in report

@@ -268,3 +268,8 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Fix: renamed the agent package `app/` → **`sfagent/`** (git mv; imports, spec, scripts, tests, docs). Older log
   entries above still say `app/…` = today's `sfagent/…`. Regression test: a generated project with its own `app/`
   package runs scripts and pytest. 145 passed, 1 skipped.
+- Run 6 resumed twice (2nd stop: max_steps 60 → default now 100 + migration + `--max-steps`), completed: VERIFY
+  PASSED, 110 requests, $0.378 (balance $0.57). Play-check found wrong generated "equivalent" items and invisible
+  admin inputs → new generic rules (independent recomputation in generator tests, no ambiguous items, visible
+  inputs) + UI probe input-visibility check + profile hint. Screenshots `docs/screenshots/run6/`; REAL_RUNS run 6.
+  Final example remains run 5. Tests: 148 passed, 1 skipped.

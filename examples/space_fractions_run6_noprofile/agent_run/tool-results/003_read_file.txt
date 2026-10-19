@@ -1,0 +1,175 @@
+    1	"""Admin screen: list + add/edit/delete questions."""
+    2	import tkinter as tk
+    3	from tkinter import messagebox
+    4	
+    5	from questions.question import Question
+    6	from ui import theme
+    7	from ui.base_screen import BaseScreen
+    8	
+    9	
+   10	class AdminScreen(BaseScreen):
+   11	    """Manage the persisted question pool. The add/edit form includes a field
+   12	    for every attribute (prompt, correct value, kind, choices)."""
+   13	
+   14	    def __init__(self, master, app):
+   15	        super().__init__(master, app)
+   16	        self._editing = None  # question id being edited
+   17	        self.title_label = tk.Label(
+   18	            self.body, text="Update Questions", font=theme.HEADING,
+   19	            fg=theme.ACCENT, bg=theme.BG,
+   20	        )
+   21	        self.title_label.pack(pady=(0, 8))
+   22	
+   23	        self.listbox = tk.Listbox(
+   24	            self.body, font=theme.SMALL, bg=theme.SURFACE, fg=theme.TEXT,
+   25	            relief="flat", height=8, width=70,
+   26	        )
+   27	        self.listbox.pack(pady=(0, 8))
+   28	        self.listbox.bind("<<ListboxSelect>>", self._on_select)
+   29	
+   30	        self.form = tk.Frame(self.body, bg=theme.BG)
+   31	        self.form.pack(pady=8)
+   32	
+   33	        self._build_form()
+   34	
+   35	        self.feedback_label = tk.Label(
+   36	            self.body, text="", font=theme.SMALL, bg=theme.BG,
+   37	        )
+   38	        self.feedback_label.pack(pady=(4, 8))
+   39	
+   40	        self.actions = tk.Frame(self.body, bg=theme.BG)
+   41	        self.actions.pack()
+   42	        self.back_btn = self.make_button("Back to Menu", self._back, primary=False)
+   43	        self.back_btn.pack(pady=(12, 0))
+   44	
+   45	    def _build_form(self):
+   46	        for w in self.form.winfo_children():
+   47	            w.destroy()
+   48	        bg = theme.BG
+   49	        self.prompt_label = tk.Label(self.form, text="Prompt:", font=theme.SMALL,
+   50	                                     fg=theme.TEXT, bg=bg)
+   51	        self.prompt_label.grid(row=0, column=0, sticky="e", padx=6, pady=4)
+   52	        self.prompt_entry = tk.Entry(self.form, font=theme.SMALL, width=40,
+   53	                                     bg=theme.SURFACE, fg=theme.TEXT,
+   54	                                     insertbackground=theme.TEXT, relief="flat")
+   55	        self.prompt_entry.grid(row=0, column=1, sticky="w", padx=6, pady=4, ipady=4)
+   56	
+   57	        self.correct_label = tk.Label(self.form, text="Correct value:", font=theme.SMALL,
+   58	                                      fg=theme.TEXT, bg=bg)
+   59	        self.correct_label.grid(row=1, column=0, sticky="e", padx=6, pady=4)
+   60	        self.correct_entry = tk.Entry(self.form, font=theme.SMALL, width=20,
+   61	                                      bg=theme.SURFACE, fg=theme.TEXT,
+   62	                                      insertbackground=theme.TEXT, relief="flat")
+   63	        self.correct_entry.grid(row=1, column=1, sticky="w", padx=6, pady=4, ipady=4)
+   64	
+   65	        self.kind_label = tk.Label(self.form, text="Kind:", font=theme.SMALL,
+   66	                                   fg=theme.TEXT, bg=bg)
+   67	        self.kind_label.grid(row=2, column=0, sticky="e", padx=6, pady=4)
+   68	        self.kind_var = tk.StringVar(value="choice")
+   69	        self.kind_menu = tk.OptionMenu(self.form, self.kind_var, "choice", "typed",
+   70	                                       command=self._on_kind_change)
+   71	        self.kind_menu.config(font=theme.SMALL, bg=theme.SURFACE, fg=theme.TEXT,
+   72	                              relief="flat")
+   73	        self.kind_menu.grid(row=2, column=1, sticky="w", padx=6, pady=4)
+   74	
+   75	        self.options_label = tk.Label(self.form, text="Choices (comma,sep):",
+   76	                                      font=theme.SMALL, fg=theme.TEXT, bg=bg)
+   77	        self.options_label.grid(row=3, column=0, sticky="e", padx=6, pady=4)
+   78	        self.options_entry = tk.Entry(self.form, font=theme.SMALL, width=40,
+   79	                                      bg=theme.SURFACE, fg=theme.TEXT,
+   80	                                      insertbackground=theme.TEXT, relief="flat")
+   81	        self.options_entry.grid(row=3, column=1, sticky="w", padx=6, pady=4, ipady=4)
+   82	
+   83	        self.save_btn = self.make_button("Save", self._save, master=self.form)
+   84	        self.save_btn.grid(row=4, column=0, columnspan=2, pady=(8, 4))
+   85	        self.delete_btn = self.make_button("Delete Selected", self._delete, primary=False, master=self.form)
+   86	        self.delete_btn.grid(row=5, column=0, columnspan=2, pady=4)
+   87	
+   88	    def _on_kind_change(self, *_):
+   89	        if self.kind_var.get() == "typed":
+   90	            self.options_entry.delete(0, "end")
+   91	            self.options_entry.config(state="disabled")
+   92	        else:
+   93	            self.options_entry.config(state="normal")
+   94	
+   95	    def show(self):
+   96	        self._editing = None
+   97	        self._refresh_list()
+   98	        self._clear_form()
+   99	        self.feedback_label.config(text="")
+  100	
+  101	    def _refresh_list(self):
+  102	        self.listbox.delete(0, "end")
+  103	        for q in self.app.controller.all_questions():
+  104	            self.listbox.insert("end", f"{q.id}: {q.prompt}")
+  105	
+  106	    def _on_select(self, *_):
+  107	        sel = self.listbox.curselection()
+  108	        if not sel:
+  109	            return
+  110	        q = self.app.controller.all_questions()[sel[0]]
+  111	        self._editing = q.id
+  112	        self.prompt_entry.delete(0, "end")
+  113	        self.prompt_entry.insert(0, q.prompt)
+  114	        self.correct_entry.delete(0, "end")
+  115	        self.correct_entry.insert(0, q.correct)
+  116	        self.kind_var.set(q.kind)
+  117	        self.options_entry.config(state="normal")
+  118	        self.options_entry.delete(0, "end")
+  119	        self.options_entry.insert(0, ",".join(q.options))
+  120	        self._on_kind_change()
+  121	
+  122	    def _clear_form(self):
+  123	        self._editing = None
+  124	        for e in (self.prompt_entry, self.correct_entry):
+  125	            e.delete(0, "end")
+  126	        self.kind_var.set("choice")
+  127	        self.options_entry.config(state="normal")
+  128	        self.options_entry.delete(0, "end")
+  129	
+  130	    def _save(self):
+  131	        prompt = self.prompt_entry.get().strip()
+  132	        correct = self.correct_entry.get().strip()
+  133	        kind = self.kind_var.get()
+  134	        if kind == "choice":
+  135	            options = [o.strip() for o in self.options_entry.get().split(",") if o.strip()]
+  136	        else:
+  137	            options = []
+  138	        if not prompt or not correct:
+  139	            self.feedback_label.config(text="Prompt and correct value are required.",
+  140	                                       fg=theme.ERROR)
+  141	            return
+  142	        try:
+  143	            q = Question(id=self._editing or _new_id(), prompt=prompt, correct=correct,
+  144	                         kind=kind, options=options)
+  145	        except ValueError as e:
+  146	            self.feedback_label.config(text=f"Error: {e}", fg=theme.ERROR)
+  147	            return
+  148	        if self._editing:
+  149	            self.app.controller.repo.update(q)
+  150	        else:
+  151	            self.app.controller.add_question(q)
+  152	        self.feedback_label.config(text=f"Saved question: {prompt}", fg=theme.SUCCESS)
+  153	        self._refresh_list()
+  154	        self._clear_form()
+  155	
+  156	    def _delete(self):
+  157	        sel = self.listbox.curselection()
+  158	        if not sel:
+  159	            self.feedback_label.config(text="Select a question to delete.", fg=theme.ERROR)
+  160	            return
+  161	        q = self.app.controller.all_questions()[sel[0]]
+  162	        name = q.prompt
+  163	        if messagebox.askyesno("Delete question", f"Delete question: {name}?"):
+  164	            self.app.controller.delete_question(q.id)
+  165	            self.feedback_label.config(text=f"Deleted question: {name}", fg=theme.SUCCESS)
+  166	            self._refresh_list()
+  167	            self._clear_form()
+  168	
+  169	    def _back(self):
+  170	        self.app.show("menu")
+  171	
+  172	
+  173	def _new_id() -> str:
+  174	    import uuid
+  175	    return "q-" + uuid.uuid4().hex[:8]

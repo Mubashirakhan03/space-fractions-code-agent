@@ -170,3 +170,9 @@ def test_rule_random_rounds_and_generated_items():
     assert "items added by an admin" in ui
     assert "If the content is" in ui and "generates new items in code" in ui
     assert "never equal to" in ui and "two rounds differ" in ui
+
+
+def test_rules_generator_recomputes_and_visible_inputs():
+    assert "RECOMPUTE the" in prompts.UI_QUALITY and "reject ambiguous items" in prompts.UI_QUALITY
+    assert "Text inputs must be clearly visible" in prompts.UI_QUALITY
+    assert "never multiply the value by k" in load_profile(SF_PROFILE).hints

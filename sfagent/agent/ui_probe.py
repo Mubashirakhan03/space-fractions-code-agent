@@ -221,6 +221,23 @@ def check_clipped(label, screen):
                     "smaller padding/font.")
 
 
+def check_inputs_visible(label, screen):
+    """A text input whose background equals its container's and has no visible border is invisible."""
+    for w in walk(screen):
+        if w.winfo_class() != "Entry" or not w.winfo_ismapped() or w.master is None:
+            continue
+        try:
+            same_bg = str(w.cget("bg")).lower() == str(w.master.cget("bg")).lower()
+            no_border = (str(w.cget("relief")) == "flat" or int(w.cget("borderwidth")) == 0) and \
+                int(w.cget("highlightthickness")) == 0
+        except (tk.TclError, ValueError):
+            continue
+        if same_bg and no_border:
+            result["problems"].append(
+                f"{label}: a text input has the same background as its container and no border, so it cannot be "
+                "seen — give it a contrasting background or a visible border/highlight.")
+
+
 def check_inputs_have_button(label, screen):
     """Every shown text input needs a visible button nearby (Enter alone is not discoverable)."""
     for w in walk(screen):
@@ -255,7 +272,8 @@ for index, (width, height) in enumerate(SIZES):
         tag = f"screen '{name}' @{size}"
         check(tag)
         if isinstance(screens[name], tk.Misc):
-            for extra in (check_overlaps, check_unfitted, check_clipped, check_inputs_have_button):
+            for extra in (check_overlaps, check_unfitted, check_clipped, check_inputs_have_button,
+                          check_inputs_visible):
                 extra(tag, screens[name])
 
 print("UI_PROBE_RESULT " + json.dumps(result), flush=True)  # report before teardown can fail

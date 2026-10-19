@@ -61,9 +61,18 @@ class Question:
         return _fraction_equal(answer, self.correct)
 
 
+def _to_fraction(s: str) -> Fraction:
+    """Parse a fraction string, incl. mixed numbers like '1 13/20'."""
+    s = s.strip()
+    if " " in s:
+        whole, frac = s.split(" ", 1)
+        return int(whole) + Fraction(frac)
+    return Fraction(s)
+
+
 def _fraction_equal(a: str, b: str) -> bool:
     """Compare two fraction strings by numeric value; tolerate invalid input."""
     try:
-        return Fraction(a) == Fraction(b)
+        return _to_fraction(a) == _to_fraction(b)
     except (ValueError, ZeroDivisionError):
         return False

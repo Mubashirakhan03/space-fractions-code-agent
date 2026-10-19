@@ -1,0 +1,149 @@
+FAILED
+.............F.............FF.                                           [100%]
+================================== FAILURES ===================================
+_________________ test_generates_correct_and_distinct_choices _________________
+
+    def test_generates_correct_and_distinct_choices():
+        rng = random.Random(42)
+        qs = generate_questions(40, rng)
+        assert len(qs) == 40
+        for q in qs:
+            if q.kind == "choice":
+                assert q.correct in q.options
+                # all distinct
+                assert len(set(q.options)) == len(q.options)
+                # no wrong choice equals the correct value
+                correct_val = _to_fraction(q.correct)
+                for o in q.options:
+                    if o != q.correct:
+                        assert _to_fraction(o) != correct_val
+            else:
+>               assert q.check_answer(q.correct)
+E               AssertionError: assert False
+E                +  where False = check_answer('1 13/20')
+E                +    where check_answer = Question(id='gen-3', prompt='Add the fractions and type the answer: 2/5 + 1 1/4', correct='1 13/20', kind='typed', options=[]).check_answer
+E                +    and   '1 13/20' = Question(id='gen-3', prompt='Add the fractions and type the answer: 2/5 + 1 1/4', correct='1 13/20', kind='typed', options=[]).correct
+
+tests\test_question_generator.py:33: AssertionError
+_______________________ test_window_sizing_and_screens ________________________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-135/test_window_sizing_and_screens0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FCB2A95E20>
+
+    def test_window_sizing_and_screens(root, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        from ui.app import create_app
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\tests\test_ui_smoke.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\app.py:72: in create_app
+    return App(root)
+           ^^^^^^^^^
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\app.py:30: in __init__
+    self._build_screens()
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\app.py:35: in _build_screens
+    "intro": IntroScreen(self.root, self),
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\intro_screen.py:10: in __init__
+    super().__init__(master, app)
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\base_screen.py:15: in __init__
+    self.starfield.place(relx=0, rely=0, relwidth=1, relheight=1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.starfield.Starfield object 0>, cnf = {}
+kw = {'relx': 0, 'rely': 0, 'relwidth': 1, 'relheight': 1}
+
+    def place_configure(self, cnf={}, **kw):
+        """Place a widget in the parent widget. Use as options:
+        in=master - master relative to which the widget is placed
+        in_=master - see 'in' option description
+        x=amount - locate anchor of this widget at position x of master
+        y=amount - locate anchor of this widget at position y of master
+        relx=amount - locate anchor of this widget between 0.0 and 1.0
+                      relative to width of master (1.0 is right edge)
+        rely=amount - locate anchor of this widget between 0.0 and 1.0
+                      relative to height of master (1.0 is bottom edge)
+        anchor=NSEW (or subset) - position anchor according to given direction
+        width=amount - width of this widget in pixel
+        height=amount - height of this widget in pixel
+        relwidth=amount - width of this widget between 0.0 and 1.0
+                          relative to width of master (1.0 is the same width
+                          as the master)
+        relheight=amount - height of this widget between 0.0 and 1.0
+                           relative to height of master (1.0 is the same
+                           height as the master)
+        bordermode="inside" or "outside" - whether to take border width of
+                                           master widget into account
+        """
+>       self.tk.call(
+              ('place', 'configure', self._w)
+              + self._options(cnf, kw))
+E       _tkinter.TclError: bad window path name "0"
+
+C:\Python312\Lib\tkinter\__init__.py:2535: TclError
+_________________________ test_typed_and_choice_flow __________________________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-135/test_typed_and_choice_flow0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001FCB2A980B0>
+
+    def test_typed_and_choice_flow(root, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        from ui.app import create_app
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\tests\test_ui_smoke.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\app.py:72: in create_app
+    return App(root)
+           ^^^^^^^^^
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\app.py:30: in __init__
+    self._build_screens()
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\app.py:35: in _build_screens
+    "intro": IntroScreen(self.root, self),
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\intro_screen.py:10: in __init__
+    super().__init__(master, app)
+D:\professor project\space-fractions-code-agent\examples\space_fractions_run6_noprofile\ui\base_screen.py:15: in __init__
+    self.starfield.place(relx=0, rely=0, relwidth=1, relheight=1)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <ui.starfield.Starfield object 0>, cnf = {}
+kw = {'relx': 0, 'rely': 0, 'relwidth': 1, 'relheight': 1}
+
+    def place_configure(self, cnf={}, **kw):
+        """Place a widget in the parent widget. Use as options:
+        in=master - master relative to which the widget is placed
+        in_=master - see 'in' option description
+        x=amount - locate anchor of this widget at position x of master
+        y=amount - locate anchor of this widget at position y of master
+        relx=amount - locate anchor of this widget between 0.0 and 1.0
+                      relative to width of master (1.0 is right edge)
+        rely=amount - locate anchor of this widget between 0.0 and 1.0
+                      relative to height of master (1.0 is bottom edge)
+        anchor=NSEW (or subset) - position anchor according to given direction
+        width=amount - width of this widget in pixel
+        height=amount - height of this widget in pixel
+        relwidth=amount - width of this widget between 0.0 and 1.0
+                          relative to width of master (1.0 is the same width
+                          as the master)
+        relheight=amount - height of this widget between 0.0 and 1.0
+                           relative to height of master (1.0 is the same
+                           height as the master)
+        bordermode="inside" or "outside" - whether to take border width of
+                                           master widget into account
+        """
+>       self.tk.call(
+              ('place', 'configure', self._w)
+              + self._options(cnf, kw))
+E       _tkinter.TclError: bad window path name "0"
+
+C:\Python312\Lib\tkinter\__init__.py:2535: TclError
+=========================== short test summary info ===========================
+FAILED tests\test_question_generator.py::test_generates_correct_and_distinct_choices
+FAILED tests\test_ui_smoke.py::test_window_sizing_and_screens - _tkinter.TclE...
+FAILED tests\test_ui_smoke.py::test_typed_and_choice_flow - _tkinter.TclError...
