@@ -42,7 +42,12 @@ for attempt in (lambda: root.state("normal"), lambda: root.attributes("-fullscre
         attempt()
     except tk.TclError:
         pass
-root.geometry("1280x800+40+40")
+# Check at a comfortable size AND at the minimum size (the app's own minsize, never below 1100x750).
+min_w, min_h = root.minsize()
+SIZES = [(1280, 800)]
+if (max(min_w, 1100), max(min_h, 750)) not in SIZES:
+    SIZES.append((max(min_w, 1100), max(min_h, 750)))
+root.geometry(f"{SIZES[0][0]}x{SIZES[0][1]}+40+40")
 root.update()
 
 
@@ -160,19 +165,59 @@ def check_overlaps(label, screen):
                     "out with pack/grid (text frame above the button row) instead of fixed overlapping positions.")
 
 
-check("startup view")
+def check_clipped(label, screen):
+    """A shown button smaller than the space its text needs (label cut off)."""
+    for w in walk(screen):
+        if w.winfo_class() in ("Button", "TButton") and w.winfo_ismapped() and text_of(w):
+            squeezed = w.winfo_height() + 3 < w.winfo_reqheight() or w.winfo_width() + 3 < w.winfo_reqwidth()
+            p = w.master  # a container smaller than the button hides part of it
+            bx0, by0, bx1, by1 = rect(w)
+            px0, py0, px1, py1 = rect(p) if p is not None and p.winfo_ismapped() else (bx0, by0, bx1, by1)
+            overflow = bx1 > px1 + 3 or by1 > py1 + 3 or bx0 < px0 - 3 or by0 < py0 - 3
+            if squeezed or overflow:
+                result["problems"].append(
+                    f"{label}: the text of button '{text_of(w)[:25]}' is cut off (shown {w.winfo_width()}x"
+                    f"{w.winfo_height()}, needs {w.winfo_reqwidth()}x{w.winfo_reqheight()}"
+                    f"{', clipped by its container' if overflow else ''}). Give its row/container enough room or use "
+                    "smaller padding/font.")
+
+
+def check_inputs_have_button(label, screen):
+    """Every shown text input needs a visible button nearby (Enter alone is not discoverable)."""
+    for w in walk(screen):
+        if w.winfo_class() not in ("Entry", "TEntry") or not w.winfo_ismapped():
+            continue
+        try:
+            if str(w.cget("state")) in ("disabled", "readonly"):
+                continue
+        except tk.TclError:
+            pass
+        scopes = [s for s in (w.master, getattr(w.master, "master", None)) if s is not None]
+        if not any(b.winfo_class() in ("Button", "TButton") and b.winfo_ismapped()
+                   for s in scopes for b in walk(s)):
+            result["problems"].append(
+                f"{label}: a text input has no visible submit button next to it — add a 'Submit'/'Check' button "
+                "(Enter can still submit).")
+
+
 screens = getattr(app, "screens", None) or getattr(app, "_screens", None) or {}
-for name in list(screens) if isinstance(screens, dict) else []:
-    try:
-        app.show(name)
-    except Exception as exc:
-        result["problems"].append(f"screen '{name}': app.show() raised {type(exc).__name__}: {exc} "
-                                  "(screens must render safely even when shown directly)")
-        continue
-    check(f"screen '{name}'")
-    if isinstance(screens[name], tk.Misc):
-        check_overlaps(f"screen '{name}'", screens[name])
-        check_unfitted(f"screen '{name}'", screens[name])
+for index, (width, height) in enumerate(SIZES):
+    root.geometry(f"{width}x{height}+40+40")
+    size = f"{width}x{height}"
+    if index == 0:
+        check(f"startup view @{size}")
+    for name in list(screens) if isinstance(screens, dict) else []:
+        try:
+            app.show(name)
+        except Exception as exc:
+            result["problems"].append(f"screen '{name}' @{size}: app.show() raised {type(exc).__name__}: {exc} "
+                                      "(screens must render safely even when shown directly)")
+            continue
+        tag = f"screen '{name}' @{size}"
+        check(tag)
+        if isinstance(screens[name], tk.Misc):
+            for extra in (check_overlaps, check_unfitted, check_clipped, check_inputs_have_button):
+                extra(tag, screens[name])
 
 print("UI_PROBE_RESULT " + json.dumps(result), flush=True)  # report before teardown can fail
 try:

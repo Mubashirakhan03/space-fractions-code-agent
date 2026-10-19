@@ -196,3 +196,10 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Version 1.0.0 (`app/__init__.py`, `pyproject.toml`); `verify_exe.py` reads the version from `app`.
 - Exe rebuilt from the final code: verify_exe 6/6 PASS without Python. Tests: 128 passed, 1 skipped.
 - Release v1.0.0 = push tag `v1.0.0` (CI builds, verifies and attaches the exe) — waiting for the user's OK.
+
+### 2026-10-19 — Three more generic improvements before run 5 (user request)
+- UI probe checks every screen at 1280x800 AND at the minimum size (app minsize, never below 1100x750).
+- Probe flags button text that is cut off (squeezed by pack, or overflowing its container) and shown text inputs
+  without a visible button next to them.
+- Rule: every text input has a visible Submit/Check button (Enter also submits); "design every screen to fit 1100x750".
+- On run 4's game the new probe reports 8 problems (incl. the hidden Exit and clipped buttons); mock demo stays OK.

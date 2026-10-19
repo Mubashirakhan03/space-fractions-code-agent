@@ -145,3 +145,8 @@ def test_rules_from_run3_findings():
     assert "NEVER mix pack and grid" in prompts.UI_QUALITY
     assert "ONE complete flow" in prompts.UI_QUALITY and "report_callback_exception" in prompts.UI_QUALITY
     assert "delete_file" in prompts.TOOL_USAGE and "must not create, modify or delete" in prompts.TOOL_USAGE
+
+
+def test_rule_visible_submit_button_and_min_size_probe():
+    assert "every text input has a clearly visible Submit/Check button" in prompts.UI_QUALITY
+    assert "AND at the minimum size (1100x750)" in prompts.UI_QUALITY

@@ -63,9 +63,9 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - High-contrast text. Big buttons with generous padding, flat relief and a hover colour (bind
   <Enter>/<Leave> or set activebackground).
 - Where a flow ends (a round, a task, a booking…), show a clear result / summary screen.
-- Forms: the main input has keyboard focus, Enter submits, the input is cleared automatically after each
-  submission, and feedback is clear and coloured (green = success, red = error) in the window itself.
-  Use messagebox only for confirmations.
+- Forms: every text input has a clearly visible Submit/Check button next to it, the main input has keyboard
+  focus, Enter also submits, the input is cleared automatically after each submission, and feedback is clear
+  and coloured (green = success, red = error) in the window itself. Use messagebox only for confirmations.
 - Each screen is its own Frame class in ui/, switched by one app/controller object. Contract (the harness
   uses it): ui/app.py defines `create_app(root) -> App`, which builds everything WITHOUT calling mainloop();
   App has `screens: dict[str, tk.Frame]` and `show(name)`. Every screen must render safely when shown
@@ -73,8 +73,10 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Canvas drawing: winfo_width()/winfo_height() return 1 until the window is actually shown, so NEVER compute
   positions from them at construction time. Bind <Configure> on the canvas and (re)draw backgrounds,
   decorations, shapes and canvas text from event.width/event.height; lay out normal widgets with pack/grid or
-  place(relx=…, rely=…). The harness opens the real window, shows every screen and FAILS verification if
-  widgets or canvas items are outside the visible area or squeezed into a corner.
+  place(relx=…, rely=…). The harness opens the real window at 1280x800 AND at the minimum size (1100x750),
+  shows every screen and FAILS verification if widgets or canvas items are outside the visible area or squeezed
+  into a corner, a button has no room or its text is cut off, a button covers text, a text input has no
+  visible submit button, or a Tk callback raises. Design every screen to fit 1100x750 (scroll long content).
 - Required test tests/test_ui_smoke.py (pytest): create ONE tk.Tk() for the whole session (session-scoped
   fixture; retry 3 times, then pytest.skip on tk.TclError). Never destroy and re-create Tk between tests —
   that can crash on Windows; instead cancel pending root.after() callbacks and destroy the root's widgets

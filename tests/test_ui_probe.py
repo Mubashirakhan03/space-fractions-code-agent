@@ -94,7 +94,7 @@ def test_probe_passes_a_correct_layout(tmp_path):
 def test_probe_reports_screens_that_crash(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, GOOD.replace("self.screens = {", "self.broken = True\n        "
                                                                             "self.screens = {")))
-    assert not ok and "screen 'end': app.show() raised RuntimeError" in report
+    assert not ok and "screen 'end' @1280x800: app.show() raised RuntimeError" in report
 
 
 def test_probe_skips_projects_without_ui_contract(tmp_path):
@@ -167,3 +167,85 @@ def create_app(root):
 def test_probe_flags_buttons_without_room(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, NO_ROOM))
     assert not ok and "is laid out but not shown" in report
+
+
+CLIPPED = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root):
+        root.minsize(1100, 750)
+        frame = tk.Frame(root, bg="navy")
+        frame.place(relwidth=1, relheight=1)
+        row = tk.Frame(frame, height=30, bg="navy")
+        row.pack(pady=40)
+        row.grid_propagate(False)
+        row.configure(width=600)
+        tk.Button(row, text="Play again", font=("Segoe UI", 22), pady=20).grid(row=0, column=0)
+        self.screens = {"end": frame}
+
+    def show(self, name):
+        pass
+
+
+def create_app(root):
+    return App(root)
+'''
+
+INPUT_NO_BUTTON = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root):
+        root.minsize(1100, 750)
+        frame = tk.Frame(root)
+        frame.place(relwidth=1, relheight=1)
+        tk.Label(frame, text="Type your answer", font=("Segoe UI", 24)).pack(pady=20)
+        box = tk.Frame(frame)
+        box.pack()
+        tk.Entry(box, font=("Segoe UI", 24)).pack()
+        self.screens = {"question": frame}
+
+    def show(self, name):
+        pass
+
+
+def create_app(root):
+    return App(root)
+'''
+
+FITS_ONLY_LARGE = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root):
+        root.minsize(1100, 750)
+        panel = tk.Frame(root)
+        panel.pack(fill="both", expand=True)
+        tk.Canvas(panel, height=735, highlightthickness=0).pack()  # fixed pixels: fits 800 px, not 750 px
+        tk.Button(panel, text="Exit", font=("Segoe UI", 10)).pack()
+        self.screens = {"menu": panel}
+
+    def show(self, name):
+        pass
+
+
+def create_app(root):
+    return App(root)
+'''
+
+
+def test_probe_flags_cut_off_button_text(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, CLIPPED))
+    assert not ok and "is cut off" in report
+
+
+def test_probe_flags_text_input_without_submit_button(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, INPUT_NO_BUTTON))
+    assert not ok and "has no visible submit button" in report
+
+
+def test_probe_checks_minimum_window_size(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, FITS_ONLY_LARGE))
+    problems = report.split("):\n", 1)[-1]  # the list after the "checked: …" header
+    assert not ok and "@1100x750" in problems and "@1280x800" not in problems
