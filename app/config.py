@@ -14,6 +14,7 @@ from pathlib import Path
 from app import APP_NAME
 
 ENV_KEY = "DEEPSEEK_API_KEY"
+CONFIG_VERSION = 2  # v2: default max_requests 40 → 80, max_total_tokens 2M → 6M
 
 
 @dataclass
@@ -22,7 +23,7 @@ class AppConfig:
     provider: str = "deepseek"  # "deepseek" or "mock"
     thinking: bool = False
     max_steps: int = 60  # agent loop iterations
-    max_requests: int = 40  # LLM calls per run
+    max_requests: int = 80  # LLM calls per run (real runs used 27–57)
     max_cost_usd: float = 1.00
     max_total_tokens: int = 6_000_000  # cumulative; ~98 % are cheap cache hits — the cost cap is the real guard
     max_output_tokens: int = 32768  # a write_files batch of several modules needs more than 8K
@@ -32,6 +33,7 @@ class AppConfig:
     profile_path: str = ""  # optional task profile (profiles/*.md)
     view_path: str = ""
     output_dir: str = ""
+    config_version: int = CONFIG_VERSION
 
     @classmethod
     def from_dict(cls, data: dict) -> AppConfig:
@@ -56,9 +58,21 @@ def load_config(path: Path | None = None) -> AppConfig:
     if not path.exists():
         return AppConfig()
     try:
-        return AppConfig.from_dict(json.loads(path.read_text(encoding="utf-8")))
-    except (json.JSONDecodeError, TypeError):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return AppConfig.from_dict(_migrate(data))
+    except (json.JSONDecodeError, TypeError, AttributeError):
         return AppConfig()
+
+
+def _migrate(data: dict) -> dict:
+    """Older saved configs kept the old defaults; lift them to the new defaults (user-chosen values are kept)."""
+    if int(data.get("config_version", 1)) < 2:
+        if data.get("max_requests") == 40:
+            data["max_requests"] = 80
+        if data.get("max_total_tokens") == 2_000_000:
+            data["max_total_tokens"] = 6_000_000
+        data["config_version"] = CONFIG_VERSION
+    return data
 
 
 def save_config(cfg: AppConfig, path: Path | None = None) -> Path:

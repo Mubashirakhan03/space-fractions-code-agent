@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import queue
+import re
 import shutil
 import subprocess
 import sys
@@ -193,13 +194,26 @@ def is_non_empty(folder: Path | str) -> bool:
     return folder.is_dir() and any(folder.iterdir())
 
 
+RUN_DIR_RE = re.compile(r"^run-\d{4}-\d{2}-\d{2}_\d{4}(-\d+)?$")
+
+
+def run_folder_base(folder: Path | str) -> Path:
+    """Where new run folders go. If `folder` is itself a run folder (it holds agent_run/ or has a run-… name),
+    new runs become its siblings — otherwise every new run would be nested inside the previous one."""
+    folder = Path(folder)
+    if (folder / "agent_run").is_dir() or RUN_DIR_RE.match(folder.name):
+        return folder.parent
+    return folder
+
+
 def new_run_subfolder(folder: Path | str, now: datetime | None = None) -> Path:
-    """<folder>/run-YYYY-MM-DD_HHMM, with -2, -3 … if that already exists."""
+    """<base>/run-YYYY-MM-DD_HHMM (base = folder, or its parent if folder is a run folder), with -2, -3 … if taken."""
+    base = run_folder_base(folder)
     stamp = (now or datetime.now()).strftime("run-%Y-%m-%d_%H%M")
-    candidate = Path(folder) / stamp
+    candidate = base / stamp
     n = 2
     while candidate.exists():
-        candidate = Path(folder) / f"{stamp}-{n}"
+        candidate = base / f"{stamp}-{n}"
         n += 1
     return candidate
 

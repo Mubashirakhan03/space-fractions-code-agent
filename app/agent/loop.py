@@ -21,6 +21,7 @@ from typing import Any
 
 from app.agent import prompts
 from app.agent.context import ContextManager
+from app.agent.import_check import run_import_check
 from app.agent.planner import TodoList
 from app.agent.profile import TaskProfile
 from app.agent.report import REQUIRED_FILES, missing_deliverables, write_report
@@ -107,6 +108,7 @@ class Agent:
             self.ctx.plan = self.state.plan
             self.state.status, self.state.stop_reason = "running", ""
             self.log(f"Resuming run at phase '{self.state.phase}' ({self.state.requests} requests so far).")
+            self.emit("resume", phase=self.state.phase, fix_round=self.state.fix_round)
         else:
             save_spec(self.spec, self.run_dir / "spec.json")
             self.state = RunState(messages=prompts.initial_messages(self.spec, self.profile))
@@ -305,6 +307,9 @@ class Agent:
             parts.append(("TESTS PASSED:\n" if t_ok else "TESTS FAILED:\n") + _tail(t_out, 6000))
             ok &= t_ok
         if c_ok:
+            i_ok, i_out = run_import_check(self.runner)
+            parts.append(i_out)
+            ok &= i_ok
             u_ok, u_out = run_ui_probe(self.runner)
             parts.append(u_out)
             ok &= u_ok

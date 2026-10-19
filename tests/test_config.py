@@ -34,3 +34,15 @@ def test_mask_key_never_leaks():
     assert mask_key("") == "(not set)"
     assert mask_key("fake-abcdefghijklmnop") == "****mnop"
     assert mask_key("short") == "****"
+
+
+def test_old_saved_defaults_are_migrated(tmp_path):
+    import json
+
+    path = tmp_path / "config.json"
+    path.write_text(json.dumps({"max_requests": 40, "max_total_tokens": 2_000_000, "max_steps": 9}))
+    cfg = load_config(path)
+    assert cfg.max_requests == 80 and cfg.max_total_tokens == 6_000_000 and cfg.max_steps == 9
+    path.write_text(json.dumps({"max_requests": 25}))      # a user's own choice is kept
+    assert load_config(path).max_requests == 25
+    assert AppConfig().max_requests == 80

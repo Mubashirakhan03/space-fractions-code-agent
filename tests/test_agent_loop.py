@@ -152,8 +152,10 @@ def test_resume_after_interruption(tmp_path, spec):
     state = RunState.load(tmp_path / "out/agent_run/state.json")
     assert state.phase == "implement" and state.phase_started
 
-    second = make_agent(tmp_path, MockProvider([reply(tool_call("finish", "f9", summary="resumed"))]), spec).run(
-        resume=True)
+    events = []
+    second = make_agent(tmp_path, MockProvider([reply(tool_call("finish", "f9", summary="resumed"))]), spec,
+                        events).run(resume=True)
+    assert ("resume", {"phase": "implement", "fix_round": 0}) in events
     assert second.status == "completed" and second.verify_ok is True
     assert second.requests == 3
 

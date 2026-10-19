@@ -77,7 +77,7 @@ class AgentApp(ctk.CTk):
         self._profiles = {p.stem: p for p in list_profiles()}
         self._run_kind = "live"
         self._started_at = 0.0
-        self._max = (40, 1.0)
+        self._max = (AppConfig.max_requests, AppConfig.max_cost_usd)
         self._last_usage: dict[str, Any] | None = None
         self._pulsing = False
         self._build()
@@ -521,6 +521,8 @@ class AgentApp(ctk.CTk):
             self._log(text, tag)
         elif kind == "phase":
             self._on_phase(d["phase"])
+        elif kind == "resume":
+            self._on_resume(d["phase"], d.get("fix_round", 0))
         elif kind == "tool_call":
             self._log(f"→ {d['summary']}", "tool")
         elif kind == "tool_result":
@@ -543,6 +545,19 @@ class AgentApp(ctk.CTk):
             req.answered.set()
         elif kind == "done":
             self._finish(d["result"])
+
+    def _on_resume(self, phase: str, fix_round: int) -> None:
+        """A resumed run starts mid-pipeline: show the phases it already completed as done."""
+        order = {"plan": 0, "implement": 1, "verify": 2, "report": 4, "done": 5}
+        current = order.get(phase, 0)
+        for p in PHASES:
+            idx = PHASES.index(p)
+            if p == "fix":
+                if fix_round > 0 and current >= 2:
+                    self._set_phase("fix", "done")
+            elif idx < current:
+                self._set_phase(p, "done")
+        self._log(f"Resumed at phase '{phase}' — earlier phases were completed in the previous session.", "info")
 
     def _on_phase(self, phase: str) -> None:
         for p, s in self.phase_status.items():
@@ -623,13 +638,14 @@ class AgentApp(ctk.CTk):
         ctk.CTkLabel(dlg, text="The output folder already contains files", font=self.font(18, "bold"),
                      text_color=T.TEXT).pack(padx=30, pady=(22, 4))
         ctk.CTkLabel(dlg, text=str(out), font=self.font(12), text_color=T.MUTED, wraplength=520).pack(padx=30)
-        ctk.CTkLabel(dlg, text=f"A new subfolder would be:  {new_run_subfolder(out).name}", font=self.font(12),
-                     text_color=T.MUTED).pack(padx=30, pady=(6, 14))
+        ctk.CTkLabel(dlg, text=f"A new run folder would be:  {new_run_subfolder(out)}", font=self.font(12),
+                     wraplength=520, text_color=T.MUTED).pack(padx=30, pady=(6, 14))
 
         def pick(value):
             return lambda: (choice.update(value=value), dlg.destroy())
 
-        self._button(dlg, "📁  Create new subfolder (recommended)", pick("new"), primary=True, width=380).pack(pady=4)
+        self._button(dlg, "📁  Create a new run folder (recommended)", pick("new"), primary=True,
+                     width=380).pack(pady=4)
         self._button(dlg, "♻  Overwrite this folder (removes the previous run's files only)", pick("overwrite"),
                      width=380, state="normal" if has_run else "disabled").pack(pady=4)
         self._button(dlg, "⟳  Resume previous run", pick("resume"), width=380,

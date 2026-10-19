@@ -88,7 +88,7 @@ Sources: [`docs/RESEARCH_NOTES.md`](docs/RESEARCH_NOTES.md) (how-claude-code-wor
 | 12 | Observability & cost | Live GUI log, `transcript.jsonl`, per-request usage, cache-hit %, cost, `RUN_REPORT.md` |
 | 13 | Sessions / resume (claw-code) | `agent_run/state.json` after every step; **Resume** (used in real runs 1 and 4) |
 | 14 | `doctor` (claw-code) | `SpaceFractionsAgent.exe --doctor`, plus Test connection in the GUI |
-| 15 | Mock parity harness (claw-code) | `MockProvider` scenarios → 134 deterministic tests with zero API cost |
+| 15 | Mock parity harness (claw-code) | `MockProvider` scenarios → 140 deterministic tests with zero API cost |
 | 16 | Self-verification | Deliverables + compile + pytest + **UI probe** (real window), with bounded fix rounds |
 
 ## Web/microservice design → desktop app
@@ -163,7 +163,7 @@ Total API spend for all five runs: about **$0.68**.
 ```bat
 py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-dev.txt
-.venv\Scripts\python -m pytest            :: 134 tests, MockProvider only, no API cost
+.venv\Scripts\python -m pytest            :: 140 tests, MockProvider only, no API cost
 .venv\Scripts\python -m ruff check .
 .venv\Scripts\python -m app.main          :: run the GUI from source
 scripts\build_exe.bat                     :: → dist\SpaceFractionsAgent.exe
@@ -182,7 +182,7 @@ app/            agent (loop, prompts, context, profile, ui_probe…), tools, llm
 schemas/        spec.schema.json            samples/   inputs (+ library_tracker)     profiles/  task profiles
 examples/       five real runs (run5 = final), each with agent_run/ transcript, state, report, logs
 docs/           RESEARCH_NOTES, ARCHITECTURE, REAL_RUNS, DECISIONS, VIDEO_SCRIPT, LEARNING_NOTES_UR, CHANGELOG_WORK
-tests/          134 tests (parsers, tools/sandbox, agent loop scenarios, GUI, UI probe, generality)
+tests/          140 tests (parsers, tools/sandbox, agent loop scenarios, GUI, UI probe, generality)
 scripts/        build_exe.bat, verify_exe.py, run_agent_cli.py, check_secrets.py, make_icon.py
 ```
 

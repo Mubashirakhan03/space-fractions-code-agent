@@ -101,6 +101,9 @@ TOOL_USAGE = """# Tool usage
 - PLAN phase: only read-only tools, update_todos and submit_plan are allowed.
 - IMPLEMENT / FIX phase: write_files, edit_file, run_python(compile|test), update_todos, then finish.
 - Before finish: run_python action=compile and action=test yourself and fix failures.
+- The harness also imports every module and loads main.py (without running main()); any ImportError,
+  AttributeError or NameError at import time fails verification. Only import names that really exist, and keep
+  main.py's start-up code under `if __name__ == "__main__":`.
 - Change project files only with write_files / edit_file / delete_file. run_python scripts are for checks and
   diagnostics; they must not create, modify or delete project files. Delete temporary helper files with
   delete_file before finish.

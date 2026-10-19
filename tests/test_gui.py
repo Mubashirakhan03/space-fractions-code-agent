@@ -228,3 +228,31 @@ def test_friendly_key_messages():
     assert "start with sk-" in friendly_key_problem("abc123")
     assert "No API key" in friendly_key_problem("")
     assert friendly_key_problem("sk-abc") is None
+
+
+def test_new_run_folders_are_siblings_not_nested(tmp_path):
+    from datetime import datetime
+
+    from app.gui.controller import new_run_subfolder, run_folder_base
+
+    now = datetime(2026, 10, 19, 17, 25)
+    workspace = tmp_path / "tictactoe"
+    workspace.mkdir()
+    (workspace / "notes.txt").write_text("user file")
+    first = new_run_subfolder(workspace, now)
+    assert first.parent == workspace                     # plain folder → subfolder inside it
+    first.mkdir()
+    (first / "agent_run").mkdir()
+    second = new_run_subfolder(first, now)               # chosen folder IS a run folder → sibling
+    assert second.parent == workspace and second.name == "run-2026-10-19_1725-2"
+    assert run_folder_base(workspace / "run-2026-10-19_0050") == workspace  # run-… name alone is enough
+
+
+def test_resume_marks_completed_phases_done(window):
+    window._reset_phases()
+    window._on_resume("verify", 0)
+    assert [window.phase_state(p) for p in ("plan", "implement", "verify", "fix")] == ["done", "done", "pending",
+                                                                                      "pending"]
+    window._reset_phases()
+    window._on_resume("report", 1)
+    assert window.phase_state("fix") == "done" and window.phase_state("verify") == "done"

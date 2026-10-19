@@ -221,3 +221,13 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Release notes set from CHANGELOG.md. The released exe was downloaded and re-verified without Python: 6/6 PASS.
 - Rollback: `gh release delete v1.0.0 --cleanup-tag` (irreversible for downloaders; ask first).
 - Remaining: user records the video (script in docs/VIDEO_SCRIPT.md), then the link is added to README.
+
+### 2026-10-19 — User report: quiz app "cannot import name 'centered' from 'ui.widgets'" (+ 3 fixes)
+- Diagnosis (generated code read, NOT edited): `main.py` imports `centered` but that run's own `ui/widgets.py` has no
+  such function → a genuine generated bug; verify missed it because tests never import main.py. Separately, the
+  "new subfolder" option nested runs (run-0050/run-0116/run-0117/run-1725) — a real UX bug, not the cause.
+- `app/agent/import_check.py` (new, in Verify; prompt mentions it); catches the user's case, passes run 5.
+- `run_folder_base()`: new run folders become siblings of a run folder; dialog shows the full path.
+- Resume: agent emits `resume` event; GUI marks completed phases done.
+- Defaults: max_requests 80, config migration (CONFIG_VERSION 2).
+- Tests: test_import_check.py, sibling folders, resume phases, config migration. 139 passed, 1 skipped.
