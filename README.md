@@ -6,15 +6,16 @@ then uses **DeepSeek `deepseek-v4-pro`** (official API) to plan, write, test, ve
 
 - 📦 **Download:** [latest release — `SpaceFractionsAgent.exe`](https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/latest). Double-click to run; no Python needed.
 - 🎬 **Demo video:** *(link added after recording)*
-- 🧾 **Evidence of real runs:** [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md) · final generated game: [`examples/space_fractions_run4/`](examples/space_fractions_run4/)
+- 🧾 **Evidence of real runs:** [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md) · final generated game: [`examples/space_fractions_run5/`](examples/space_fractions_run5/)
 
 Task 1 evaluation for the Intelligent Software Engineering group (Prof. Peng Liang). Author: Mubashira.
 
 ![Agent GUI after a successful run](docs/screenshots/gui_success.png)
 
-| Generated game (real run 4, unedited) | |
+| Generated game (real run 5, unedited) | |
 |---|---|
-| ![question](docs/screenshots/run4/8_question_choice.png) | ![end](docs/screenshots/run4/11_end.png) |
+| ![menu](docs/screenshots/run5/2_menu.png) | ![typed question with Check button](docs/screenshots/run5/7_question_typed.png) |
+| ![wrong-answer feedback](docs/screenshots/run5/8_feedback_wrong.png) | ![end](docs/screenshots/run5/10_end.png) |
 
 ---
 
@@ -30,7 +31,7 @@ Task 1 evaluation for the Intelligent Software Engineering group (Prof. Peng Lia
 6. When the success dialog appears, press **▶ Run generated app**. The game runs on the interpreter inside the exe.
 
 Zero-cost options: **Developer: mock mode** runs the full pipeline with a scripted demo (clearly labelled *MOCK DEMO*).
-**Replay** re-runs a recorded transcript, e.g. `examples/space_fractions_run4/agent_run/transcript.jsonl`, with no API calls.
+**Replay** re-runs a recorded transcript, e.g. `examples/space_fractions_run5/agent_run/transcript.jsonl`, with no API calls.
 
 A typical real run costs about **$0.10–0.15**, because ~98 % of the prompt tokens are DeepSeek cache hits.
 
@@ -59,8 +60,9 @@ flowchart LR
 3. **Implement.** The model writes files in batches with `write_files`. It changes them with exact search-and-replace
    `edit_file`, and runs compile and tests.
 4. **Verify (harness).** The harness checks the required deliverables, compiles every file, runs pytest with the
-   bundled interpreter, and runs a **UI probe**. The probe opens the real window and shows every screen. It fails on
-   off-screen or collapsed widgets, buttons covering text, buttons with no room, and Tk callback errors.
+   bundled interpreter, and runs a **UI probe**. The probe opens the real window at 1280×800 **and** at 1100×750 and
+   shows every screen. It fails on off-screen or collapsed widgets, cut-off or hidden buttons, buttons covering text,
+   text inputs without a submit button, and Tk callback errors.
 5. **Fix.** The verification report goes back to the model, which fixes the problems itself (bounded rounds).
 6. **Report.** `agent_run/RUN_REPORT.md`: provider, model, requests, tokens, cache hits, cost, verification and files.
 
@@ -86,7 +88,7 @@ Sources: [`docs/RESEARCH_NOTES.md`](docs/RESEARCH_NOTES.md) (how-claude-code-wor
 | 12 | Observability & cost | Live GUI log, `transcript.jsonl`, per-request usage, cache-hit %, cost, `RUN_REPORT.md` |
 | 13 | Sessions / resume (claw-code) | `agent_run/state.json` after every step; **Resume** (used in real runs 1 and 4) |
 | 14 | `doctor` (claw-code) | `SpaceFractionsAgent.exe --doctor`, plus Test connection in the GUI |
-| 15 | Mock parity harness (claw-code) | `MockProvider` scenarios → 128 deterministic tests with zero API cost |
+| 15 | Mock parity harness (claw-code) | `MockProvider` scenarios → 134 deterministic tests with zero API cost |
 | 16 | Self-verification | Deliverables + compile + pytest + **UI probe** (real window), with bounded fix rounds |
 
 ## Web/microservice design → desktop app
@@ -125,7 +127,7 @@ Hints for the model…
 
 ## Real runs (honest summary)
 
-Four real runs used the official API. The generated code was **never edited by hand**. After each run I looked at the
+Five real runs used the official API. The generated code was **never edited by hand**. After each run I looked at the
 real window, and when something was wrong I improved the **agent** (rules, tools, verification). Full details and
 screenshots: [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
 
@@ -134,20 +136,24 @@ screenshots: [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
 | 1 | 44 | $0.103 | verified | canvas drawn before the window had a size → **UI probe** + `<Configure>` rule |
 | 2 | 27 | $0.096 | verified first try | feedback showed the *next* item's answer → rule "capture message data before changing state" |
 | 3 | 54 | $0.131 | probe found off-screen buttons → **agent fixed them itself** | pack/grid freeze → layout rule, full-flow smoke test, callback-error probe, `delete_file` |
-| 4 | 57 | $0.142 | verified; 5 real-timer rounds, 0 errors | final example |
+| 4 | 57 | $0.142 | verified; 5 real-timer rounds, 0 errors | hidden/clipped buttons at small sizes → probe at minimum size, clipped-text and submit-button checks |
+| 5 | 47 | $0.122 | the probe gave a false positive on a scrollable list during the run; **passed on re-verification** ([evidence](docs/run5_reverification.txt)) | **final example**: fits 1100×750, Check button, full pause overlay, 41 tests, 5 rounds with 0 errors |
 
-Total API spend for all four runs: about **$0.55**.
+Total API spend for all five runs: about **$0.68**.
 
 ## Known limitations
 
-- **Generated game (run 4):** at 125 % display scaling the menu's *Exit* button does not fit. The probe ran at
-  1280×800, where it fits. The last row of choice-button labels is slightly clipped. A typed answer is submitted
-  with Enter (there is no Submit button). The look is simpler than runs 2–3 (a grey margin and fewer decorations).
-  Each run of an LLM differs, and visual quality varies between runs.
+- **Generated game (run 5):** the intro schedules an 8-second auto-advance that Skip does not cancel. A player who
+  starts a round within 8 s of launching is sent back to the menu once. The choice buttons are left-aligned rather
+  than centred, and the intro screen is sparse. LLM output varies from run to run, and earlier runs (`examples/`)
+  show different strengths and weaknesses, documented in [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
+- During run 5 the agent's own verification reported **FAILED** because of a false positive in the UI probe (rows of
+  a scrollable list counted as off-window). The probe was fixed and the unchanged output re-verified (compile, 41
+  tests, probe at both sizes, all OK). Its `RUN_REPORT.md` is kept as it was produced.
 - `run_python` scripts are ordinary Python. They run in the output folder with a timeout and no API keys, but they are
   not OS-sandboxed. The model is told to change files only through the file tools.
-- The UI probe checks layout and crashes generically. It does not play the app; the generated smoke test is
-  responsible for that.
+- The UI probe checks layout and crashes generically. It does not play the app; the generated full-flow smoke test
+  is responsible for that, and it does not catch every timing bug (for example the intro timer above).
 - "No Python on the target PC" was verified by running the exe with Python removed from PATH, locally and on a clean
   GitHub Windows runner. A test on a second physical PC is still recommended.
 - The token estimate for context compaction uses characters ÷ 4.
@@ -157,7 +163,7 @@ Total API spend for all four runs: about **$0.55**.
 ```bat
 py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-dev.txt
-.venv\Scripts\python -m pytest            :: 128 tests, MockProvider only, no API cost
+.venv\Scripts\python -m pytest            :: 134 tests, MockProvider only, no API cost
 .venv\Scripts\python -m ruff check .
 .venv\Scripts\python -m app.main          :: run the GUI from source
 scripts\build_exe.bat                     :: → dist\SpaceFractionsAgent.exe
@@ -174,9 +180,9 @@ for every push, and attaches the exe to a GitHub Release for `v*` tags. A pre-co
 ```
 app/            agent (loop, prompts, context, profile, ui_probe…), tools, llm providers, parsers, gui, main
 schemas/        spec.schema.json            samples/   inputs (+ library_tracker)     profiles/  task profiles
-examples/       four real runs (run4 = final), each with agent_run/ transcript, state, report, logs
+examples/       five real runs (run5 = final), each with agent_run/ transcript, state, report, logs
 docs/           RESEARCH_NOTES, ARCHITECTURE, REAL_RUNS, DECISIONS, VIDEO_SCRIPT, LEARNING_NOTES_UR, CHANGELOG_WORK
-tests/          128 tests (parsers, tools/sandbox, agent loop scenarios, GUI, UI probe, generality)
+tests/          134 tests (parsers, tools/sandbox, agent loop scenarios, GUI, UI probe, generality)
 scripts/        build_exe.bat, verify_exe.py, run_agent_cli.py, check_secrets.py, make_icon.py
 ```
 

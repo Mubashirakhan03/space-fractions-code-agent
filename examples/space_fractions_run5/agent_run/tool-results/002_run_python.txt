@@ -1,0 +1,358 @@
+FAILED
+...............................EEEEEE....                                [100%]
+=================================== ERRORS ====================================
+______________ ERROR at setup of test_min_size_and_screens_exist ______________
+
+root = <tkinter.Tk object .>
+
+    @pytest.fixture()
+    def window(root):
+        """Build a fresh app; after each test, cancel timers and destroy widgets."""
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(
+            (exc, val)
+        )
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:107: in create_app
+    return App(root)
+           ^^^^^^^^^
+ui\app.py:57: in __init__
+    self._build_screens()
+ui\app.py:75: in _build_screens
+    self.screens[name] = cls(self.root, self)
+                         ^^^^^^^^^^^^^^^^^^^^
+ui\screens\question.py:19: in __init__
+    super().__init__(master, app)
+ui\screens\base.py:21: in __init__
+    self._build()
+ui\screens\question.py:75: in _build
+    self._build_pause_overlay()
+ui\screens\question.py:78: in _build_pause_overlay
+    self._pause_overlay = tk.Frame(self, bg="#000000AA")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:3224: in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tkinter.Frame object .!questionscreen.!frame2>
+master = <ui.screens.question.QuestionScreen object .!questionscreen>
+widgetName = 'frame', cnf = {'bg': '#000000AA'}, kw = {}, extra = ()
+
+    def __init__(self, master, widgetName, cnf={}, kw={}, extra=()):
+        """Construct a widget with the parent widget MASTER, a name WIDGETNAME
+        and appropriate options."""
+        if kw:
+            cnf = _cnfmerge((cnf, kw))
+        self.widgetName = widgetName
+        self._setup(master, cnf)
+        if self._tclCommands is None:
+            self._tclCommands = []
+        classes = [(k, v) for k, v in cnf.items() if isinstance(k, type)]
+        for k, v in classes:
+            del cnf[k]
+>       self.tk.call(
+            (widgetName, self._w) + extra + self._options(cnf))
+E       _tkinter.TclError: invalid color name "#000000AA"
+
+C:\Python312\Lib\tkinter\__init__.py:2659: TclError
+_________________ ERROR at setup of test_every_screen_renders _________________
+
+root = <tkinter.Tk object .>
+
+    @pytest.fixture()
+    def window(root):
+        """Build a fresh app; after each test, cancel timers and destroy widgets."""
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(
+            (exc, val)
+        )
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:107: in create_app
+    return App(root)
+           ^^^^^^^^^
+ui\app.py:57: in __init__
+    self._build_screens()
+ui\app.py:75: in _build_screens
+    self.screens[name] = cls(self.root, self)
+                         ^^^^^^^^^^^^^^^^^^^^
+ui\screens\question.py:19: in __init__
+    super().__init__(master, app)
+ui\screens\base.py:21: in __init__
+    self._build()
+ui\screens\question.py:75: in _build
+    self._build_pause_overlay()
+ui\screens\question.py:78: in _build_pause_overlay
+    self._pause_overlay = tk.Frame(self, bg="#000000AA")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:3224: in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tkinter.Frame object .!questionscreen2.!frame2>
+master = <ui.screens.question.QuestionScreen object .!questionscreen2>
+widgetName = 'frame', cnf = {'bg': '#000000AA'}, kw = {}, extra = ()
+
+    def __init__(self, master, widgetName, cnf={}, kw={}, extra=()):
+        """Construct a widget with the parent widget MASTER, a name WIDGETNAME
+        and appropriate options."""
+        if kw:
+            cnf = _cnfmerge((cnf, kw))
+        self.widgetName = widgetName
+        self._setup(master, cnf)
+        if self._tclCommands is None:
+            self._tclCommands = []
+        classes = [(k, v) for k, v in cnf.items() if isinstance(k, type)]
+        for k, v in classes:
+            del cnf[k]
+>       self.tk.call(
+            (widgetName, self._w) + extra + self._options(cnf))
+E       _tkinter.TclError: invalid color name "#000000AA"
+
+C:\Python312\Lib\tkinter\__init__.py:2659: TclError
+_______ ERROR at setup of test_name_entry_correct_and_wrong_submission ________
+
+root = <tkinter.Tk object .>
+
+    @pytest.fixture()
+    def window(root):
+        """Build a fresh app; after each test, cancel timers and destroy widgets."""
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(
+            (exc, val)
+        )
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:107: in create_app
+    return App(root)
+           ^^^^^^^^^
+ui\app.py:57: in __init__
+    self._build_screens()
+ui\app.py:75: in _build_screens
+    self.screens[name] = cls(self.root, self)
+                         ^^^^^^^^^^^^^^^^^^^^
+ui\screens\question.py:19: in __init__
+    super().__init__(master, app)
+ui\screens\base.py:21: in __init__
+    self._build()
+ui\screens\question.py:75: in _build
+    self._build_pause_overlay()
+ui\screens\question.py:78: in _build_pause_overlay
+    self._pause_overlay = tk.Frame(self, bg="#000000AA")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:3224: in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tkinter.Frame object .!questionscreen3.!frame2>
+master = <ui.screens.question.QuestionScreen object .!questionscreen3>
+widgetName = 'frame', cnf = {'bg': '#000000AA'}, kw = {}, extra = ()
+
+    def __init__(self, master, widgetName, cnf={}, kw={}, extra=()):
+        """Construct a widget with the parent widget MASTER, a name WIDGETNAME
+        and appropriate options."""
+        if kw:
+            cnf = _cnfmerge((cnf, kw))
+        self.widgetName = widgetName
+        self._setup(master, cnf)
+        if self._tclCommands is None:
+            self._tclCommands = []
+        classes = [(k, v) for k, v in cnf.items() if isinstance(k, type)]
+        for k, v in classes:
+            del cnf[k]
+>       self.tk.call(
+            (widgetName, self._w) + extra + self._options(cnf))
+E       _tkinter.TclError: invalid color name "#000000AA"
+
+C:\Python312\Lib\tkinter\__init__.py:2659: TclError
+_________ ERROR at setup of test_question_input_cleared_and_full_flow _________
+
+root = <tkinter.Tk object .>
+
+    @pytest.fixture()
+    def window(root):
+        """Build a fresh app; after each test, cancel timers and destroy widgets."""
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(
+            (exc, val)
+        )
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:107: in create_app
+    return App(root)
+           ^^^^^^^^^
+ui\app.py:57: in __init__
+    self._build_screens()
+ui\app.py:75: in _build_screens
+    self.screens[name] = cls(self.root, self)
+                         ^^^^^^^^^^^^^^^^^^^^
+ui\screens\question.py:19: in __init__
+    super().__init__(master, app)
+ui\screens\base.py:21: in __init__
+    self._build()
+ui\screens\question.py:75: in _build
+    self._build_pause_overlay()
+ui\screens\question.py:78: in _build_pause_overlay
+    self._pause_overlay = tk.Frame(self, bg="#000000AA")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:3224: in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tkinter.Frame object .!questionscreen4.!frame2>
+master = <ui.screens.question.QuestionScreen object .!questionscreen4>
+widgetName = 'frame', cnf = {'bg': '#000000AA'}, kw = {}, extra = ()
+
+    def __init__(self, master, widgetName, cnf={}, kw={}, extra=()):
+        """Construct a widget with the parent widget MASTER, a name WIDGETNAME
+        and appropriate options."""
+        if kw:
+            cnf = _cnfmerge((cnf, kw))
+        self.widgetName = widgetName
+        self._setup(master, cnf)
+        if self._tclCommands is None:
+            self._tclCommands = []
+        classes = [(k, v) for k, v in cnf.items() if isinstance(k, type)]
+        for k, v in classes:
+            del cnf[k]
+>       self.tk.call(
+            (widgetName, self._w) + extra + self._options(cnf))
+E       _tkinter.TclError: invalid color name "#000000AA"
+
+C:\Python312\Lib\tkinter\__init__.py:2659: TclError
+_______________ ERROR at setup of test_pause_overlay_and_resume _______________
+
+root = <tkinter.Tk object .>
+
+    @pytest.fixture()
+    def window(root):
+        """Build a fresh app; after each test, cancel timers and destroy widgets."""
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(
+            (exc, val)
+        )
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:107: in create_app
+    return App(root)
+           ^^^^^^^^^
+ui\app.py:57: in __init__
+    self._build_screens()
+ui\app.py:75: in _build_screens
+    self.screens[name] = cls(self.root, self)
+                         ^^^^^^^^^^^^^^^^^^^^
+ui\screens\question.py:19: in __init__
+    super().__init__(master, app)
+ui\screens\base.py:21: in __init__
+    self._build()
+ui\screens\question.py:75: in _build
+    self._build_pause_overlay()
+ui\screens\question.py:78: in _build_pause_overlay
+    self._pause_overlay = tk.Frame(self, bg="#000000AA")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:3224: in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tkinter.Frame object .!questionscreen5.!frame2>
+master = <ui.screens.question.QuestionScreen object .!questionscreen5>
+widgetName = 'frame', cnf = {'bg': '#000000AA'}, kw = {}, extra = ()
+
+    def __init__(self, master, widgetName, cnf={}, kw={}, extra=()):
+        """Construct a widget with the parent widget MASTER, a name WIDGETNAME
+        and appropriate options."""
+        if kw:
+            cnf = _cnfmerge((cnf, kw))
+        self.widgetName = widgetName
+        self._setup(master, cnf)
+        if self._tclCommands is None:
+            self._tclCommands = []
+        classes = [(k, v) for k, v in cnf.items() if isinstance(k, type)]
+        for k, v in classes:
+            del cnf[k]
+>       self.tk.call(
+            (widgetName, self._w) + extra + self._options(cnf))
+E       _tkinter.TclError: invalid color name "#000000AA"
+
+C:\Python312\Lib\tkinter\__init__.py:2659: TclError
+___________ ERROR at setup of test_end_screen_renders_without_data ____________
+
+root = <tkinter.Tk object .>
+
+    @pytest.fixture()
+    def window(root):
+        """Build a fresh app; after each test, cancel timers and destroy widgets."""
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(
+            (exc, val)
+        )
+>       app = create_app(root)
+              ^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:107: in create_app
+    return App(root)
+           ^^^^^^^^^
+ui\app.py:57: in __init__
+    self._build_screens()
+ui\app.py:75: in _build_screens
+    self.screens[name] = cls(self.root, self)
+                         ^^^^^^^^^^^^^^^^^^^^
+ui\screens\question.py:19: in __init__
+    super().__init__(master, app)
+ui\screens\base.py:21: in __init__
+    self._build()
+ui\screens\question.py:75: in _build
+    self._build_pause_overlay()
+ui\screens\question.py:78: in _build_pause_overlay
+    self._pause_overlay = tk.Frame(self, bg="#000000AA")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\tkinter\__init__.py:3224: in __init__
+    Widget.__init__(self, master, 'frame', cnf, {}, extra)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <tkinter.Frame object .!questionscreen6.!frame2>
+master = <ui.screens.question.QuestionScreen object .!questionscreen6>
+widgetName = 'frame', cnf = {'bg': '#000000AA'}, kw = {}, extra = ()
+
+    def __init__(self, master, widgetName, cnf={}, kw={}, extra=()):
+        """Construct a widget with the parent widget MASTER, a name WIDGETNAME
+        and appropriate options."""
+        if kw:
+            cnf = _cnfmerge((cnf, kw))
+        self.widgetName = widgetName
+        self._setup(master, cnf)
+        if self._tclCommands is None:
+            self._tclCommands = []
+        classes = [(k, v) for k, v in cnf.items() if isinstance(k, type)]
+        for k, v in classes:
+            del cnf[k]
+>       self.tk.call(
+            (widgetName, self._w) + extra + self._options(cnf))
+E       _tkinter.TclError: invalid color name "#000000AA"
+
+C:\Python312\Lib\tkinter\__init__.py:2659: TclError
+=========================== short test summary info ===========================
+ERROR tests\test_ui_smoke.py::test_min_size_and_screens_exist - _tkinter.TclE...
+ERROR tests\test_ui_smoke.py::test_every_screen_renders - _tkinter.TclError: ...
+ERROR tests\test_ui_smoke.py::test_name_entry_correct_and_wrong_submission - ...
+ERROR tests\test_ui_smoke.py::test_question_input_cleared_and_full_flow - _tk...
+ERROR tests\test_ui_smoke.py::test_pause_overlay_and_resume - _tkinter.TclErr...
+ERROR tests\test_ui_smoke.py::test_end_screen_renders_without_data - _tkinter...

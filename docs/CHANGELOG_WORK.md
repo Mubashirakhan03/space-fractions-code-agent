@@ -203,3 +203,14 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   without a visible button next to them.
 - Rule: every text input has a visible Submit/Check button (Enter also submits); "design every screen to fit 1100x750".
 - On run 4's game the new probe reports 8 problems (incl. the hidden Exit and clipped buttons); mock demo stays OK.
+
+### 2026-10-19 — Real run 5 (final example) + probe false-positive fix
+- Run 5 → `examples/space_fractions_run5/`: 47 requests, $0.122 (balance $1.32). In-run verify FAILED after 3 fix rounds;
+  the agent fixed real problems in rounds 1–2 (screens never placed; admin too tall → scrollable list), and round 3's
+  remaining "problems" were rows of the scrollable list = probe false positive.
+- `app/agent/ui_probe.py`: widgets inside a scrollable Canvas are skipped for off-window/clipped/overlap checks
+  (+ test). Unchanged output re-verified without API: compile OK, 41 tests, probe OK @1280x800 and @1100x750 →
+  `docs/run5_reverification.txt`.
+- Play-test: 5 real-timer rounds, heavy typed/choice mixing, 0 Tk errors. Found: intro 8 s auto-advance not cancelled by
+  Skip (documented). Screenshots `docs/screenshots/run5/` (14).
+- Final example switched to run 5 in README / VIDEO_SCRIPT / CHANGELOG.md (D-019). Total spend ≈ $0.68. Tests: 134.

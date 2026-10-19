@@ -101,7 +101,7 @@ Honest review:
 
 Total real-API spend for runs 1–3: about **$0.41** of the $2.00 top-up.
 
-## Run 4 — 2026-10-19 11:00 UTC (16:00 PKT, off-peak) → `examples/space_fractions_run4/` (**final example**)
+## Run 4 — 2026-10-19 11:00 UTC (16:00 PKT, off-peak) → `examples/space_fractions_run4/`
 
 Agent changes since run 3: never mix pack and grid in one container; the UI smoke test must play one complete
 flow covering every input variant with real-time pumping and `report_callback_exception`; a sandboxed
@@ -129,6 +129,33 @@ Honest review:
   `pack`. The probe only checks widgets that are shown, so it missed this. In the bottom row of choice buttons the
   label is slightly clipped. The typed input has no Submit button (Enter submits).
 
+## Run 5 — 2026-10-19 11:41 UTC (16:41 PKT, off-peak) → `examples/space_fractions_run5/` (**final example**)
+
+Agent changes since run 4 (user request): the probe checks every screen at 1280×800 **and** at the minimum size
+1100×750; it flags button text that is cut off and text inputs without a visible button; there is a rule that every
+text input gets a visible Submit/Check button; clearer `write_files` errors; a 6M token cap.
+
+| Item | Value |
+|---|---|
+| Requests / cost | 47 requests, **$0.122** estimated; balance $1.45 → $1.32 |
+| Verify during the run | **FAILED after 3 fix rounds.** Round 1: the probe found that no screen was visible at all (screens were never placed in the window), and the agent fixed it. Round 2: the admin form was too tall, and the agent made the list scrollable. Round 3: the only remaining "problems" were rows of that **scrollable** list, which the probe counted as off-window. That was a **false positive in my probe**, not a bug in the game |
+| Probe fix | Widgets inside a scrollable Canvas are no longer treated as off-window, clipped or overlapping (test `test_probe_allows_rows_of_a_scrollable_list`) |
+| Re-verification | The same harness checks on the unchanged output, with no API calls: compile OK, **41 tests passed**, **UI PROBE OK at both sizes** → `docs/run5_reverification.txt` |
+
+Play-test with the game's own timers: **5 complete rounds** with heavy typed/choice mixing (e.g. `TCTTCCCTTC`,
+`TTTTTCCTTC`). There were **0 Tk callback errors**. Screenshots: `docs/screenshots/run5/` (14, including the menu and
+end screen at 1100×750).
+
+Honest review:
+- ✅ Everything fits at 1100×750 (the menu shows all five buttons including Exit). Typed questions have a **Check**
+  button. The pause overlay covers the whole question. The wrong-answer feedback names the same question's answer.
+  The admin screen has a form plus a scrollable list with Delete.
+- ❌ **Intro timer bug:** the intro schedules `after(8000, auto_advance)` and Skip does not cancel it. If a player
+  skips and starts a round within 8 s of launch, the game jumps back to the menu once. (The play-test hit it because
+  the script was fast; screenshots were retaken after waiting 9 s.)
+- ⚠️ The choice buttons are left-aligned instead of centred. The intro screen is sparse, with the rocket partly
+  hidden at the top.
+
 ## Summary of all real runs
 
 | Run | Requests | Cost | Verify | Main finding → agent improvement |
@@ -136,6 +163,7 @@ Honest review:
 | 1 | 44 (resume) | $0.103 | passed | canvas drawn at width 1 → **UI probe**, <Configure> rule |
 | 2 | 27 | $0.096 | passed first try | feedback showed the next item's answer → **rule 10**; Help overlap → overlap check |
 | 3 | 54 | $0.131 | passed after 1 **self-fix** round | pack/grid freeze → pack/grid rule, **full-flow smoke test**, callback-error probe, `delete_file` |
-| 4 | 57 (resume) | $0.142 | passed | final example; remaining issues are known limitations |
+| 4 | 57 (resume) | $0.142 | passed | hidden Exit / clipped text at small sizes → probe at min size, clipped-text and submit-button checks |
+| 5 | 47 | $0.122 | probe false positive during the run → **passed on re-verification** | **final example**; scrollable-list false positive fixed in the probe |
 
-Total: about **$0.55** of the $2.00 top-up. The generated code was never edited by hand.
+Total: about **$0.68** of the $2.00 top-up. The generated code was never edited by hand.

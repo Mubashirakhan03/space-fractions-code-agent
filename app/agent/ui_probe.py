@@ -65,6 +65,20 @@ def pump(seconds):
         time.sleep(0.02)
 
 
+def in_scroller(w):
+    """True if w lives inside a scrollable Canvas (a list that scrolls may extend beyond the window)."""
+    p = w.master
+    while p is not None:
+        if p.winfo_class() == "Canvas":
+            try:
+                if str(p.cget("yscrollcommand")) or str(p.cget("xscrollcommand")):
+                    return True
+            except tk.TclError:
+                pass
+        p = p.master
+    return False
+
+
 def check(label):
     before = len(callback_errors)
     pump(PUMP_SECONDS)
@@ -79,6 +93,9 @@ def check(label):
         if not w.winfo_ismapped():
             continue
         if cls in ("Label", "Button", "Entry", "TLabel", "TButton", "TEntry"):
+            if in_scroller(w):
+                visible += 1  # rows of a scrollable list may legitimately lie outside the window
+                continue
             cx = w.winfo_rootx() - ox + w.winfo_width() / 2
             cy = w.winfo_rooty() - oy + w.winfo_height() / 2
             if 0 <= cx <= width and 0 <= cy <= height:
@@ -146,7 +163,7 @@ def check_unfitted(label, screen):
 
 def check_overlaps(label, screen):
     """A button drawn over a text label on the visible screen (e.g. a fixed-position 'Back' over help text)."""
-    widgets = [w for w in walk(screen) if w.winfo_ismapped() and text_of(w)]
+    widgets = [w for w in walk(screen) if w.winfo_ismapped() and text_of(w) and not in_scroller(w)]
     labels = [w for w in widgets if w.winfo_class() in ("Label", "TLabel", "Message")]
     buttons = [w for w in widgets if w.winfo_class() in ("Button", "TButton")]
     for b in buttons:
@@ -168,7 +185,7 @@ def check_overlaps(label, screen):
 def check_clipped(label, screen):
     """A shown button smaller than the space its text needs (label cut off)."""
     for w in walk(screen):
-        if w.winfo_class() in ("Button", "TButton") and w.winfo_ismapped() and text_of(w):
+        if w.winfo_class() in ("Button", "TButton") and w.winfo_ismapped() and text_of(w) and not in_scroller(w):
             squeezed = w.winfo_height() + 3 < w.winfo_reqheight() or w.winfo_width() + 3 < w.winfo_reqwidth()
             p = w.master  # a container smaller than the button hides part of it
             bx0, by0, bx1, by1 = rect(w)

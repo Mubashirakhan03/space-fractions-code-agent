@@ -252,3 +252,12 @@ prompt mein bhi di jati hai. CI har commit par exe build kar ke bina-Python envi
 ### Interview line
 "Main ne 4 asal runs kiye, har run ke baad window khud dekhi, aur jo bhi kharabi mili use agent ke rules aur
 verification mein generic tareeqe se theek kiya — aakhri run mein 5 poore rounds bina kisi error ke chale."
+
+### Run 5 (final) — kya seekha
+- Probe ab **do sizes** (1280×800 aur 1100×750) par check karta hai, kata hua button text aur "input ke saath button
+  nahi" bhi pakarta hai → Run 5 ka game choti screen par bhi poora fit, typed sawal ke saath **Check** button.
+- Run ke dauran verify FAILED aaya — lekin aakhri "masle" asal mein **mere probe ki ghalti** thi (scroll hone wali
+  list ki rows ko bahar gina). Imaandari: probe theek kiya, test likha, aur **wahi code bina API ke dobara verify**
+  kiya → sab pass. Asal RUN_REPORT waisa hi rakha; dobara-verify ka saboot alag file mein.
+- Sabaq (interview ke liye): "Automated checker bhi software hai — us ke false positives bhi test aur fix karne
+  parte hain."

@@ -16,5 +16,5 @@ First public release for the Task 1 evaluation.
   opens the real window.
 - Generic system prompt with a UI design brief; optional task profiles (`profiles/space_fractions.md`).
 - DeepSeek `deepseek-v4-pro` provider (official API, thinking off, retry/backoff), MockProvider, ReplayProvider.
-- 128 tests (MockProvider only), ruff, CI on windows-latest that builds and verifies the exe.
-- Four real runs with transcripts in `examples/` (final: `space_fractions_run4`), documented in `docs/REAL_RUNS.md`.
+- 134 tests (MockProvider only), ruff, CI on windows-latest that builds and verifies the exe.
+- Five real runs with transcripts in `examples/` (final: `space_fractions_run5`), documented in `docs/REAL_RUNS.md`.

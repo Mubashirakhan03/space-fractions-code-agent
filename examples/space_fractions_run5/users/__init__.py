@@ -1,0 +1,1 @@
+"""User component: player identity."""

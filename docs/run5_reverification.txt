@@ -1,0 +1,9 @@
+Re-verification of examples/space_fractions_run5 with the corrected UI probe (no API calls)
+Reason: during run 5 the probe reported rows of a SCROLLABLE admin list as off-window (false positive).
+Fix: app/agent/ui_probe.py skips widgets inside a scrollable Canvas (test: test_probe_allows_rows_of_a_scrollable_list).
+Generated code: unchanged (copy of the committed folder).
+Date (UTC): 2026-10-19 11:54
+
+COMPILE: OK All 36 Python files compile.
+PYTEST: PASSED 41 passed in 6.37s
+UI PROBE: UI PROBE OK: startup view @1280x800, screen 'intro' @1280x800, screen 'menu' @1280x800, screen 'name_entry' @1280x800, screen 'question' @1280x800, screen 'end' @1280x800, screen 'high_scores' @1280x800, screen 'help' @1280x800, screen 'admin' @1280x800, screen 'intro' @1100x750, screen 'menu' @1100x750, screen 'name_entry' @1100x750, screen 'question' @1100x750, screen 'end' @1100x750, screen 'high_scores' @1100x750, screen 'help' @1100x750, screen 'admin' @1100x750

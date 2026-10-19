@@ -1,0 +1,14 @@
+requirement,use_case_or_feature,component,file,test
+FR-1,Play Game,GameComponent,game/controller.py,tests/test_game.py
+NFR-1,Performance (responsive input),GameComponent,game/controller.py,tests/test_ui_smoke.py
+ASR-1,Data durability,QuestionComponent,questions/repository.py,tests/test_persistence.py
+ASR-2,Security (local data, admin-only edit),AdminComponent,admin/service.py,tests/test_admin.py
+FR-1,Play Game,QuestionComponent,questions/checker.py,tests/test_questions.py
+FR-1,View Score,GameComponent,game/models.py,tests/test_game.py
+FR-1,View Help,GameComponent,ui/screens/help.py,tests/test_ui_smoke.py
+FR-1,Update Questions,AdminComponent,admin/service.py,tests/test_admin.py
+(implied),Introductory movie,GameComponent,ui/screens/intro.py,tests/test_ui_smoke.py
+(implied),Main menu,GameComponent,ui/screens/menu.py,tests/test_ui_smoke.py
+(implied),Series of fraction questions,GameComponent,game/controller.py,tests/test_game.py
+(implied),Ending scene with feedback,GameComponent,ui/screens/end.py,tests/test_ui_smoke.py
+NFR-1,State machine (Playing/Paused/GameOver),GameComponent,game/state_machine.py,tests/test_state_machine.py

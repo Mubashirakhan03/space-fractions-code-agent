@@ -249,3 +249,39 @@ def test_probe_checks_minimum_window_size(tmp_path):
     ok, report = run_ui_probe(make(tmp_path, FITS_ONLY_LARGE))
     problems = report.split("):\n", 1)[-1]  # the list after the "checked: …" header
     assert not ok and "@1100x750" in problems and "@1280x800" not in problems
+
+
+SCROLL_LIST = '''import tkinter as tk
+
+
+class App:
+    def __init__(self, root):
+        root.minsize(1100, 750)
+        frame = tk.Frame(root)
+        frame.place(relwidth=1, relheight=1)
+        tk.Label(frame, text="Questions", font=("Segoe UI", 28)).pack()
+        canvas = tk.Canvas(frame, height=300)
+        bar = tk.Scrollbar(frame, command=canvas.yview)
+        canvas.configure(yscrollcommand=bar.set)
+        bar.pack(side="right", fill="y")
+        canvas.pack(fill="x")
+        inner = tk.Frame(canvas)
+        canvas.create_window(0, 0, window=inner, anchor="nw")
+        for i in range(40):  # far more rows than fit: they scroll, which is fine
+            tk.Button(inner, text=f"Row {i}", font=("Segoe UI", 16)).pack()
+        inner.update_idletasks()
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        self.screens = {"admin": frame}
+
+    def show(self, name):
+        pass
+
+
+def create_app(root):
+    return App(root)
+'''
+
+
+def test_probe_allows_rows_of_a_scrollable_list(tmp_path):
+    ok, report = run_ui_probe(make(tmp_path, SCROLL_LIST))
+    assert ok, report
