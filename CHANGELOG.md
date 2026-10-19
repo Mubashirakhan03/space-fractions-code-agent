@@ -17,6 +17,10 @@
   silent hard-coded defaults; apps must ship with seed data loaded on first start (≥ 20 items for quiz-style
   apps); `create_app` sets a real window title. The UI probe now fails a default "tk" title (a title set in
   `main.py` is accepted).
+- Generic rule for quiz/practice apps (any profile): every round draws items at random from the whole pool
+  (seed + admin-added) and shuffles them; computable content (math, arithmetic, number patterns…) is also
+  generated in code each round with computed answers and distinct wrong choices; tests for all of this.
+- UI probe: re-checks once after bringing the window to the front if nothing is mapped (removes a flaky false alarm).
 - Space Fractions profile: ≥ 20 seed questions plus fraction questions generated in code for every round
   (equivalent, compare, add/subtract, simplify; answers via `fractions.Fraction`); full admin form.
 - Default max LLM requests per run is now 80 (and the token cap 6M); older saved settings with the old defaults are

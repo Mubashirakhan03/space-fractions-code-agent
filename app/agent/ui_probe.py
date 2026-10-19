@@ -90,9 +90,20 @@ def in_scroller(w):
     return False
 
 
+WIDGET_CLASSES = ("Label", "Button", "Entry", "TLabel", "TButton", "TEntry")
+
+
+def mapped_widgets():
+    return sum(1 for w in walk(root) if w.winfo_class() in WIDGET_CLASSES and w.winfo_ismapped())
+
+
 def check(label):
     before = len(callback_errors)
     pump(PUMP_SECONDS)
+    if mapped_widgets() == 0:  # right after a geometry change Windows may briefly report nothing mapped
+        root.deiconify()
+        root.lift()
+        pump(1.0)
     for err in callback_errors[before:][:3]:
         result["problems"].append(f"{label}: a Tk callback raised {err} while the screen was running "
                                   "(timers/animations/events must not crash)")

@@ -162,3 +162,11 @@ def test_rules_complete_forms_seed_data_and_title():
 def test_profile_asks_for_generated_items_and_seed_set():
     hints = load_profile(SF_PROFILE).hints
     assert "at least 20 seed questions" in hints and "generates NEW fraction questions in code" in hints
+
+
+def test_rule_random_rounds_and_generated_items():
+    ui = prompts.UI_QUALITY
+    assert "draws its items at RANDOM from the whole pool" in ui and "SHUFFLES" in ui
+    assert "items added by an admin" in ui
+    assert "If the content is" in ui and "generates new items in code" in ui
+    assert "never equal to" in ui and "two rounds differ" in ui

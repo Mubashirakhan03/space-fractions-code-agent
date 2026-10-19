@@ -251,3 +251,10 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - UI probe: fails a default "tk" title unless main.py sets one (run 5 OK, user's quiz app flagged) + 2 tests.
 - Profile: ≥ 20 seed questions (typed + choice), code-generated random questions every round, full admin form.
 - Tests: 144 total (143 passed, 1 skipped). No paid run (run 6 only with the user's permission).
+
+### 2026-10-19 — Generic random-rounds rule (all profiles) + exe to dist
+- Prompt (generic, any domain): random draw from the whole pool incl. admin-added items, shuffled order; computable
+  content also generated in code each round (computed answers, distinct wrong choices); tests required.
+- UI probe: if nothing is mapped right after a resize, deiconify/lift and re-check once (fixed an intermittent
+  "no labels visible" false alarm, 6/6 stable). Full suite 144 passed, 1 skipped.
+- New exe copied to `dist/` (user closed all windows) and verified 6/6 without Python.

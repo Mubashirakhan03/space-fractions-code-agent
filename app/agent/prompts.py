@@ -74,6 +74,13 @@ UI_QUALITY = """# UI quality rules (any desktop app)
 - Never ship empty: provide sensible seed data (data/*.json or SQL inserts) that is loaded automatically on first
   start when the store is empty, enough to use every feature immediately (for a quiz-style app at least 20
   items covering every kind). Test that a fresh database is seeded.
+- Quiz / practice apps (any domain): every round draws its items at RANDOM from the whole pool (seed items AND
+  items added by an admin/user) and SHUFFLES their order, so two rounds are not the same. If the content is
+  computable (math, arithmetic, number patterns, unit conversions…), the app ALSO generates new items in code
+  for every round: the correct value is calculated in code, and wrong choices are distinct and never equal to
+  (or equivalent to) the correct value. If the content is not computable, draw randomly from the pool and
+  shuffle. Tests: two rounds differ (seeded random), admin-added items can appear in a round, and every
+  generated item has a correct computed value and valid distinct choices.
 - Window title: `create_app(root)` sets root.title() to the application's real name, never the default "tk".
 - Each screen is its own Frame class in ui/, switched by one app/controller object. Contract (the harness
   uses it): ui/app.py defines `create_app(root) -> App`, which builds everything WITHOUT calling mainloop();
