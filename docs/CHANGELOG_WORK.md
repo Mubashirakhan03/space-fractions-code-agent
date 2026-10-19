@@ -182,3 +182,10 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   checks only. New sandboxed `delete_file` tool (files only, not agent_run/, not in plan mode, ask-before-write aware).
 - UI probe: pumps each screen for 1.2 s so the app's timers run and fails on any Tk callback exception; timeout 120 s.
 - Tests: delete_file sandbox, probe callback-error detection, rule presence. 126 passed, 1 skipped.
+
+### 2026-10-19 — Phase 5, real run 4 (final example)
+- Run 4 → `examples/space_fractions_run4/`: 54 requests stopped at the 2M token cap (cache-heavy), Resume +3 →
+  VERIFY PASSED + UI PROBE OK; 57 requests, $0.142 (balance $1.45). 5 real-timer rounds with mixed inputs: 0 errors.
+- Renamed `examples/space_fractions_generated` (run 2) → `examples/space_fractions_run2` so all runs are named
+  consistently (older log entries above refer to the old name). `scripts/run_agent_cli.py --max-tokens`.
+- Screenshots `docs/screenshots/run4/`; review + summary of all runs in `docs/REAL_RUNS.md`. Total spend ≈ $0.55.

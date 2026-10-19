@@ -1,0 +1,259 @@
+FAILED
+....................EEEEE.....                                           [100%]
+=================================== ERRORS ====================================
+_________________ ERROR at setup of test_minsize_and_screens __________________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-78/test_minsize_and_screens0')
+
+    @pytest.fixture()
+    def app(root, tmp_path):
+        from ui.app import create_app
+        # fresh app each test, using a tmp db
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(val)
+>       a = create_app(root, db_path=tmp_path / "test.db")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:162: in create_app
+    return App(root, db_path=db_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:48: in __init__
+    screen = self._build_screen(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:70: in _build_screen
+    return cls(self.background, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\screens.py:440: in __init__
+    self.title_label = tk.Label(p, "🔧  Admin", font=theme.F(38, "bold"),
+C:\Python312\Lib\tkinter\__init__.py:3248: in __init__
+    Widget.__init__(self, master, 'label', cnf, kw)
+C:\Python312\Lib\tkinter\__init__.py:2651: in __init__
+    cnf = _cnfmerge((cnf, kw))
+          ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cnfs = ('🔧  Admin', {'font': <tkinter.font.Font object 'font13'>, 'fg': '#FFFFFF', 'bg': '#14274E'})
+
+    def _cnfmerge(cnfs):
+        """Internal function."""
+        if isinstance(cnfs, dict):
+            return cnfs
+        elif isinstance(cnfs, (type(None), str)):
+            return cnfs
+        else:
+            cnf = {}
+            for c in _flatten(cnfs):
+                try:
+>                   cnf.update(c)
+E                   ValueError: dictionary update sequence element #0 has length 1; 2 is required
+
+C:\Python312\Lib\tkinter\__init__.py:116: ValueError
+___________ ERROR at setup of test_full_flow_with_typed_and_choice ____________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-78/test_full_flow_with_typed_and_0')
+
+    @pytest.fixture()
+    def app(root, tmp_path):
+        from ui.app import create_app
+        # fresh app each test, using a tmp db
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(val)
+>       a = create_app(root, db_path=tmp_path / "test.db")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:162: in create_app
+    return App(root, db_path=db_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:48: in __init__
+    screen = self._build_screen(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:70: in _build_screen
+    return cls(self.background, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\screens.py:440: in __init__
+    self.title_label = tk.Label(p, "🔧  Admin", font=theme.F(38, "bold"),
+C:\Python312\Lib\tkinter\__init__.py:3248: in __init__
+    Widget.__init__(self, master, 'label', cnf, kw)
+C:\Python312\Lib\tkinter\__init__.py:2651: in __init__
+    cnf = _cnfmerge((cnf, kw))
+          ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cnfs = ('🔧  Admin', {'font': <tkinter.font.Font object 'font13'>, 'fg': '#FFFFFF', 'bg': '#14274E'})
+
+    def _cnfmerge(cnfs):
+        """Internal function."""
+        if isinstance(cnfs, dict):
+            return cnfs
+        elif isinstance(cnfs, (type(None), str)):
+            return cnfs
+        else:
+            cnf = {}
+            for c in _flatten(cnfs):
+                try:
+>                   cnf.update(c)
+E                   ValueError: dictionary update sequence element #0 has length 1; 2 is required
+
+C:\Python312\Lib\tkinter\__init__.py:116: ValueError
+_________ ERROR at setup of test_wrong_answer_feedback_names_expected _________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-78/test_wrong_answer_feedback_nam0')
+
+    @pytest.fixture()
+    def app(root, tmp_path):
+        from ui.app import create_app
+        # fresh app each test, using a tmp db
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(val)
+>       a = create_app(root, db_path=tmp_path / "test.db")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:162: in create_app
+    return App(root, db_path=db_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:48: in __init__
+    screen = self._build_screen(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:70: in _build_screen
+    return cls(self.background, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\screens.py:440: in __init__
+    self.title_label = tk.Label(p, "🔧  Admin", font=theme.F(38, "bold"),
+C:\Python312\Lib\tkinter\__init__.py:3248: in __init__
+    Widget.__init__(self, master, 'label', cnf, kw)
+C:\Python312\Lib\tkinter\__init__.py:2651: in __init__
+    cnf = _cnfmerge((cnf, kw))
+          ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cnfs = ('🔧  Admin', {'font': <tkinter.font.Font object 'font13'>, 'fg': '#FFFFFF', 'bg': '#14274E'})
+
+    def _cnfmerge(cnfs):
+        """Internal function."""
+        if isinstance(cnfs, dict):
+            return cnfs
+        elif isinstance(cnfs, (type(None), str)):
+            return cnfs
+        else:
+            cnf = {}
+            for c in _flatten(cnfs):
+                try:
+>                   cnf.update(c)
+E                   ValueError: dictionary update sequence element #0 has length 1; 2 is required
+
+C:\Python312\Lib\tkinter\__init__.py:116: ValueError
+____________________ ERROR at setup of test_pause_overlay _____________________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-78/test_pause_overlay0')
+
+    @pytest.fixture()
+    def app(root, tmp_path):
+        from ui.app import create_app
+        # fresh app each test, using a tmp db
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(val)
+>       a = create_app(root, db_path=tmp_path / "test.db")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:162: in create_app
+    return App(root, db_path=db_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:48: in __init__
+    screen = self._build_screen(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:70: in _build_screen
+    return cls(self.background, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\screens.py:440: in __init__
+    self.title_label = tk.Label(p, "🔧  Admin", font=theme.F(38, "bold"),
+C:\Python312\Lib\tkinter\__init__.py:3248: in __init__
+    Widget.__init__(self, master, 'label', cnf, kw)
+C:\Python312\Lib\tkinter\__init__.py:2651: in __init__
+    cnf = _cnfmerge((cnf, kw))
+          ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cnfs = ('🔧  Admin', {'font': <tkinter.font.Font object 'font13'>, 'fg': '#FFFFFF', 'bg': '#14274E'})
+
+    def _cnfmerge(cnfs):
+        """Internal function."""
+        if isinstance(cnfs, dict):
+            return cnfs
+        elif isinstance(cnfs, (type(None), str)):
+            return cnfs
+        else:
+            cnf = {}
+            for c in _flatten(cnfs):
+                try:
+>                   cnf.update(c)
+E                   ValueError: dictionary update sequence element #0 has length 1; 2 is required
+
+C:\Python312\Lib\tkinter\__init__.py:116: ValueError
+________________ ERROR at setup of test_high_scores_and_admin _________________
+
+root = <tkinter.Tk object .>
+tmp_path = WindowsPath('C:/Users/Eocean/AppData/Local/Temp/pytest-of-Mubashira-Khan/pytest-78/test_high_scores_and_admin0')
+
+    @pytest.fixture()
+    def app(root, tmp_path):
+        from ui.app import create_app
+        # fresh app each test, using a tmp db
+        errors = []
+        root.report_callback_exception = lambda exc, val, tb: errors.append(val)
+>       a = create_app(root, db_path=tmp_path / "test.db")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_ui_smoke.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+ui\app.py:162: in create_app
+    return App(root, db_path=db_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:48: in __init__
+    screen = self._build_screen(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+ui\app.py:70: in _build_screen
+    return cls(self.background, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+ui\screens.py:440: in __init__
+    self.title_label = tk.Label(p, "🔧  Admin", font=theme.F(38, "bold"),
+C:\Python312\Lib\tkinter\__init__.py:3248: in __init__
+    Widget.__init__(self, master, 'label', cnf, kw)
+C:\Python312\Lib\tkinter\__init__.py:2651: in __init__
+    cnf = _cnfmerge((cnf, kw))
+          ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cnfs = ('🔧  Admin', {'font': <tkinter.font.Font object 'font13'>, 'fg': '#FFFFFF', 'bg': '#14274E'})
+
+    def _cnfmerge(cnfs):
+        """Internal function."""
+        if isinstance(cnfs, dict):
+            return cnfs
+        elif isinstance(cnfs, (type(None), str)):
+            return cnfs
+        else:
+            cnf = {}
+            for c in _flatten(cnfs):
+                try:
+>                   cnf.update(c)
+E                   ValueError: dictionary update sequence element #0 has length 1; 2 is required
+
+C:\Python312\Lib\tkinter\__init__.py:116: ValueError
+=========================== short test summary info ===========================
+ERROR tests\test_ui_smoke.py::test_minsize_and_screens - ValueError: dictiona...
+ERROR tests\test_ui_smoke.py::test_full_flow_with_typed_and_choice - ValueErr...
+ERROR tests\test_ui_smoke.py::test_wrong_answer_feedback_names_expected - Val...
+ERROR tests\test_ui_smoke.py::test_pause_overlay - ValueError: dictionary upd...
+ERROR tests\test_ui_smoke.py::test_high_scores_and_admin - ValueError: dictio...

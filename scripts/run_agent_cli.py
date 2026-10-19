@@ -35,11 +35,12 @@ def main() -> int:
     ap.add_argument("--max-cost", type=float, default=1.0)
     ap.add_argument("--max-requests", type=int, default=40)
     ap.add_argument("--fix-rounds", type=int, default=3)
+    ap.add_argument("--max-tokens", type=int, default=AppConfig.max_total_tokens)
     ap.add_argument("--resume", action="store_true")
     a = ap.parse_args()
 
     cfg = AppConfig(provider="mock" if a.mock else "deepseek", max_cost_usd=a.max_cost, max_requests=a.max_requests,
-                    fix_rounds=a.fix_rounds, doc_path=a.doc, view_path=a.view, output_dir=a.out,
+                    fix_rounds=a.fix_rounds, max_total_tokens=a.max_tokens, doc_path=a.doc, view_path=a.view, output_dir=a.out,
                     profile_path=a.profile)
     provider = build_provider(cfg)
     spec = build_spec(Path(a.doc), Path(a.view))

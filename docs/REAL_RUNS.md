@@ -34,7 +34,7 @@ Agent improvements made in response (generic, not Space-Fractions specific):
   `screens` / `show` contract is now explicit. Every screen must render safely when shown directly.
 - Rule 5: send all `edit_file` calls for several files in ONE reply.
 
-## Run 2 — 2026-10-18 20:12 UTC (off-peak) → `examples/space_fractions_generated/` (final)
+## Run 2 — 2026-10-18 20:12 UTC (off-peak) → `examples/space_fractions_run2/`
 
 Same inputs, profile and limits ($1.00 / 60 requests), with the improved agent (UI design brief, UI layout probe,
 <Configure> drawing rule, batch-edit rule).
@@ -100,3 +100,42 @@ Honest review:
   `delete_file` tool inside the sandbox would remove the need for this.
 
 Total real-API spend for runs 1–3: about **$0.41** of the $2.00 top-up.
+
+## Run 4 — 2026-10-19 11:00 UTC (16:00 PKT, off-peak) → `examples/space_fractions_run4/` (**final example**)
+
+Agent changes since run 3: never mix pack and grid in one container; the UI smoke test must play one complete
+flow covering every input variant with real-time pumping and `report_callback_exception`; a sandboxed
+`delete_file` tool, with scripts no longer allowed to change project files; the probe pumps every screen for 1.2 s and
+fails on Tk callback errors.
+
+| Item | Value |
+|---|---|
+| Result | completed: VERIFY PASSED + UI PROBE OK on all 9 screens, 0 fix rounds |
+| Requests | 57: the first 54 stopped at the **token cap** (2,052,447 cumulative prompt tokens, 98 % of them cheap cache hits); **Resume** with a higher token cap added 3 |
+| Cost | **$0.142** estimated; balance $1.59 → $1.45 |
+| Notable | The agent wrote and debugged a full-flow UI test itself (`debug_test.py`). The sandbox blocked its attempt to write `/tmp/debug.py` ("Absolute paths are not allowed"). Two `write_files` entries came without `path` (model mistake) and were retried |
+
+Play-test with the game's own timers: **5 complete rounds** with mixed typed and choice questions (e.g.
+`CCCCTCCTTC`, `CTCCCCTCCC`). There were **0 Tk callback errors**, and every round reached the end screen. Screenshots:
+`docs/screenshots/run4/`.
+
+Honest review:
+- ✅ The run-3 freeze is gone: typed and choice inputs use separate frames.
+- ✅ A wrong answer shows that same question's answer in simplest form ("Which fraction is equal to 2/3?" →
+  "Not quite — the answer is 2/3"). The input clears automatically and the feedback no longer sits behind buttons.
+- ✅ Help, pause overlay, end screen ("Congratulations, Ayesha!", 9/10, ★★☆, confetti), high scores and admin all work.
+- ⚠️ Visual polish is simpler than runs 2–3: a light grey margin around the dark panel and fewer decorations.
+- ⚠️ At 125 % display scaling (window height 793 px) the menu's **Exit** button does not fit and is not shown by
+  `pack`. The probe only checks widgets that are shown, so it missed this. In the bottom row of choice buttons the
+  label is slightly clipped. The typed input has no Submit button (Enter submits).
+
+## Summary of all real runs
+
+| Run | Requests | Cost | Verify | Main finding → agent improvement |
+|---|---|---|---|---|
+| 1 | 44 (resume) | $0.103 | passed | canvas drawn at width 1 → **UI probe**, <Configure> rule |
+| 2 | 27 | $0.096 | passed first try | feedback showed the next item's answer → **rule 10**; Help overlap → overlap check |
+| 3 | 54 | $0.131 | passed after 1 **self-fix** round | pack/grid freeze → pack/grid rule, **full-flow smoke test**, callback-error probe, `delete_file` |
+| 4 | 57 (resume) | $0.142 | passed | final example; remaining issues are known limitations |
+
+Total: about **$0.55** of the $2.00 top-up. The generated code was never edited by hand.
