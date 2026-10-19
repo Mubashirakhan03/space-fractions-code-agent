@@ -3,7 +3,7 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-18
-**Current phase:** Phase 6 — everything ready (README, docs, exe v1.0.0, run 5 final); **waiting for the user's OK to publish Release v1.0.0**
+**Current phase:** ✅ ALL PHASES DONE — Release v1.0.0 published (https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/tag/v1.0.0). Remaining for the user: record the video, then add its link to README.
 
 | Phase | Status | Tag |
 |---|---|---|
@@ -13,7 +13,7 @@ Read this first when resuming work in a new session.
 | 3 — GUI | ✅ done | `phase-3` |
 | 4 — Exe build + GitHub Actions | ✅ done | `phase-4` |
 | 5 — Real runs → examples/ | ✅ done (5 runs, ≈ $0.68, final = run 5) | `phase-5` |
-| 6 — README, video script, release | ⏳ in progress | |
+| 6 — README, video script, release | ✅ done — v1.0.0 released | `phase-6`, `v1.0.0` |
 
 ## Environment facts
 - Python 3.12.6 via `py`; tkinter 8.6; sqlite 3.45 — OK

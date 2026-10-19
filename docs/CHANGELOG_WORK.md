@@ -214,3 +214,10 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Play-test: 5 real-timer rounds, heavy typed/choice mixing, 0 Tk errors. Found: intro 8 s auto-advance not cancelled by
   Skip (documented). Screenshots `docs/screenshots/run5/` (14).
 - Final example switched to run 5 in README / VIDEO_SCRIPT / CHANGELOG.md (D-019). Total spend ≈ $0.68. Tests: 134.
+
+### 2026-10-19 — Release v1.0.0 (user approved)
+- Pushed tags `v1.0.0` and `phase-6` on `48fcc02`. CI run 39251682136 built + verified the exe and published
+  https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/tag/v1.0.0 with `SpaceFractionsAgent.exe` (26.6 MB).
+- Release notes set from CHANGELOG.md. The released exe was downloaded and re-verified without Python: 6/6 PASS.
+- Rollback: `gh release delete v1.0.0 --cleanup-tag` (irreversible for downloaders; ask first).
+- Remaining: user records the video (script in docs/VIDEO_SCRIPT.md), then the link is added to README.
