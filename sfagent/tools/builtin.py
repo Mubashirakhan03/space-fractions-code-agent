@@ -128,25 +128,43 @@ def write_file(ctx: ToolContext, a: dict) -> str:
     return _write(ctx, a["path"], a["content"])
 
 
+def _file_entries(files: Any) -> list[tuple[int, str | None, Any]]:
+    """Normalise write_files input to (index, path, content).
+
+    Preferred form is a mapping {"path": "content", ...}: the path is the JSON key, so it cannot be dropped.
+    Real runs with the older list form [{"path", "content"}] lost "path" in about half of the calls, because
+    the model wrote "content" first and never came back to "path"; the list form is still accepted."""
+    if isinstance(files, dict):
+        if set(files) == {"path", "content"} and isinstance(files.get("path"), str):
+            return [(1, files["path"], files["content"])]  # a single entry sent without the list around it
+        return [(i, p, c) for i, (p, c) in enumerate(files.items(), start=1)]
+    if isinstance(files, list):
+        out = []
+        for i, f in enumerate(files, start=1):
+            f = f if isinstance(f, dict) else {}
+            out.append((i, f.get("path"), f.get("content")))
+        return out
+    return []
+
+
 def write_files(ctx: ToolContext, a: dict) -> str:
-    files = a["files"]
-    if not isinstance(files, list) or not files:
-        raise ToolError("files must be a non-empty list of {path, content}.")
+    entries = _file_entries(a["files"])
+    if not entries:
+        raise ToolError('files must be a non-empty object {"relative/path.py": "full file content", ...}.')
     report, failed = [], 0
-    for i, f in enumerate(files, start=1):
-        missing = [k for k in ("path", "content") if not isinstance(f, dict) or k not in f]
-        if missing:  # the model sometimes drops "path" after a long "content"
+    for i, path, content in entries:
+        if not isinstance(path, str) or not path or not isinstance(content, str):
             failed += 1
-            keys = sorted(f) if isinstance(f, dict) else type(f).__name__
-            report.append(f"FAILED entry #{i}: missing {', '.join(missing)} (got {keys}). Every entry needs BOTH "
-                          "'path' and 'content' — write 'path' FIRST. Re-send this file.")
+            what = "path" if not isinstance(path, str) or not path else "content (must be a string)"
+            report.append(f"FAILED entry #{i}: missing {what}. Send files as an object keyed by path, "
+                          '{"pkg/mod.py": "<full content>"}, and re-send only this file.')
             continue
         try:
-            report.append(_write(ctx, f["path"], f["content"]))
+            report.append(_write(ctx, path, content))
         except Exception as exc:  # one bad file must not block the rest
             failed += 1
-            report.append(f"FAILED {f['path']}: {exc}")
-    if failed == len(files):
+            report.append(f"FAILED {path}: {exc}")
+    if failed == len(entries):
         raise ToolError("\n".join(report))
     return "\n".join(report)
 
@@ -275,9 +293,10 @@ def build_registry(ctx: ToolContext) -> ToolRegistry:
              _obj({"pattern": S, "path": S, "glob": S}, ["pattern"]), search_text, read_only=True),
         Tool("write_file", "Create a new file (or fully rewrite a file you have read). Paths are relative.",
              file_entry, write_file, modes=WORK_MODES),
-        Tool("write_files", "Create several files in ONE call (preferred: saves requests). Each entry is "
-             "{\"path\": …, \"content\": …} — always write \"path\" first.",
-             _obj({"files": {"type": "array", "items": file_entry}}, ["files"]), write_files, modes=WORK_MODES),
+        Tool("write_files", "Create several files in ONE call (preferred: saves requests). `files` is an object "
+             "that maps each relative path to its full content: {\"pkg/a.py\": \"…\", \"pkg/b.py\": \"…\"}.",
+             _obj({"files": {"type": "object", "description": "relative file path -> complete file content",
+                             "additionalProperties": S}}, ["files"]), write_files, modes=WORK_MODES),
         Tool("edit_file", "Replace an exact, unique string in a file you have read. Prefer this over rewriting.",
              _obj({"path": S, "old_string": S, "new_string": S, "replace_all": {"type": "boolean"}},
                   ["path", "old_string", "new_string"]), edit_file, modes=WORK_MODES),

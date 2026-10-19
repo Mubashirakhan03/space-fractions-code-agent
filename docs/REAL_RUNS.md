@@ -129,7 +129,7 @@ Honest review:
   `pack`. The probe only checks widgets that are shown, so it missed this. In the bottom row of choice buttons the
   label is slightly clipped. The typed input has no Submit button (Enter submits).
 
-## Run 5 — 2026-10-19 11:41 UTC (16:41 PKT, off-peak) → `examples/space_fractions_run5/` (**final example**)
+## Run 5 — 2026-10-19 11:41 UTC (16:41 PKT, off-peak) → `examples/space_fractions_run5/` (final example until run 7)
 
 Agent changes since run 4 (user request): the probe checks every screen at 1280×800 **and** at the minimum size
 1100×750; it flags button text that is cut off and text inputs without a visible button; there is a rule that every
@@ -170,9 +170,11 @@ Honest review:
 | 2 | 27 | $0.096 | passed first try | feedback showed the next item's answer → **rule 10**; Help overlap → overlap check |
 | 3 | 54 | $0.131 | passed after 1 **self-fix** round | pack/grid freeze → pack/grid rule, **full-flow smoke test**, callback-error probe, `delete_file` |
 | 4 | 57 (resume) | $0.142 | passed | hidden Exit / clipped text at small sizes → probe at min size, clipped-text and submit-button checks |
-| 5 | 47 | $0.122 | probe false positive during the run → **passed on re-verification** | **final example**; scrollable-list false positive fixed in the probe |
+| 5 | 47 | $0.122 | probe false positive during the run → **passed on re-verification** | scrollable-list false positive fixed in the probe |
+| 6 | 110 (2 resumes) | $0.378 | passed, profile none | generated `app/` package shadowed the agent → `sfagent`; wrong equivalent answers → recompute rule |
+| 7 | 42 | $0.144 | passed after 2 self-fix rounds, profile none, **GUI run by the user** | **final example**; `write_files` lost `path` in 6 of 12 calls → path-keyed `files` object |
 
-Total: about **$0.68** of the $2.00 top-up. The generated code was never edited by hand.
+Total: about **$1.20**. The generated code was never edited by hand.
 
 ## Run 6 — 2026-10-19 17:43 UTC (22:43 PKT, off-peak), **profile: none** → `examples/space_fractions_run6_noprofile/`
 
@@ -201,3 +203,37 @@ Agent improvements from run 6 (no new run made): the package rename; `max_steps`
 must recompute the expected value independently over many seeds" and "reject ambiguous items"; "text inputs must be
 clearly visible", plus a UI probe check (flags run 6's admin inputs, run 5 stays OK); a profile hint for building
 equivalent-fraction display text. Screenshots: `docs/screenshots/run6/`. **Final example stays run 5.**
+
+## Run 7 — 2026-10-19 18:20 UTC (23:20 PKT, off-peak), **profile: none**, started by the user from the exe's GUI → `examples/space_fractions_run7_gui/` (**final example**)
+
+The user ran the released agent from its GUI with all the generic rules added after run 6 (path `run-2026-10-19_2320`);
+the folder was copied into `examples/` without any change.
+
+| Item | Value |
+|---|---|
+| Result | **VERIFY PASSED after 2 fix rounds.** The UI probe found "Back to Menu" clipped on Help and not shown on Admin (round 1), then not shown on Score (round 2); the agent fixed both itself |
+| Requests / cost | 42 requests, **$0.144** estimated; 1.73M prompt tokens with 98.6 % cache hits, 46K output tokens, 382 s |
+| Re-verification with the v1.0.1 harness | no missing deliverables, 33 files compile, **29 tests passed**, IMPORT CHECK OK (27 modules), **UI PROBE OK** for 8 screens at 1280×800 and 1100×750 → `docs/run7_reverification.txt` |
+| Harness problem seen | 6 of 12 `write_files` calls lost `"path"`: the model wrote `"content"` first and never added `"path"` after a long file, so those files had to be sent again (wasted requests and output tokens) |
+
+Checked by playing a copy, without editing the code:
+- ✅ Window title "Space Fractions"; intro, menu (Play, View Score, Help, Admin, Quit), game, pause, results, help,
+  score and admin screens.
+- ✅ **25 seed questions** in `data/questions.json` (add, subtract, multiply, compare, simplify, equivalent), loaded into
+  SQLite. **Random rounds** of 5 mix seed, admin and code-generated questions (`game/generator.py`); two rounds differ.
+- ✅ **1000 generated questions checked independently:** every add/subtract/multiply, compare and simplify answer is
+  correct, the choices are distinct and always contain the answer.
+- ✅ Wrong-answer feedback names the same question's answer ("Not quite — the answer was 6/8"); a 0/5 round ends with
+  "Score: 0 / 5" and "Let's practice more — you'll get there!" (no praise), 0 Tk callback errors.
+- ✅ Admin: Prompt, Correct value, Options, Kind; Add, Load Selected / Save Edit, Delete Selected.
+- ❌ **No score and no progress on the game screen** while playing (user finding).
+- ❌ **Admin Kind is a free-text field**, not a list of the six kinds (user finding).
+- ❌ **Generated equivalent questions are trivial:** all 160 of 1000 show the answer in reduced form, which is the
+  question's own fraction (`Fraction(n*m, d*m)` reduces). The profile warns about exactly this, but run 7 used no profile.
+- ⚠️ Admin-added questions are drawn only after a restart (`GameService` copies the pool at start-up). The result
+  title is always "Mission Complete!" (the line below it is score-dependent). Rounds have 5 questions.
+
+Agent improvement from run 7: `write_files` now takes `files` as an object **keyed by path**
+(`{"ui/theme.py": "<content>"}`), so the path is the key and cannot be dropped; the old list form is still
+accepted, and a missing path now tells the model to use the object form (tests in `tests/test_tools.py`).
+Screenshots: `docs/screenshots/run7/`. **Run 7 replaces run 5 as the final example.**

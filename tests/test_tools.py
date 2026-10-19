@@ -231,9 +231,36 @@ def test_delete_file_is_sandboxed(reg, ctx):
 
 
 def test_write_files_explains_missing_path(reg, ctx):
+    """Legacy list form still works; a dropped path names the object form as the way out."""
     r = call(reg, "write_files", files=[{"path": "ok.py", "content": "x = 1\n"}, {"content": "lost path"}])
     assert not r.is_error and "wrote ok.py" in r.content
-    assert "FAILED entry #2: missing path" in r.content and "'path' FIRST" in r.content
+    assert "FAILED entry #2: missing path" in r.content and "object keyed by path" in r.content
+
+
+def test_write_files_accepts_path_keyed_object(reg, ctx):
+    """Regression (GUI run 2026-10-19 23:20): 6 of 12 list-form calls lost "path" because the model wrote
+    "content" first. With the path as the JSON key it cannot be dropped."""
+    r = call(reg, "write_files", files={"pkg/a.py": "A = 1\n", "pkg/b.py": "B = 2\n", "README.md": "# x\n"})
+    assert not r.is_error
+    for rel in ("pkg/a.py", "pkg/b.py", "README.md"):
+        assert f"wrote {rel}" in r.content
+    assert (ctx.sandbox.root / "pkg" / "b.py").read_text(encoding="utf-8") == "B = 2\n"
+
+
+def test_write_files_object_form_partial_failure_and_single_entry(reg, ctx):
+    r = call(reg, "write_files", files={"ok.py": "x=1", "../escape.py": "y=2", "bad.py": 3})
+    assert not r.is_error and "wrote ok.py" in r.content
+    assert "FAILED ../escape.py" in r.content and "FAILED entry #3: missing content" in r.content
+    # a single {"path", "content"} entry sent without the surrounding list
+    r = call(reg, "write_files", files={"path": "solo.py", "content": "z = 3\n"})
+    assert not r.is_error and "wrote solo.py" in r.content
+    assert call(reg, "write_files", files={}).is_error
+
+
+def test_write_files_schema_uses_path_keys(reg):
+    schema = next(s for s in reg.schemas() if s["function"]["name"] == "write_files")
+    files = schema["function"]["parameters"]["properties"]["files"]
+    assert files["type"] == "object" and files["additionalProperties"] == {"type": "string"}
 
 
 def test_generated_project_may_have_its_own_app_package(reg, ctx):

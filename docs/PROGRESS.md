@@ -2,7 +2,7 @@
 
 Read this first when resuming work in a new session.
 
-**Last updated:** 2026-10-18
+**Last updated:** 2026-10-19
 **Current phase:** ✅ ALL PHASES DONE — Release v1.0.0 published (https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/tag/v1.0.0). Remaining for the user: record the video, then add its link to README.
 
 | Phase | Status | Tag |
@@ -38,12 +38,12 @@ Read this first when resuming work in a new session.
 - CI: `.github/workflows/build-windows.yml` builds + verifies on every push; `v*` tag → GitHub Release with exe.
 
 ## Real runs
-- See `docs/REAL_RUNS.md`. Final example: `examples/space_fractions_run5/`. Balance after run 5: $1.32.
+- See `docs/REAL_RUNS.md`. Final example: `examples/space_fractions_run7_gui/` (user's GUI run, profile none). Balance after run 6: $0.57 (run 7 ≈ $0.14 more, check `/user/balance`).
 - Headless run: `PYTHONIOENCODING=utf-8 .venv/Scripts/python scripts/run_agent_cli.py --out <empty dir> --profile profiles/space_fractions.md`
   (off-peak only: avoid Mon–Fri 06–09 and 11–15 PKT). Always ask the user before a paid run.
 
 ## Open decisions / waiting on user
-- none right now
+- v1.0.1 release: waiting for the user's permission (CHANGELOG [1.0.1] is ready).
 
 ## Key files
 - Plan & requirements: `docs/PROMPT.md`

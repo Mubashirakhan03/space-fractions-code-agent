@@ -261,3 +261,16 @@ verification mein generic tareeqe se theek kiya — aakhri run mein 5 poore roun
   kiya → sab pass. Asal RUN_REPORT waisa hi rakha; dobara-verify ka saboot alag file mein.
 - Sabaq (interview ke liye): "Automated checker bhi software hai — us ke false positives bhi test aur fix karne
   parte hain."
+
+## Run 7 (aap ka GUI run) aur write_files ka masla
+
+- **Run 7 final example kyun:** yeh aap ne khud exe ke GUI se chalaya, bina profile ke. Verify 2 fix rounds ke baad
+  PASSED hua (agent ne khud "Back to Menu" button wali problems theek ki). 25 seed sawal, har round random, 1000 generated
+  sawal check kiye — jama/tafreeq/zarb, compare aur simplify sab sahi. Code haath se nahi chheda.
+- **Kamzoriyan (known limitations mein likh di):** khelte waqt score/progress nazar nahi aata; admin ka Kind field
+  free text hai; "equivalent" sawal bekaar hain kyunke `Fraction(6, 8)` khud `3/4` ban jata hai, is liye jawab sawal
+  jaisa hi dikhta hai; admin mein naya sawal restart ke baad hi aata hai.
+- **write_files masla:** model pehle `"content"` (lambi file) likhta tha aur `"path"` bhool jata tha — run 7 mein 12 mein
+  se 6 calls aisi thi, aur har dafa poori file dobara bhejni padti thi (paise aur requests zaya). **Hal:** ab `files` ek
+  object hai jis ki *key hi path hai*: `{"ui/theme.py": "...code..."}`. Key ke baghair value likhi hi nahi ja sakti, is
+  liye path gum nahi ho sakta. Purana list wala tareeqa bhi chalta hai (pichhle transcripts/replay ke liye).

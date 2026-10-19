@@ -331,6 +331,8 @@ def _summarise_call(name: str, arguments: str) -> str:
         a = json.loads(arguments or "{}")
     except json.JSONDecodeError:
         return f"{name} (invalid JSON)"
+    if name == "write_files" and isinstance(a.get("files"), dict):
+        return f"{name} " + ", ".join(map(str, a["files"]))
     if name == "write_files" and isinstance(a.get("files"), list):
         return f"{name} " + ", ".join(str(f.get("path")) for f in a["files"] if isinstance(f, dict))
     if name == "update_todos":

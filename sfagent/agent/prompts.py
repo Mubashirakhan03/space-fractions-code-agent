@@ -35,7 +35,8 @@ RULES_TEMPLATE = """# Rules
    Tests use pytest. No third-party runtime packages, no network access.
 3. Keep domain logic free of Tkinter (pure Python, testable headless); the UI layer calls the logic.
 4. Prefer edit_file (exact, unique search-and-replace) over rewriting a file. You must read_file a
-   whole file before editing it. Create new files with write_files, several per call.
+   whole file before editing it. Create new files with write_files, several per call; its `files` argument is
+   an object keyed by path: {{"pkg/a.py": "<full content>", "pkg/b.py": "<full content>"}}.
 5. Be request-efficient: every model call costs money and runs have a request limit. Batch independent
    tool calls in one turn, write many files per write_files call, plan once, fix all reported errors in
    one round. When several files need changes, send ALL the edit_file calls in ONE reply (several tool

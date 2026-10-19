@@ -1,0 +1,14 @@
+requirement,use_case_or_feature,component,file,test
+ASR-1,Data durability (question persistence),QuestionComponent,question/repository.py,tests/test_persistence.py
+ASR-2,Security (local-only, no network),GameComponent,game/service.py,tests/test_domain.py
+FR-1,Play game,GameComponent,game/service.py,tests/test_domain.py
+FR-2,Introductory movie,GameComponent,ui/screens/intro_screen.py,tests/test_ui_smoke.py
+FR-3,Main menu,GameComponent,ui/screens/menu_screen.py,tests/test_ui_smoke.py
+FR-4,Series of fraction questions,QuestionComponent,game/round.py + game/generator.py,tests/test_generator.py
+FR-5,Ending scene with feedback,GameComponent,ui/screens/results_screen.py,tests/test_ui_smoke.py
+FR-6,Update questions (Admin),AdminComponent,ui/screens/admin_screen.py,tests/test_persistence.py
+NFR-1,Performance (fast response to input),GameComponent,game/service.py,tests/test_domain.py
+UC-1,Use Case: Play Game,GameComponent,ui/screens/game_screen.py,tests/test_ui_smoke.py
+UC-2,Use Case: View Score,UserComponent,ui/screens/score_screen.py,tests/test_ui_smoke.py
+UC-3,Use Case: View Help,UserComponent,ui/screens/help_screen.py,tests/test_ui_smoke.py
+UC-4,Use Case: Update Questions,AdminComponent,ui/screens/admin_screen.py,tests/test_persistence.py

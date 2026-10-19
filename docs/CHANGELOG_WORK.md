@@ -273,3 +273,17 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   admin inputs → new generic rules (independent recomputation in generator tests, no ambiguous items, visible
   inputs) + UI probe input-visibility check + profile hint. Screenshots `docs/screenshots/run6/`; REAL_RUNS run 6.
   Final example remains run 5. Tests: 148 passed, 1 skipped.
+
+### 2026-10-19 — Run 7 (user's GUI run) = final example; `write_files` keyed by path
+- Run 7 = the user's own GUI run (profile none, `run-2026-10-19_2320`): VERIFY PASSED after 2 fix rounds, 42 requests,
+  $0.144. Copied unchanged to `examples/space_fractions_run7_gui/` (caches removed, no keys found). Re-verified with
+  the current harness → `docs/run7_reverification.txt` (33 files compile, 29 tests, import check, probe OK at both
+  sizes). Played a copy: 25 seeds, random rounds, 1000 generated items checked (all correct except trivial
+  equivalent items), 0/5 result without praise, 0 Tk errors. Screenshots `docs/screenshots/run7/`.
+- README (final example, screenshots, real-runs table incl. runs 6–7, known limitations: no score/progress on the
+  game screen, free-text admin Kind, trivial equivalent items, admin items only after restart), REAL_RUNS (run 7 +
+  summary), DECISIONS D-020/D-021, CHANGELOG [1.0.1].
+- `write_files`: `files` is now an object keyed by path; the list form still works (`sfagent/tools/builtin.py`
+  `_file_entries`), schema/description, prompt rule 4, log summary (`loop.py`), mock demo uses the object form;
+  4 new/updated tests in `tests/test_tools.py`. Tests: 151 passed, 1 skipped. No paid run.
+- Rollback: `git revert <this commit>` (or `git checkout e467af1 -- sfagent/tools/builtin.py` for the tool only).

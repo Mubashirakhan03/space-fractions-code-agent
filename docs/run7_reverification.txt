@@ -1,0 +1,9 @@
+Re-verification of examples/space_fractions_run7_gui with the v1.0.1 harness (no API calls)
+Source: user's GUI run, profile none, folder run-2026-10-19_2320. Generated code: unchanged copy.
+Date (UTC): 2026-10-19 18:47
+
+MISSING DELIVERABLES: none
+COMPILE: OK All 33 Python files compile.
+PYTEST: PASSED 29 passed in 3.16s
+IMPORT CHECK OK: 27 modules incl. main.py
+UI PROBE OK: startup view @1280x800, screen 'intro' @1280x800, screen 'menu' @1280x800, screen 'game' @1280x800, screen 'pause' @1280x800, screen 'results' @1280x800, screen 'help' @1280x800, screen 'score' @1280x800, screen 'admin' @1280x800, screen 'intro' @1100x750, screen 'menu' @1100x750, screen 'game' @1100x750, screen 'pause' @1100x750, screen 'results' @1100x750, screen 'help' @1100x750, screen 'score' @1100x750, screen 'admin' @1100x750

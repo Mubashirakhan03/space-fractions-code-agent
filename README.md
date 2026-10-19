@@ -6,16 +6,16 @@ then uses **DeepSeek `deepseek-v4-pro`** (official API) to plan, write, test, ve
 
 - 📦 **Download:** [latest release — `SpaceFractionsAgent.exe`](https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/latest). Double-click to run; no Python needed.
 - 🎬 **Demo video:** *(link added after recording)*
-- 🧾 **Evidence of real runs:** [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md) · final generated game: [`examples/space_fractions_run5/`](examples/space_fractions_run5/)
+- 🧾 **Evidence of real runs:** [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md) · final generated game: [`examples/space_fractions_run7_gui/`](examples/space_fractions_run7_gui/)
 
 Task 1 evaluation for the Intelligent Software Engineering group (Prof. Peng Liang). Author: Mubashira.
 
 ![Agent GUI after a successful run](docs/screenshots/gui_success.png)
 
-| Generated game (real run 5, unedited) | |
+| Generated game (real run 7 from the GUI, profile *none*, unedited) | |
 |---|---|
-| ![menu](docs/screenshots/run5/2_menu.png) | ![typed question with Check button](docs/screenshots/run5/7_question_typed.png) |
-| ![wrong-answer feedback](docs/screenshots/run5/8_feedback_wrong.png) | ![end](docs/screenshots/run5/10_end.png) |
+| ![menu](docs/screenshots/run7/menu.png) | ![question](docs/screenshots/run7/game.png) |
+| ![wrong-answer feedback](docs/screenshots/run7/feedback_wrong.png) | ![result at 0 of 5](docs/screenshots/run7/results_zero.png) |
 
 ---
 
@@ -25,13 +25,13 @@ Task 1 evaluation for the Intelligent Software Engineering group (Prof. Peng Lia
 2. Paste your DeepSeek API key (it starts with `sk-`). **Test connection** sends one tiny request.
 3. The two input files are pre-filled from the bundled samples (copied to `Documents\SpaceFractionsAgent\samples`).
    You can also pick your own files. Optionally choose the task profile `space_fractions`.
-4. Choose an **empty output folder** and keep the hard limits (default **$1.00** and 60 requests per run).
+4. Choose an **empty output folder** and keep the hard limits (default **$1.00** and 80 requests per run).
 5. Press **▶ Generate project**. You will see the phase bar (Plan → Implement → Verify → Fix → Report), the live log,
    the todo list and the running cost.
 6. When the success dialog appears, press **▶ Run generated app**. The game runs on the interpreter inside the exe.
 
 Zero-cost options: **Developer: mock mode** runs the full pipeline with a scripted demo (clearly labelled *MOCK DEMO*).
-**Replay** re-runs a recorded transcript, e.g. `examples/space_fractions_run5/agent_run/transcript.jsonl`, with no API calls.
+**Replay** re-runs a recorded transcript, e.g. `examples/space_fractions_run7_gui/agent_run/transcript.jsonl`, with no API calls.
 
 A typical real run costs about **$0.10–0.15**, because ~98 % of the prompt tokens are DeepSeek cache hits.
 
@@ -78,7 +78,7 @@ Sources: [`docs/RESEARCH_NOTES.md`](docs/RESEARCH_NOTES.md) (how-claude-code-wor
 | 2 | Error recovery | Retry with backoff on 429/5xx/network errors; invalid tool JSON and missing arguments go back to the model as errors; "continue" when the output is cut off; nudges when no tool is called |
 | 3 | Tool system | JSON-schema registry; read-only tools run in parallel, writes serially; errors are returned, never raised; fixed tool order (`sfagent/tools/`) |
 | 4 | Plan mode | Plan phase: only read-only tools + `update_todos` + `submit_plan`. Write tools are denied, and the harness persists the plan |
-| 5 | Code editing strategy | `edit_file`: exact unique match (or `replace_all`), must read the whole file first, mtime check; `write_files` for new files; `delete_file` |
+| 5 | Code editing strategy | `edit_file`: exact unique match (or `replace_all`), must read the whole file first, mtime check; `write_files` (an object keyed by path, so a path cannot be lost) for new files; `delete_file` |
 | 6 | Permissions & sandbox | Paths confined to the output folder (absolute paths, `..` and symlinks blocked); `agent_run/` read-only; no script file types; no shell; optional ask-before-write dialog |
 | 7 | TodoWrite | `update_todos` (pending / in_progress / completed, one in progress), shown live in the GUI |
 | 8 | Context engineering | Long tool outputs are saved to disk with a head/tail preview; microcompact of old results; auto-compact summary near the budget (the cached prefix is never touched) |
@@ -88,7 +88,7 @@ Sources: [`docs/RESEARCH_NOTES.md`](docs/RESEARCH_NOTES.md) (how-claude-code-wor
 | 12 | Observability & cost | Live GUI log, `transcript.jsonl`, per-request usage, cache-hit %, cost, `RUN_REPORT.md` |
 | 13 | Sessions / resume (claw-code) | `agent_run/state.json` after every step; **Resume** (used in real runs 1 and 4) |
 | 14 | `doctor` (claw-code) | `SpaceFractionsAgent.exe --doctor`, plus Test connection in the GUI |
-| 15 | Mock parity harness (claw-code) | `MockProvider` scenarios → 145 deterministic tests with zero API cost |
+| 15 | Mock parity harness (claw-code) | `MockProvider` scenarios → 152 deterministic tests with zero API cost |
 | 16 | Self-verification | Deliverables + compile + pytest + **UI probe** (real window), with bounded fix rounds |
 
 ## Web/microservice design → desktop app
@@ -127,7 +127,7 @@ Hints for the model…
 
 ## Real runs (honest summary)
 
-Five real runs used the official API. The generated code was **never edited by hand**. After each run I looked at the
+Seven real runs used the official API (run 7 was started by the user from the exe's GUI). The generated code was **never edited by hand**. After each run I looked at the
 real window, and when something was wrong I improved the **agent** (rules, tools, verification). Full details and
 screenshots: [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
 
@@ -137,20 +137,25 @@ screenshots: [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
 | 2 | 27 | $0.096 | verified first try | feedback showed the *next* item's answer → rule "capture message data before changing state" |
 | 3 | 54 | $0.131 | probe found off-screen buttons → **agent fixed them itself** | pack/grid freeze → layout rule, full-flow smoke test, callback-error probe, `delete_file` |
 | 4 | 57 | $0.142 | verified; 5 real-timer rounds, 0 errors | hidden/clipped buttons at small sizes → probe at minimum size, clipped-text and submit-button checks |
-| 5 | 47 | $0.122 | the probe gave a false positive on a scrollable list during the run; **passed on re-verification** ([evidence](docs/run5_reverification.txt)) | **final example**: fits 1100×750, Check button, full pause overlay, 41 tests, 5 rounds with 0 errors |
+| 5 | 47 | $0.122 | the probe gave a false positive on a scrollable list during the run; **passed on re-verification** ([evidence](docs/run5_reverification.txt)) | fits 1100×750, Check button, full pause overlay, 41 tests, 5 rounds with 0 errors |
+| 6 | 110 (2 resumes) | $0.378 | verified, profile *none* | generated `app/` package shadowed the agent → package renamed to `sfagent`; equivalent-fraction answers wrong → independent-recompute rule |
+| 7 | 42 | $0.144 | verified after 2 self-fix rounds, profile *none*, GUI run | **final example**: 25 seed questions, random rounds with code-generated items (1000 checked, all correct), admin add/edit/delete, score-dependent result screen ([evidence](docs/run7_reverification.txt)); 6 of 12 `write_files` calls lost `path` → path-keyed `files` object |
 
-Total API spend for all five runs: about **$0.68**.
+Total API spend for all seven runs: about **$1.20**.
 
 ## Known limitations
 
-- **Generated game (run 5):** the end screen title always reads "Congratulations, <name>!", even at 0/10 (the
-  stars (0) and the line below it, "Every astronaut needs practice. Keep going!", do match the score; see
-  [screenshot](docs/screenshots/run5/14_end_zero_score.png)). The old profile asked for that title unconditionally;
-  the profile and the generic prompt now require a score-dependent message and 0–3 stars, but run 5 was generated
-  before that change. The intro schedules an 8-second auto-advance that Skip does not cancel. A player who
-  starts a round within 8 s of launching is sent back to the menu once. The choice buttons are left-aligned rather
-  than centred, and the intro screen is sparse. LLM output varies from run to run, and earlier runs (`examples/`)
-  show different strengths and weaknesses, documented in [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
+- **Generated game (run 7, the final example):** the game screen shows **no score and no progress** ("question 2
+  of 5") while playing; the score appears only on the result screen. The admin form's **Kind field is free text**
+  rather than a drop-down of the six kinds. Generated *equivalent* questions are trivial: the answer is printed in
+  reduced form, so it reads the same as the question (e.g. "equivalent to 3/4?" → "3/4" among the choices;
+  `Fraction(n*k, d*k)` reduces, the exact trap the profile warns about, but run 7 used no profile). Questions added
+  in Admin are only drawn after a restart (the game service copies the pool at start-up). A round has 5 questions.
+  The title of the result screen is always "Mission Complete!", while the line under it does match the score. The
+  code was left as generated. Earlier runs (`examples/`) show other strengths and weaknesses, documented in
+  [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
+- **Run 5** (the previous final example) shows "Congratulations, <name>!" even at 0/10, and Skip does not cancel the
+  intro's 8-second auto-advance.
 - During run 5 the agent's own verification reported **FAILED** because of a false positive in the UI probe (rows of
   a scrollable list counted as off-window). The probe was fixed and the unchanged output re-verified (compile, 41
   tests, probe at both sizes, all OK). Its `RUN_REPORT.md` is kept as it was produced.
@@ -167,7 +172,7 @@ Total API spend for all five runs: about **$0.68**.
 ```bat
 py -3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements-dev.txt
-.venv\Scripts\python -m pytest            :: 145 tests, MockProvider only, no API cost
+.venv\Scripts\python -m pytest            :: 152 tests, MockProvider only, no API cost
 .venv\Scripts\python -m ruff check .
 .venv\Scripts\python -m sfagent.main          :: run the GUI from source
 scripts\build_exe.bat                     :: → dist\SpaceFractionsAgent.exe
@@ -184,9 +189,9 @@ for every push, and attaches the exe to a GitHub Release for `v*` tags. A pre-co
 ```
 sfagent/        agent (loop, prompts, context, profile, ui_probe…), tools, llm providers, parsers, gui, main
 schemas/        spec.schema.json            samples/   inputs (+ library_tracker)     profiles/  task profiles
-examples/       five real runs (run5 = final), each with agent_run/ transcript, state, report, logs
+examples/       seven real runs (run7_gui = final), each with agent_run/ transcript, state, report, logs
 docs/           RESEARCH_NOTES, ARCHITECTURE, REAL_RUNS, DECISIONS, VIDEO_SCRIPT, LEARNING_NOTES_UR, CHANGELOG_WORK
-tests/          145 tests (parsers, tools/sandbox, agent loop scenarios, GUI, UI probe, generality)
+tests/          152 tests (parsers, tools/sandbox, agent loop scenarios, GUI, UI probe, generality)
 scripts/        build_exe.bat, verify_exe.py, run_agent_cli.py, check_secrets.py, make_icon.py
 ```
 
