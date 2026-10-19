@@ -287,3 +287,6 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   `_file_entries`), schema/description, prompt rule 4, log summary (`loop.py`), mock demo uses the object form;
   4 new/updated tests in `tests/test_tools.py`. Tests: 151 passed, 1 skipped. No paid run.
 - Rollback: `git revert <this commit>` (or `git checkout e467af1 -- sfagent/tools/builtin.py` for the tool only).
+- Exe rebuilt → `build/dist_new/SpaceFractionsAgent.exe` (26 MB), `verify_exe.py` 6/6 PASSED without Python
+  (self-test exercises the path-keyed `write_files`). Not copied to `dist/` yet: the old exe was still open.
+  Version is still 1.0.0; it is bumped to 1.0.1 only when the release is approved.
