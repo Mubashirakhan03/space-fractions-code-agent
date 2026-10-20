@@ -1,0 +1,10 @@
+Re-verification of examples/space_fractions_run9_final with the v1.0.1 harness (no API calls)
+Source: final real run 9 (CLI, profile none, $1 cap; stopped once at 402 balance, resumed at peak for 14 requests, stopped by the user, resumed off-peak). Generated code: unchanged copy.
+Date (UTC): 2026-10-20 10:18
+
+MISSING DELIVERABLES: none
+COMPILE: OK All 38 Python files compile.
+PYTEST: PASSED 50 passed in 15.04s
+IMPORT CHECK OK: 27 modules incl. main.py
+PROBE REQUIREMENTS (from the spec): {'animation': ['introductory movie'], 'protected_roles': ['Admin'], 'managed': [{'role': 'Admin', 'use_case': 'Update Questions'}]}
+UI PROBE OK: startup view @1280x800, screen 'intro_movie' @1280x800, screen 'main_menu' @1280x800, screen 'question_screen' @1280x800, screen 'ending_scene' @1280x800, screen 'help_screen' @1280x800, screen 'score_screen' @1280x800, screen 'pin_screen' @1280x800, screen 'admin_screen' @1280x800, screen 'intro_movie' @1100x750, screen 'main_menu' @1100x750, screen 'question_screen' @1100x750, screen 'ending_scene' @1100x750, screen 'help_screen' @1100x750, screen 'score_screen' @1100x750, screen 'pin_screen' @1100x750, screen 'admin_screen' @1100x750

@@ -173,9 +173,11 @@ Honest review:
 | 5 | 47 | $0.122 | probe false positive during the run → **passed on re-verification** | scrollable-list false positive fixed in the probe |
 | 6 | 110 (2 resumes) | $0.378 | passed, profile none | generated `app/` package shadowed the agent → `sfagent`; wrong equivalent answers → recompute rule |
 | 7 | 42 | $0.144 | passed after 2 self-fix rounds, profile none, **GUI run by the user** | `write_files` lost `path` in 6 of 12 calls → path-keyed `files` object |
-| 8 | 58 | $0.159 | passed after 1 self-fix round, profile none | **final example**; animated intro + admin PIN as required; flawed choice items → "exactly one option" rule |
+| 8 | 58 | $0.159 | passed after 1 self-fix round, profile none | animated intro + admin PIN as required; flawed choice items → "exactly one option" rule |
 
-Total: about **$1.36**. The generated code was never edited by hand.
+| 9 | 59 (2 resumes) | ≈ $0.38 actual | passed after 1 self-fix round, profile none | **final example**; admin list + Add/Edit/Delete as required |
+
+Total: about **$1.74**. The generated code was never edited by hand.
 
 ## Run 6 — 2026-10-19 17:43 UTC (22:43 PKT, off-peak), **profile: none** → `examples/space_fractions_run6_noprofile/`
 
@@ -239,7 +241,7 @@ Agent improvement from run 7: `write_files` now takes `files` as an object **key
 accepted, and a missing path now tells the model to use the object form (tests in `tests/test_tools.py`).
 Screenshots: `docs/screenshots/run7/`. Run 7 replaced run 5 as the final example (later replaced by run 8).
 
-## Run 8 — 2026-10-19 19:16 UTC (00:16 PKT, off-peak), **profile: none**, $1 cap → `examples/space_fractions_run8_final/` (**final example**)
+## Run 8 — 2026-10-19 19:16 UTC (00:16 PKT, off-peak), **profile: none**, $1 cap → `examples/space_fractions_run8_final/` (final example until run 9)
 
 Agent changes since run 7 (user request): `write_files` keyed by path; generic rules "spec coverage" (every named
 screen/scene is implemented), "animated scenes" (Canvas, moving objects, 5–10 s, Skip, auto-advance, test) and
@@ -275,5 +277,40 @@ Checked by playing a copy, without editing the code:
 Agent improvement from run 8 (not yet tested in a real run): a generic rule that every choice item has exactly one
 option satisfying the prompt ("which of A or B" offers only A and B; grading follows the prompt's own criterion; the
 answer never repeats the prompt's operand text), with a test. Screenshots: `docs/screenshots/run8/`.
-**Run 8 replaces run 7 as the final example:** it has every feature asked for (animated intro, admin PIN, progress,
+Run 8 replaced run 7 as the final example (later replaced by run 9): it has every feature asked for (animated intro, admin PIN, progress,
 correct answer keys) and the fewest problems; its weaknesses are listed above and in the README.
+
+## Run 9 — 2026-10-19 20:03 UTC → 2026-10-20 10:04 UTC, **profile: none**, $1 cap → `examples/space_fractions_run9_final/` (**final example**)
+
+Agent change since run 8 (user request): generic rule "data management by a role" (a role that updates / manages /
+maintains records gets a list of ALL records incl. seed data with Add, Edit, Delete, each tested), listed in the
+harness checklist ("Update Questions" by Admin); the UI probe fails an empty list while data/ holds seed records, or a
+missing Add / Edit / Delete button.
+
+| Item | Value |
+|---|---|
+| Course of the run | 34 requests, then **402 Insufficient balance** (state saved). User topped up to $1.99 and asked to resume; it was peak time, the user chose to resume at peak; 14 requests later the user stopped it; resumed automatically at 15:01 PKT (off-peak) and finished |
+| Result | **VERIFY PASSED after 1 fix round** (round 1: admin buttons clipped / not shown, Help back button cut off; fixed by the agent) |
+| Requests / cost | 59 requests; estimated $0.284; **actual ≈ $0.38** from the balance ($0.27 → $0.06, then $1.99 → $1.82), partly at peak price |
+| `write_files` | 0 "missing path" errors |
+| Re-verification | 38 files compile, **50 tests passed**, import check OK, **UI PROBE OK incl. animation, PIN and admin-list checks** → `docs/run9_reverification.txt` (a first attempt was interrupted when the session closed: "application has been destroyed") |
+
+Checked by playing a copy, without editing the code:
+- ✅ **Admin (Update Questions):** menu "🔒 Admin" → PIN screen; PIN 1234 refused ("❌ Incorrect PIN"), **PIN 4321** opens
+  "Manage Questions"; the Listbox shows **all 22 seed questions**; Add (22 → 23 rows), Edit (selected row changed) and
+  Delete (after the confirmation, 23 → 22) all work; an edited question appeared in 12 of 30 new rounds without a
+  restart; leaving the admin screen asks for the PIN again.
+- ✅ **Introductory movie:** planets and fraction labels move across a starfield; auto-advance after 8.1 s; Skip goes
+  to the menu with 0 pending `after()` callbacks.
+- ✅ Question screen: "Question 1 of 10 · Score: 0 ✓ | 0 ✗"; wrong-answer feedback names the same item's answer;
+  0 / 10 ends with "Keep trying — every astronaut practises to reach the stars." (no praise); 0 Tk callback errors.
+- ✅ **Answer keys:** 2000 generated (identify, compare, add, subtract, reduce, equivalent) and 22 seed items recomputed
+  independently: 0 wrong. Equivalent items are no longer trivial; "lowest terms" accepts only the reduced form.
+- ❌ Generated "identify" items print the answer in the prompt ("Which fraction of the circle is shaded? Shown as 2/5").
+- ❌ Generated compare items offer values outside the pair (328 of 328; 156 with a value larger than both).
+- ⚠️ Seed "3/4 − 1/4" lists 1/2 and 2/4 but accepts only 1/2; the admin success message is cleared by the refresh;
+  no Exit button on the menu; Pause / Exit buttons above the answer buttons; default PIN 4321 (run 8: 1234).
+
+**Run 9 replaces run 8 as the final example:** admin list, Add, Edit and Delete work, and the intro movie, the PIN
+and the answer keys are as good as in run 8 or better (equivalent and lowest-terms items fixed). The PIN number differs
+(4321, documented in the generated README). Screenshots: `docs/screenshots/run9/`.

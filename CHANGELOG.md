@@ -10,9 +10,12 @@
   Canvas animation with moving objects, Skip and auto-advance; administrator-type roles get an in-window PIN screen;
   every choice item has exactly one option that satisfies the prompt. The first message lists the spec's own names
   ("Harness checklist"), and the UI probe fails a missing animation, Skip button or masked PIN input.
-- Mock demo: animated intro with Skip and an admin PIN screen.
-- Final example is real run 8 (`examples/space_fractions_run8_final/`, profile none), with re-verification evidence
-  `docs/run8_reverification.txt` and screenshots `docs/screenshots/run8/`. Run 7 (the user's GUI run) is kept.
+- Generic rule: a role that updates / manages / maintains records gets a list of all records (seed data
+  included) with Add, Edit and Delete, each tested; the UI probe fails an empty list while seed data exists, or a
+  missing Add / Edit / Delete button.
+- Mock demo: animated intro with Skip, an admin PIN screen and an admin list with Add / Edit / Delete.
+- Final example is real run 9 (`examples/space_fractions_run9_final/`, profile none), with re-verification evidence
+  `docs/run9_reverification.txt` and screenshots `docs/screenshots/run9/`. Runs 7 and 8 are kept.
 
 ### Fixed
 - Verify now runs an **import check**: it imports every module and loads `main.py` without running `main()`. A wrong

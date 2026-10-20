@@ -1,0 +1,17 @@
+requirement,use_case_or_feature,component,file,test
+FR-1,Play Game,GameComponent,ui/screens/question_screen.py,tests/test_ui_smoke.py::test_full_playthrough_to_ending
+FR-1,Play Game,GameComponent,game/game.py,tests/test_game.py
+FR-2,Introductory movie,GameComponent,ui/screens/intro_movie.py,tests/test_ui_smoke.py::test_intro_movie_objects_move_and_skip
+FR-3,Main menu,GameComponent,ui/screens/main_menu.py,tests/test_ui_smoke.py::test_every_screen_renders
+FR-4,Series of fraction questions,GameComponent,ui/screens/question_screen.py,tests/test_generator.py
+FR-5,Ending scene with feedback,GameComponent,ui/screens/ending_scene.py,tests/test_ui_smoke.py::test_full_playthrough_to_ending
+FR-6,View Help,GameComponent,ui/screens/help_screen.py,tests/test_ui_smoke.py
+FR-7,View Score,GameComponent,ui/screens/score_screen.py,tests/test_ui_smoke.py
+FR-8,Update Questions,AdminComponent,ui/screens/admin_screen.py,tests/test_admin.py
+ASR-1,Data durability,QuestionComponent,store/store.py,tests/test_store.py
+ASR-2,Security (Admin PIN),UserComponent,admin/settings.py,tests/test_admin.py::test_settings_default_pin
+ASR-2,Security (PIN gate),UserComponent,ui/screens/pin_screen.py,tests/test_ui_smoke.py::test_pin_gate
+NFR-1,Performance (responsive input),GameComponent,game/game.py,tests/test_game_flow.py
+SequenceDiagram1,Play flow,GameComponent,game/game.py,tests/test_game_flow.py
+SequenceDiagram2,Admin update questions,AdminComponent,admin/admin.py,tests/test_admin.py
+StateMachine,Playing/Paused/GameOver,GameComponent,game/state_machine.py,tests/test_state_machine.py

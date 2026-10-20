@@ -38,7 +38,7 @@ Read this first when resuming work in a new session.
 - CI: `.github/workflows/build-windows.yml` builds + verifies on every push; `v*` tag → GitHub Release with exe.
 
 ## Real runs
-- See `docs/REAL_RUNS.md`. Final example: `examples/space_fractions_run8_final/` (profile none). Balance after run 8 ≈ $0.27 (check `/user/balance`).
+- See `docs/REAL_RUNS.md`. Final example: `examples/space_fractions_run9_final/` (profile none). Balance after run 9: $1.82.
 - Headless run: `PYTHONIOENCODING=utf-8 .venv/Scripts/python scripts/run_agent_cli.py --out <empty dir> --profile profiles/space_fractions.md`
   (off-peak only: avoid Mon–Fri 06–09 and 11–15 PKT). Always ask the user before a paid run.
 

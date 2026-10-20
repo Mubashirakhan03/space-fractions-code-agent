@@ -326,3 +326,11 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   unlocked is re-checked after setting the app's own unlock flag). Real outputs: run 7 and run 8 pass, the user's
   0038 run is flagged. Mock demo admin: Listbox + Add/Edit/Delete. Tests 163 passed, 1 skipped.
 - Rollback: `git revert <this commit>`.
+
+### 2026-10-20 — Real run 9 = final example
+- Run 9 (profile none, $1 cap): 402 at 34 requests → user topped up → resumed at peak (user's choice) → stopped by the
+  user at 48 → auto-resumed 15:01 PKT off-peak → VERIFY PASSED, 59 requests, ≈ $0.38 actual ($0.284 estimated).
+- Copied to `examples/space_fractions_run9_final/` (without `.db` files; CLI log in `agent_run/cli_log.txt`).
+  Re-verified incl. animation / PIN / admin-list checks → `docs/run9_reverification.txt`. Play-check + screenshots
+  `docs/screenshots/run9/`. README (final example, run table, known limitations), REAL_RUNS run 9, D-023, CHANGELOG.
+- Rollback: `git revert <this commit>`; previous final example = run 8 (D-022).

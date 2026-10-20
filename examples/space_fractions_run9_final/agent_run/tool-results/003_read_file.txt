@@ -1,0 +1,137 @@
+    1	    1	FAILED
+    2	    2	....F............F...FF...........F.EEEEEE....                           [100%]
+    3	    3	=================================== ERRORS ====================================
+    4	    4	__________ ERROR at setup of test_intro_movie_objects_move_and_skip ___________
+    5	    5	file D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py, line 20
+    6	    6	  def test_intro_movie_objects_move_and_skip(root, app):
+    7	    7	E       fixture 'root' not found
+    8	    8	>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, seed_json, subtests, tmp_path, tmp_path_factory, tmp_store, tmpdir, tmpdir_factory
+    9	    9	>       use 'pytest --fixtures [testpath]' for help on them.
+   10	   10	
+   11	   11	D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py:20
+   12	   12	_______________________ ERROR at setup of test_pin_gate _______________________
+   13	   13	file D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py, line 37
+   14	   14	  def test_pin_gate(root, app):
+   15	   15	E       fixture 'root' not found
+   16	   16	>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, seed_json, subtests, tmp_path, tmp_path_factory, tmp_store, tmpdir, tmpdir_factory
+   17	   17	>       use 'pytest --fixtures [testpath]' for help on them.
+   18	   18	
+   19	   19	D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py:37
+   20	   20	______________ ERROR at setup of test_admin_list_seeded_and_crud ______________
+   21	   21	file D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py, line 52
+   22	   22	  def test_admin_list_seeded_and_crud(root, app):
+   23	   23	E       fixture 'root' not found
+   24	   24	>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, seed_json, subtests, tmp_path, tmp_path_factory, tmp_store, tmpdir, tmpdir_factory
+   25	   25	>       use 'pytest --fixtures [testpath]' for help on them.
+   26	   26	
+   27	   27	D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py:52
+   28	   28	_______ ERROR at setup of test_form_errors_and_correct_wrong_submission _______
+   29	   29	file D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py, line 93
+   30	   30	  def test_form_errors_and_correct_wrong_submission(root, app):
+   31	   31	E       fixture 'root' not found
+   32	   32	>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, seed_json, subtests, tmp_path, tmp_path_factory, tmp_store, tmpdir, tmpdir_factory
+   33	   33	>       use 'pytest --fixtures [testpath]' for help on them.
+   34	   34	
+   35	   35	D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py:93
+   36	   36	______________ ERROR at setup of test_full_playthrough_to_ending ______________
+   37	   37	file D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py, line 120
+   38	   38	  def test_full_playthrough_to_ending(root, app):
+   39	   39	E       fixture 'root' not found
+   40	   40	>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, seed_json, subtests, tmp_path, tmp_path_factory, tmp_store, tmpdir, tmpdir_factory
+   41	   41	>       use 'pytest --fixtures [testpath]' for help on them.
+   42	   42	
+   43	   43	D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py:120
+   44	   44	________________ ERROR at setup of test_help_and_score_screens ________________
+   45	   45	file D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py, line 139
+   46	   46	  def test_help_and_score_screens(root, app):
+   47	   47	E       fixture 'root' not found
+   48	   48	>       available fixtures: anyio_backend, anyio_backend_name, anyio_backend_options, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, doctest_namespace, free_tcp_port, free_tcp_port_factory, free_udp_port, free_udp_port_factory, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, seed_json, subtests, tmp_path, tmp_path_factory, tmp_store, tmpdir, tmpdir_factory
+   49	   49	>       use 'pytest --fixtures [testpath]' for help on them.
+   50	   50	
+   51	   51	D:\professor project\space-fractions-code-agent\runs\run9_final\tests\test_ui_smoke.py:139
+   52	   52	================================== FAILURES ===================================
+   53	   53	_________________ test_round_submit_tracks_correct_and_wrong __________________
+   54	   54	
+   55	   55	    def test_round_submit_tracks_correct_and_wrong():
+   56	   56	        qs = [Question(id="q1", prompt="p", choices=["yes", "no"], correct_value="yes"),
+   57	   57	              Question(id="q2", prompt="p", choices=["up", "dn"], correct_value="up")]
+   58	   58	        r = Round(qs)
+   59	   59	        assert r.submit("yes") is False
+   60	   60	>       assert r.correct == 1
+   61	   61	E       assert 0 == 1
+   62	   62	E        +  where 0 = <game.game.Round object at 0x000001DA1CE5CD70>.correct
+   63	   63	
+   64	   64	tests\test_game.py:24: AssertionError
+   65	   65	____________ test_no_choice_repeats_prompt_operand_for_equivalent _____________
+   66	   66	
+   67	   67	    def test_no_choice_repeats_prompt_operand_for_equivalent():
+   68	   68	        for seed in range(100):
+   69	   69	            rng = random.Random(seed)
+   70	   70	            for q in generate_questions(rng, count=12):
+   71	   71	                if q.kind == "equivalent":
+   72	   72	                    base = q.operands["base"]
+   73	   73	                    # correct option must look different from the prompt's operand text
+   74	   74	>                   assert q.correct_value != base
+   75	   75	E                   AssertionError: assert '1/4' != '1/4'
+   76	   76	E                    +  where '1/4' = GeneratedQuestion(id='gen-equivalent-307bf3', prompt='Which fraction is equivalent to 1/4?', options=[], correct_value='1/4', kind='equivalent', choices=['3/4', '1/4', '1', '2/3'], operands={'base': '1/4', 'target': '1/4'}).correct_value
+   77	   77	
+   78	   78	tests\test_generator.py:85: AssertionError
+   79	   79	___________________ test_typed_answer_accepts_reduced_only ____________________
+   80	   80	
+   81	   81	    def test_typed_answer_accepts_reduced_only():
+   82	   82	        q = Question(id="q1", prompt="Reduce 2/4", kind="reduce",
+   83	   83	                     correct_value="1/2", choices=[])
+   84	   84	        assert q.check_answer("1/2") is True
+   85	   85	>       assert q.check_answer("2/4") is False  # not lowest terms
+   86	   86	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   87	   87	E       AssertionError: assert True is False
+   88	   88	E        +  where True = check_answer('2/4')
+   89	   89	E        +    where check_answer = Question(id='q1', prompt='Reduce 2/4', options=[], correct_value='1/2', kind='reduce', choices=[]).check_answer
+   90	   90	
+   91	   91	tests\test_question.py:26: AssertionError
+   92	   92	____________________ test_typed_answer_normalises_fraction ____________________
+   93	   93	
+   94	   94	    def test_typed_answer_normalises_fraction():
+   95	   95	        q = Question(id="q1", prompt="p", kind="add", correct_value="3/4", choices=[])
+   96	   96	        assert q.check_answer("3/4") is True
+   97	   97	>       assert q.check_answer("6/8") is False  # add expects exact-ish value
+   98	   98	        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   99	   99	E       AssertionError: assert True is False
+  100	  100	E        +  where True = check_answer('6/8')
+  101	  101	E        +    where check_answer = Question(id='q1', prompt='p', options=[], correct_value='3/4', kind='add', choices=[]).check_answer
+  102	  102	
+  103	  103	tests\test_question.py:32: AssertionError
+  104	  104	______________________ test_seed_loaded_only_when_empty _______________________
+  105	  105	
+  106	  106	seed_json = '[\n  {"id": "seed-identify-01", "prompt": "Which fraction is shown by 1/2 of a circle?", "kind": "identify", "correct...on is equivalent to 3/4?", "kind": "equivalent", "correct_value": "6/8", "choices": ["6/8", "3/8", "2/4", "1/2"]}\n]\n'
+  107	  107	
+  108	  108	    def test_seed_loaded_only_when_empty(seed_json):
+  109	  109	        from store.store import QuestionStore
+  110	  110	        import tempfile, os
+  111	  111	        from pathlib import Path
+  112	  112	        fd, path = tempfile.mkstemp(suffix=".db")
+  113	  113	        os.close(fd)
+  114	  114	        st = QuestionStore(Path(path), seed_json=seed_json)
+  115	  115	        st.add_question(Question(id="custom", prompt="mine", correct_value="1/2", choices=[]))
+  116	  116	        st.close()
+  117	  117	        st2 = QuestionStore(Path(path), seed_json=seed_json)
+  118	  118	        try:
+  119	  119	            qs = st2.list_questions()
+  120	  120	            # should NOT re-seed because store was non-empty
+  121	  121	>           assert len(qs) == 1
+  122	  122	E           AssertionError: assert 23 == 1
+  123	  123	E            +  where 23 = len([Question(id='seed-identify-01', prompt='Which fraction is shown by 1/2 of a circle?', options=[], correct_value='1/2'...'Which fraction is larger: 1/4 or 1/5?', options=[], correct_value='1/4', kind='compare', choices=['1/4', '1/5']), ...])
+  124	  124	
+  125	  125	tests\test_store.py:36: AssertionError
+  126	  126	=========================== short test summary info ===========================
+  127	  127	FAILED tests\test_game.py::test_round_submit_tracks_correct_and_wrong - asser...
+  128	  128	FAILED tests\test_generator.py::test_no_choice_repeats_prompt_operand_for_equivalent
+  129	  129	FAILED tests\test_question.py::test_typed_answer_accepts_reduced_only - Asser...
+  130	  130	FAILED tests\test_question.py::test_typed_answer_normalises_fraction - Assert...
+  131	  131	FAILED tests\test_store.py::test_seed_loaded_only_when_empty - AssertionError...
+  132	  132	ERROR tests\test_ui_smoke.py::test_intro_movie_objects_move_and_skip
+  133	  133	ERROR tests\test_ui_smoke.py::test_pin_gate
+  134	  134	ERROR tests\test_ui_smoke.py::test_admin_list_seeded_and_crud
+  135	  135	ERROR tests\test_ui_smoke.py::test_form_errors_and_correct_wrong_submission
+  136	  136	ERROR tests\test_ui_smoke.py::test_full_playthrough_to_ending
+  137	  137	ERROR tests\test_ui_smoke.py::test_help_and_score_screens

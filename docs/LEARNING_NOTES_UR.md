@@ -285,3 +285,15 @@ verification mein generic tareeqe se theek kiya — aakhri run mein 5 poore roun
   khulta hai, ghalat PIN par laal error. Khelte waqt "1 / 10 Score: 0" nazar aata hai. write_files ka ek bhi error nahi.
 - **Kamzoriyan:** generated "equivalent" sawal phir bekaar (jawab sawal jaisa), "which is larger" mein faltu options,
   aur "lowest terms" mein 4/6 bhi sahi maan liya jata hai. Is ke liye naya generic rule add kiya (abhi run se test nahi hua).
+
+## Run 9 — admin ki list, Add, Edit, Delete
+
+- **Naya rule:** agar spec mein koi role data update/manage/maintain karta ho to us ki screen par saare records ki list
+  (seed samet) aur Add, Edit, Delete — har ek ka test. UI probe check karta hai ke seed data ho to list khaali na ho, aur
+  teeno buttons maujood hon. Aap ke GUI run 0038 (sirf Add) ko yeh check pakadta hai; Run 7 aur 8 pass.
+- **Run 9:** beech mein balance khatam (402) → top up → resume → aap ne roka → 3 baje khud resume → VERIFY PASSED.
+  59 requests, asal kharcha ≈ $0.38 (kuch hissa peak par).
+- **Nateeja:** admin mein 22 seed sawal nazar aate hain, Add/Edit/Delete teeno chalte hain; intro movie (8 s, Skip);
+  PIN **4321** (Run 8 mein 1234 tha — README mein likha hai); sab jawab sahi, equivalent aur lowest-terms ab theek.
+- **Kamzoriyan:** "identify" sawal mein jawab sawal mein likha hota hai; compare mein faltu options; admin ka success
+  message refresh se mit jata hai; menu mein Exit nahi.
