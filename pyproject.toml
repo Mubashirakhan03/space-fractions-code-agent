@@ -1,6 +1,6 @@
 [project]
 name = "space-fractions-agent"
-version = "1.0.0"
+version = "1.0.1"
 description = "Simplified Claude-Code-style code agent that generates the Space Fractions desktop game with DeepSeek"
 requires-python = ">=3.11"
 license = { text = "MIT" }

@@ -336,3 +336,10 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Rollback: `git revert <this commit>`; previous final example = run 8 (D-022).
 - Exe rebuilt with the data-management rule → `build/dist_v101/` (build/dist_new was locked by an open exe),
   verify_exe 6/6 PASSED without Python, copied to `dist/`. Version still 1.0.0 until the release is approved.
+
+### 2026-10-20 — Release v1.0.1 (user approved: "Run 9 final rahe, v1.0.1 release kar do")
+- Version 1.0.0 → 1.0.1 (`pyproject.toml`, `sfagent/__init__.py`); CHANGELOG [1.0.1] dated 2026-10-20.
+- Tag `v1.0.1` pushed → GitHub Actions builds, verifies and attaches `SpaceFractionsAgent.exe` to the release.
+- Final example: run 9 (`examples/space_fractions_run9_final/`).
+- Rollback: delete the release on GitHub + `git push --delete origin v1.0.1` + `git revert <this commit>`.
+

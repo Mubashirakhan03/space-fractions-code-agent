@@ -3,7 +3,7 @@
 Read this first when resuming work in a new session.
 
 **Last updated:** 2026-10-19
-**Current phase:** ✅ ALL PHASES DONE — Release v1.0.0 published (https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/tag/v1.0.0). Remaining for the user: record the video, then add its link to README.
+**Current phase:** ✅ ALL PHASES DONE — Release **v1.0.1** published (https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/tag/v1.0.1); v1.0.0 before it. Remaining for the user: record the video, then add its link to README.
 
 | Phase | Status | Tag |
 |---|---|---|
@@ -43,7 +43,7 @@ Read this first when resuming work in a new session.
   (off-peak only: avoid Mon–Fri 06–09 and 11–15 PKT). Always ask the user before a paid run.
 
 ## Open decisions / waiting on user
-- v1.0.1 release: waiting for the user's permission (CHANGELOG [1.0.1] is ready).
+- none right now (v1.0.1 released 2026-10-20 with the user's permission).
 
 ## Key files
 - Plan & requirements: `docs/PROMPT.md`

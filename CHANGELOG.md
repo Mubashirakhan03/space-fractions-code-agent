@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.1] — unreleased
+## [1.0.1] — 2026-10-20
 
 ### Changed
 - `write_files` takes `files` as an object keyed by path (`{"pkg/a.py": "<full content>"}`), so a path can no
