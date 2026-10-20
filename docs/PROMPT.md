@@ -1,43 +1,22 @@
 # Master Prompt — Space Fractions Code Agent (Task 1 Evaluation)
 
 > How to use: put this file at `docs/PROMPT.md` in an empty project folder, together with
-> `docs/Task1-EN.docx`, `docs/Architecture_Documentation.md` and `docs/Architecture_View.md`.
+> `docs/Architecture_Documentation.md` and `docs/Architecture_View.md`.
 > Then tell Claude Code: **"Read docs/PROMPT.md completely and follow it. Start with Phase 0 in plan mode."**
 
 ---
 
-## 0. Who I am and what this is
+## 0. What this is
 
-I am Mubashira, a Software Engineer / QA Automation Engineer (Python, JavaScript, Playwright, API testing).
-I applied for a Master's position in a Chinese university research group working on
-**Intelligent Software Engineering** (Prof. Peng Liang's group). This is their **first, competitive
-evaluation task**. Quality, clean design, and my ability to explain it all matter.
+An implementation task: build a simplified Claude-Code-style code agent (Program A) that generates a desktop
+application (Program B) from architecture documents. Build the must-haves first (a working, well-documented,
+end-to-end result), then polish.
 
-**Deadline is very tight (about 3 days left).** Prioritise a working, well-documented, end-to-end
-result over extra features. Build the must-haves first, then polish.
+**Explanations:** after every phase, explain in **simple Roman Urdu** (no heavy jargon) what was built, why, how
+it works and which Claude Code mechanism it mirrors, and keep these explanations in `docs/LEARNING_NOTES_UR.md`.
+The result is shown in a video, so the GUI and the generated application must be easy to demonstrate.
 
-**Your teaching duty:** I must explain this project in a YouTube video and possibly in an
-interview. After every phase, explain to me in **simple Roman Urdu** (no heavy jargon):
-what you built, why, how it works, and which Claude Code mechanism it mirrors. Keep a running
-file `docs/LEARNING_NOTES_UR.md` with these explanations so I can revise from it.
-
-### Professor's emails (verbatim)
-
-Email 1:
-> Hi Mubashira,
-> Thank you for your interest. Can you tell us your birth date?
-> The research focus in our group is intelligent software engineering (https://www.researchgate.net/profile/Peng-Liang-4), and for the initial evaluation, we will ask the applicants to implement a project and write a report based on several selected papers published from our group. We will send you the detailed instructions if you agree to take the evaluation which is competitive. You may have a look of the papers published in our group and decide whether you have interest.
-> Best regards.
-
-Email 2:
-> Hi Mubashira,
-> Thank you for your information.
-> Regarding the first task, please find attached the instruction about the implementation task (Task 1), which is the first evaluation task. We hope that you can send us your assignment in one week (for example, you can share with us the GitHub link of your repository). You can then create a Youtube video to show how the implemented code agent works and the generated game with UI, which should be a desktop application (instead of a web-based application).
-> You can decide whether you want to take the evaluation after you read the instructions. Please also carefully read the instructions if you decide to take the task because the evaluation is competitive.
-> Best regards.
-> Peng
-
-### Task 1 instructions (verbatim from Task1-EN.docx)
+### Task 1 instructions (verbatim)
 
 > **Task Description**
 > Research the implementation mechanisms of open-source Claude-Code projects. Based on the provided open-source references, implement a simplified Code Agent. The underlying LLM must be deepseek-v4-pro via official API; local weight deployment is not required. Reference repositories:
@@ -156,7 +135,7 @@ Mechanisms my agent must implement (simplified, but real):
   (never in the repo, never in logs). Also support env var `DEEPSEEK_API_KEY`.
 - Show tokens used and estimated cost after each run.
 
-### 4.1b ZERO-budget plan (I cannot spend any money on API credit)
+### 4.1b ZERO-budget plan (no paid API credit during development)
 - **Provider selector** in GUI:
   1. `DeepSeek (official)` — **default**, base URL from official docs, model `deepseek-v4-pro`.
      This is what the task requires and what the professor will use with **his own API key**
@@ -186,7 +165,7 @@ Mechanisms my agent must implement (simplified, but real):
 - **Thinking mode off by default** (cheaper); optional checkbox to enable it.
 - **Replay mode for demos:** a saved real run (`examples/.../agent_run/transcript.jsonl`) can be
   replayed in the GUI step by step **with zero API cost**, clearly labelled "REPLAY of recorded run"
-  (never pretend it is live). Useful as a backup during interviews if internet/API fails.
+  (never pretend it is live). Useful as a backup during demos if internet/API fails.
 - Development and all automated tests use `MockProvider` only. **Ask me before every real API call
   run**, and tell me the estimated cost first.
 - After each real run, show actual tokens and cost so I can track my balance.
@@ -296,8 +275,7 @@ I want my work saved on GitHub **continuously, from the very first hour**, so no
 
 - **Before writing any code (start of Phase 1):**
   1. Check if `git` and GitHub CLI `gh` are installed; if not, install them (ask me to approve).
-  2. Configure git identity: `git config user.name "Mubashira"` and
-     `git config user.email "mubashirakhan1001@gmail.com"`.
+  2. Configure the author's git identity (`git config user.name` / `git config user.email`).
   3. Run `gh auth login` and guide me through the browser login (I will do the login step).
   4. Create the repo: `space-fractions-code-agent` (public), add `.gitignore` (Python, venv, build/,
      dist/, *.spec outputs if not needed, config.json, .env, any API keys), `LICENSE` (MIT),
@@ -369,8 +347,7 @@ project root (`DEEPSEEK_API_KEY=...`, `OPENROUTER_API_KEY=...`). Before anything
 `.env` is listed in `.gitignore` and **verify with `git status` / `git check-ignore .env` that it is never
 committed or pushed**. The app should read keys from `.env` / environment variables in dev mode and
 from the GUI in the exe. Provide a `.env.example` with empty values.
-Both accounts (DeepSeek platform and OpenRouter) are registered on my Gmail **mubashirakhan1001@gmail.com**
-(same email as my GitHub/git identity). You cannot log in to them yourself — whenever you need something
+The DeepSeek / OpenRouter accounts belong to the user. You cannot log in to them yourself — whenever you need something
 from a dashboard (check balance/credits, check free-model availability, usage/rate-limit status,
 regenerate a key), tell me exactly what to click and I will do it and report back. Never write a key into any other
 file in the repo, PROMPT.md, logs, transcripts or commit messages, and never print a full key in output.

@@ -19,7 +19,7 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 
 ### 2026-10-18 — Phase 0 (research & setup)
 - **Created** folder `space-fractions-code-agent/` with `docs/` and `samples/`.
-- **Copied** `PROMPT (1).md` → `docs/PROMPT.md`; `Task1-EN.docx`, `Architecture_Documentation.md`,
+- **Copied** `PROMPT (1).md` → `docs/PROMPT.md`; `Task1-EN.docx` (removed from the repo on 2026-10-20), `Architecture_Documentation.md`,
   `Architecture_View.md` → `docs/`; the two `.md` inputs → `samples/`.
 - **Copied** `Task1/env` → `.env` (secret, gitignored).
 - **Added** `.gitignore` (secrets, Python, build outputs).
@@ -342,4 +342,12 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
 - Tag `v1.0.1` pushed → GitHub Actions builds, verifies and attaches `SpaceFractionsAgent.exe` to the release.
 - Final example: run 9 (`examples/space_fractions_run9_final/`).
 - Rollback: delete the release on GitHub + `git push --delete origin v1.0.1` + `git revert <this commit>`.
+
+### 2026-10-20 — Cleanup after v1.0.1 (no new release)
+- README "Real runs" table (and the REAL_RUNS summary table): removed the blank lines before the run 8 / run 9 rows,
+  which split the table on GitHub.
+- `docs/Task1-EN.docx` removed from the repo (`git rm`); its mentions in `docs/PROMPT.md` removed.
+- `docs/PROMPT.md`: personal part removed (who I am, Master's application, deadline, the professor's e-mails, personal
+  e-mail address, "interviews"); the technical instructions and the verbatim Task 1 instructions are kept.
+- Rollback: `git revert <this commit>` (the docx comes back with it). The files stay in older history and in v1.0.1.
 

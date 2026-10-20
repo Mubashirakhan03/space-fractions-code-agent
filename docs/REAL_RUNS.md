@@ -174,7 +174,6 @@ Honest review:
 | 6 | 110 (2 resumes) | $0.378 | passed, profile none | generated `app/` package shadowed the agent → `sfagent`; wrong equivalent answers → recompute rule |
 | 7 | 42 | $0.144 | passed after 2 self-fix rounds, profile none, **GUI run by the user** | `write_files` lost `path` in 6 of 12 calls → path-keyed `files` object |
 | 8 | 58 | $0.159 | passed after 1 self-fix round, profile none | animated intro + admin PIN as required; flawed choice items → "exactly one option" rule |
-
 | 9 | 59 (2 resumes) | ≈ $0.38 actual | passed after 1 self-fix round, profile none | **final example**; admin list + Add/Edit/Delete as required |
 
 Total: about **$1.74**. The generated code was never edited by hand.

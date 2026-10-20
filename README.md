@@ -140,9 +140,7 @@ screenshots: [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md).
 | 5 | 47 | $0.122 | the probe gave a false positive on a scrollable list during the run; **passed on re-verification** ([evidence](docs/run5_reverification.txt)) | fits 1100×750, Check button, full pause overlay, 41 tests, 5 rounds with 0 errors |
 | 6 | 110 (2 resumes) | $0.378 | verified, profile *none* | generated `app/` package shadowed the agent → package renamed to `sfagent`; equivalent-fraction answers wrong → independent-recompute rule |
 | 7 | 42 | $0.144 | verified after 2 self-fix rounds, profile *none*, GUI run | 25 seed questions, random rounds with code-generated items (1000 checked, all correct), admin add/edit/delete, score-dependent result screen ([evidence](docs/run7_reverification.txt)); 6 of 12 `write_files` calls lost `path` → path-keyed `files` object |
-
 | 8 | 58 | $0.159 | verified after 1 self-fix round, profile *none* | animated intro (moving stars + rocket, 5 s, Skip), admin behind a PIN, progress and score while playing, Kind drop-down, admin items used without restart, 0 `write_files` errors, 34 tests ([evidence](docs/run8_reverification.txt)); flawed choice items → "exactly one option satisfies the prompt" rule |
-
 | 9 | 59 (2 resumes) | ≈ $0.38 actual ($0.28 estimated; 14 requests at peak price) | verified after 1 self-fix round, profile *none* | **final example**: admin lists all 22 seed questions with Add / Edit / Delete, animated intro (8 s, Skip), admin PIN, progress + score, answer keys correct, 50 tests ([evidence](docs/run9_reverification.txt)) |
 
 Total API spend for all nine runs: about **$1.74**.
