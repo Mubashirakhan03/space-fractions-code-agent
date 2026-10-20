@@ -334,3 +334,5 @@ Original inputs are also kept untouched in `D:\professor project\Task1\`.
   Re-verified incl. animation / PIN / admin-list checks → `docs/run9_reverification.txt`. Play-check + screenshots
   `docs/screenshots/run9/`. README (final example, run table, known limitations), REAL_RUNS run 9, D-023, CHANGELOG.
 - Rollback: `git revert <this commit>`; previous final example = run 8 (D-022).
+- Exe rebuilt with the data-management rule → `build/dist_v101/` (build/dist_new was locked by an open exe),
+  verify_exe 6/6 PASSED without Python, copied to `dist/`. Version still 1.0.0 until the release is approved.
