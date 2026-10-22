@@ -5,7 +5,7 @@ then uses **DeepSeek `deepseek-v4-pro`** (official API) to plan, write, test, ve
 **desktop application**. The reference task is *Space Fractions*, an educational fractions game for 6th graders.
 
 - 📦 **Download:** [latest release — `SpaceFractionsAgent.exe`](https://github.com/Mubashirakhan03/space-fractions-code-agent/releases/latest). Double-click to run; no Python needed.
-- 🎬 **Demo video:** *(link added after recording)*
+- 🎬 **Demo video:**  https://youtu.be/FbmM5-Hy1ww?si=k71kwkcG6_OqYoAL
 - 🧾 **Evidence of real runs:** [`docs/REAL_RUNS.md`](docs/REAL_RUNS.md) · final generated game: [`examples/space_fractions_run9_final/`](examples/space_fractions_run9_final/)
 
 Task 1 evaluation for the Intelligent Software Engineering group (Prof. Peng Liang). Author: Mubashira.
